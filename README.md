@@ -1,7 +1,7 @@
 # 프로젝트명: soulmate-nodejs-backend
 앱 이름: Soulmate, 언제든지 소통할 수 있는 메신저 애플리케이션
 
-# 개발 히스토이
+# 개발 히스토리
 - 패키지 리스트
 express
 nodemon
