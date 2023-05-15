@@ -18,7 +18,7 @@ const channelController = {
                 res.status(200).json({
                     msg: '채널 리스트 입니다.',
                     channels: channels
-                })
+                });
             }
         } catch (err) {
             if (!err.statusCode) {
