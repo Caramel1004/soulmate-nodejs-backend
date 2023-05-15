@@ -1,6 +1,7 @@
 import User from '../models/user.js'
 
 const userController = {
+    //회원가입
     postSignUp: async (req, res, next) => {
         try {
             const clientId = req.body.clientId;
@@ -25,6 +26,10 @@ const userController = {
             }
             next(err);
         }
+    },
+    //회원 로그인
+    postLogin: (req, res, next) => {
+
     }
 }
 
