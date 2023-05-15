@@ -7,6 +7,10 @@ const chatRoomSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
+    roomName:{
+        type: String,
+        required: true
+    },
     users: {
         type: [userSchema],
         required: true
