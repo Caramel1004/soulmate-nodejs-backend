@@ -75,7 +75,7 @@ const channelController = {
 
             console.log('thumbnail: ',thumbnail);
             if(thumbnail === ''){
-                thumbnail = 'https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/309/59932b0eb046f9fa3e063b8875032edd_crop.jpeg';
+                thumbnail = '/images/android-chrome-192x192.png';
             }
             const owner = {
                 ownerId: matchedUser._id,
