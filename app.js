@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
+import chatRoutes from './routes/chat.js';
 
 const app = express();
 
@@ -21,13 +22,14 @@ app.use((req, res, next) => {
 // 라우트 접근
 app.use('/v1/channel',channelRoutes);
 app.use('/v1/user',userRoutes);
+app.use('/v1/channel/:/channelId/chat',chatRoutes);
 
 app.use((error, req, res, next) => {
     console.log('app.js: ', error);
     const statusCode = (!error.statusCode) ? 500 : error.statusCode;
     const msg = error.message;
     const data = error.data;
-    
+
     res.status(statusCode).json({
         message: msg,
         statusCode: statusCode,

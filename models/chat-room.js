@@ -11,16 +11,16 @@ const chatRoomSchema = new Schema({
         type: String,
         required: true
     },
-    users: {
-        type: [userSchema],
+    users: [{
+        type: Schema.Types.ObjectId,
         required: true
-    },
-    imageUrl: {
+    }],
+    imageUrl: [{
         type: String
-    },
-    chat: {
+    }],
+    chat: [{
         type: String
-    },
+    }],
     createdAt: {
         type: Date
     }
