@@ -41,12 +41,12 @@ app.use((error, req, res, next) => {
 //몽구스와 연결후 서버 실행
 mongoose.connect('mongodb+srv://caramel1004:sK0eztAhijnYoDlT@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')
     .then(result => {
-        app.listen(8080, () => console.log(`Node Server 8080 start!!`));
-        // const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));
-        // const io = SocketIO.init(server);
-        // io.on('connection', socket => {
-        //     console.log('socket 가동!!!');
-        // });
+        // app.listen(8080, () => console.log(`Node Server 8080 start!!`));
+        const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));
+        const io = SocketIO.init(server);
+        io.on('connection', socket => {
+            console.log('socket 가동!!!');
+        });
     }).catch(err => {
         console.log('app.js err:', err);
     });

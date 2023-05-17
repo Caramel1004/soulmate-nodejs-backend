@@ -37,7 +37,37 @@ const chatController = {
         }
     },
     // 실시간 채팅
-    
+    patchSendChat: async (req, res, next) => {
+        try {
+            const chatRoomId = req.body.chatRoomId;
+            const reqChat = req.body.chat;
+            console.log('reqChat: ', reqChat);
+            const chatRoom = await ChatRoom.findById(chatRoomId);
+
+            console.log('chatRoom: ', chatRoom);
+            chatRoom.chat.push(reqChat);
+
+            await chatRoom.save();
+
+            const serverIO = SocketIO.getSocketIO();
+            // console.log('serverIO: ', serverIO);
+            serverIO.emit('chat', {
+                msg: '소켓 사용 중',
+                chatRoom: chatRoom
+            });
+
+            res.status(200).json({
+                msg: '채팅 중',
+                chatRoom: chatRoom
+            });
+        } catch (err) {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        }
+
+    }
 }
 
 export default chatController;
