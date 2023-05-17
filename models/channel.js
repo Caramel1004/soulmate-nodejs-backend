@@ -8,10 +8,10 @@ const channelSchema = new Schema({
         required: true
     },
     owner: {
-        ownerId:{
+        ownerId: {
             type: Schema.Types.ObjectId,
             required: true
-        }, 
+        },
         ownerName: {
             type: String,
             required: true
@@ -21,18 +21,22 @@ const channelSchema = new Schema({
         type: 'Number',
         default: '1'
     },
-    thumbnail:{
+    thumbnail: {
         type: String,
         default: 'images/apple-touch-icon.png'
     },
-    users: [{
+    users: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+    chatRooms: [
+        {
         type: Schema.Types.ObjectId,
-        ref: 'User'
-    }],
-    chatRooms: [{
-        type: Schema.Types.ObjectId,
-        ref: 'chatRoom'
-    }],
+        ref: 'ChatRoom'
+    }
+],
     posts: [{
         type: Schema.Types.ObjectId,
         ref: 'post'

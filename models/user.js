@@ -24,7 +24,7 @@ const userSchema = new Schema({
     chatRooms: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'chatRoom'
+            ref: 'ChatRoom'
         }
     ],
     posts: [

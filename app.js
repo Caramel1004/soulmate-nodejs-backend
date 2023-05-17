@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import SocketIO from './socket.js';
 
 
 import channelRoutes from './routes/channel.js';
@@ -22,7 +23,7 @@ app.use((req, res, next) => {
 // 라우트 접근
 app.use('/v1/channel',channelRoutes);
 app.use('/v1/user',userRoutes);
-app.use('/v1/channel/:/channelId/chat',chatRoutes);
+app.use('/v1/chat',chatRoutes);
 
 app.use((error, req, res, next) => {
     console.log('app.js: ', error);
@@ -40,7 +41,7 @@ app.use((error, req, res, next) => {
 //몽구스와 연결후 서버 실행
 mongoose.connect('mongodb+srv://caramel1004:sK0eztAhijnYoDlT@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')
     .then(result => {
-        app.listen(8080,() => console.log('Node 8080 Server start!!!'));
+        app.listen(8080, () => console.log(`Node Server 8080 start!!`));
         // const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));
         // const io = SocketIO.init(server);
         // io.on('connection', socket => {
