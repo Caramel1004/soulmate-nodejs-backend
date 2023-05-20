@@ -23,6 +23,16 @@ const chatController = {
                 error.statusCode = 403;
                 throw error;
             } else {
+
+                const serverIO = SocketIO.getSocketIO();
+                serverIO.emit('loadchat', () => {
+                    return {
+                        msg: '소켓 사용 중',
+                        chatRooms: chatRoomList,
+                        chatRoom: chatRoom
+                    }
+                });
+                next();
                 res.status(200).json({
                     msg: '채팅방이 로딩 되었습니다.',
                     chatRooms: chatRoomList,
@@ -39,22 +49,23 @@ const chatController = {
     // 실시간 채팅
     patchSendChat: async (req, res, next) => {
         try {
+            const clientChannelId = req.params.channelId;
             const chatRoomId = req.body.chatRoomId;
             const reqChat = req.body.chat;
             console.log('reqChat: ', reqChat);
             const chatRoom = await ChatRoom.findById(chatRoomId);
 
-            console.log('chatRoom: ', chatRoom);
             chatRoom.chat.push(reqChat);
 
             await chatRoom.save();
+            console.log('chatRoom: ', chatRoom);
 
             const serverIO = SocketIO.getSocketIO();
             // console.log('serverIO: ', serverIO);
-            serverIO.emit('chat', {
-                msg: '소켓 사용 중',
-                chatRoom: chatRoom
-            });
+            // serverIO.emit('chat', {
+            //     msg: '소켓 사용 중',
+            //     chatRoom: chatRoom
+            // });
 
             res.status(200).json({
                 msg: '채팅 중',
