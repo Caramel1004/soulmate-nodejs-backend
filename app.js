@@ -16,7 +16,7 @@ app.use((req, res, next) => {
     //cors에러 해결을 위한 헤더설정
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization');
     next();
 })
 
@@ -25,6 +25,7 @@ app.use('/v1/channel', channelRoutes);
 app.use('/v1/user', userRoutes);
 app.use('/v1/chat', chatRoutes);
 
+// 오류 처리
 app.use((error, req, res, next) => {
     console.log('app.js: ', error);
     const statusCode = (!error.statusCode) ? 500 : error.statusCode;
@@ -38,16 +39,6 @@ app.use((error, req, res, next) => {
     });
     next();
 });
-
-// app.use((req, res, next) => {
-//     const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));
-//     const io = SocketIO.init(server);
-
-//     io.emit('connection', socket => {
-//         console.log('서버 socket 가동!!!: ');
-//         return socket;
-//     });
-// });
 
 //몽구스와 연결후 서버 실행
 mongoose.connect('mongodb+srv://caramel1004:sK0eztAhijnYoDlT@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')

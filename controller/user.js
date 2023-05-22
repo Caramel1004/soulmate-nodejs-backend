@@ -28,9 +28,56 @@ const userController = {
         }
     },
     //회원 로그인
-    postLogin: (req, res, next) => {
+    postLogin: async (req, res, next) => {
+        try {
+            const clientId = req.body.clientId;
+            const password = req.body.password;
 
-    }
+            const user = await User.findOne({ clientId: clientId });
+
+            // 사용자 존재유무 체크
+            if (!user) {
+                const error = new Error('사용자 정보가 없습니다.');
+                error.statusCode = 401;
+                throw error;
+            }
+
+            // 나중에 bcrypt 추가할 예정
+            // 비밀번호 일치하는지 체크
+            if (user.password !== password) {
+                const error = new Error('비밀번호가 일치하지 않습니다.');
+                error.statusCode = 401;
+                throw error;
+            }
+
+            // jwt 발급
+            const token = jwt.sign({
+                clientId: user.clientId,
+                userId: user._id
+            },
+                'caramel',
+                { expiresIn: '0.5h' }
+            );
+
+            console.log('로그인 인증 token: ', token);
+
+            if (!token) {
+                const error = new Error('토큰이 부여되지 않았습니다!!');
+                error.statusCode = 422;
+                throw error;
+            } else {
+                res.status(201).json({
+                    token: token,
+                    userId: user._id
+                });
+            }
+        } catch (err) {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        }
+    },
 }
 
 export default userController;
