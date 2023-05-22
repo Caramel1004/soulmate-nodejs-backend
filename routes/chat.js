@@ -7,6 +7,6 @@ const router = Router();
 router.get('/:channelId/:chatRoomId', chatController.getLoadChatRoom);
 
 // PATCH /v1/chat/send/:channelId/:chatRoomId
-router.patch('/:channelId/:chatRoomI/send', chatController.patchSendChat);
+router.patch('/:channelId/:chatRoomId', chatController.patchSendChat);
 
 export default router;

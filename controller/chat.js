@@ -16,23 +16,20 @@ const chatController = {
             const chatRoom = await ChatRoom.findById(chatRoomId);
 
             // console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
-            console.log('chatRoomList: ', chatRoomList);
-            console.log('chatRoom: ', chatRoom);
+            // console.log('chatRoomList: ', chatRoomList);
+            // console.log('chatRoom: ', chatRoom);
             if (chatRoom.channelId.toString() !== clientChannelId.toString()) {
                 const error = new Error('데이터베이스 채널아이디랑 일치하지 않습니다!');
                 error.statusCode = 403;
                 throw error;
             } else {
+                // const serverIO = SocketIO.getSocketIO();
+                // serverIO.emit('loadChat', {
+                //     msg: '소켓 채팅방 로딩',
+                //     chatRooms: chatRoomList,
+                //     chatRoom: chatRoom
+                // });
 
-                const serverIO = SocketIO.getSocketIO();
-                serverIO.emit('loadchat', () => {
-                    return {
-                        msg: '소켓 사용 중',
-                        chatRooms: chatRoomList,
-                        chatRoom: chatRoom
-                    }
-                });
-                next();
                 res.status(200).json({
                     msg: '채팅방이 로딩 되었습니다.',
                     chatRooms: chatRoomList,
@@ -61,16 +58,19 @@ const chatController = {
             console.log('chatRoom: ', chatRoom);
 
             const serverIO = SocketIO.getSocketIO();
-            // console.log('serverIO: ', serverIO);
-            // serverIO.emit('chat', {
-            //     msg: '소켓 사용 중',
-            //     chatRoom: chatRoom
-            // });
+
+            serverIO.emit('sendChat', {
+                msg: '소켓 메세지 전송',
+                chatRoom: chatRoom,
+                currentChat: reqChat
+            });
 
             res.status(200).json({
                 msg: '채팅 중',
                 chatRoom: chatRoom
             });
+
+            // next();
         } catch (err) {
             if (!err.statusCode) {
                 err.statusCode = 500;
