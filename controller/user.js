@@ -1,4 +1,5 @@
 import User from '../models/user.js'
+import jwt from 'jsonwebtoken';
 
 const userController = {
     //회원가입
@@ -31,7 +32,9 @@ const userController = {
     postLogin: async (req, res, next) => {
         try {
             const clientId = req.body.clientId;
-            const password = req.body.password;
+            const pwd = req.body.password;
+            console.log('clientId: ', clientId);
+            console.log('pwd: ', pwd);
 
             const user = await User.findOne({ clientId: clientId });
 
@@ -41,10 +44,12 @@ const userController = {
                 error.statusCode = 401;
                 throw error;
             }
+            console.log('user: ', user);
+            console.log('user.password: ', user.password);
 
             // 나중에 bcrypt 추가할 예정
             // 비밀번호 일치하는지 체크
-            if (user.password !== password) {
+            if (user.password !== pwd.toString()) {
                 const error = new Error('비밀번호가 일치하지 않습니다.');
                 error.statusCode = 401;
                 throw error;
@@ -61,6 +66,7 @@ const userController = {
 
             console.log('로그인 인증 token: ', token);
 
+            // 토큰 발급 유무
             if (!token) {
                 const error = new Error('토큰이 부여되지 않았습니다!!');
                 error.statusCode = 422;
@@ -77,7 +83,7 @@ const userController = {
             }
             next(err);
         }
-    },
+    }
 }
 
 export default userController;

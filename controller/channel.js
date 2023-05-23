@@ -6,7 +6,8 @@ const channelController = {
     // 해당 유저의 채널 리스트 조회
     getChannelList: async (req, res, next) => {
         try {
-            const user = await User.findById('645bc55b7d8b60a0021cb1b5').populate('channels');//poplate함수로 해당아이디에대한 채널정보 모두 가져오기
+            const userId = req.userId;// 토큰에서 파싱한 유저아이디
+            const user = await User.findById(userId).populate('channels');//poplate함수로 해당아이디에대한 채널정보 모두 가져오기
             // console.log(user)
             if (!user) {
                 const error = new Error('채널리스트를 불러오지 못했습니다.');
@@ -99,9 +100,10 @@ const channelController = {
         try {
             // 채널 이벤트 발생
             // 1. 채널 생성 2. 해당유저 소유자로 지정 3. 참여 채널 저장 4. 해당유저의 채널에 추가
+            const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
-            const matchedUser = await User.findById('645bc55b7d8b60a0021cb1b5');
+            const matchedUser = await User.findById(userId);
 
             console.log('thumbnail: ', thumbnail);
             if (thumbnail === '') {
