@@ -61,7 +61,7 @@ const userController = {
                 userId: user._id
             },
                 'caramel',
-                { expiresIn: '0.5h' }
+                { expiresIn: '1h' }
             );
 
             console.log('로그인 인증 token: ', token);

@@ -31,10 +31,11 @@ const channelController = {
     // 채널아이디로 해당 채널 조회
     getChannelById: async (req, res, next) => {
         try {
+            const userId = req.userId;
             const channelId = req.params.channelId;
 
             // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 없으면 에러 스루
-            const userInfo = await User.findById('645bc55b7d8b60a0021cb1b5');// 나중에는 토큰으로 유저 유무 구분 할거임
+            const userInfo = await User.findById(userId);// 나중에는 토큰으로 유저 유무 구분 할거임
             const userChannelIdList = userInfo.channels;
 
             const matchedChannel = userChannelIdList.find(userChId => userChId.toString() === channelId.toString());
@@ -45,12 +46,12 @@ const channelController = {
                 throw error;
             }
 
-            // 2. 유저가 해당 채널의 아이디를 자기고있으면 다음 채널아이디로 해당채널 조회
+            // 2. 유저가 해당 채널의 아이디를 가지고있으면 다음 채널아이디로 해당채널 조회
             const finalChannel = await Channel.findById(matchedChannel._id);
 
             if (!finalChannel) {
                 const error = new Error('해당채널을 찾지 못했습니다.');
-                error.statusCode = 401
+                error.statusCode = 401;
                 throw error;
             }
 
@@ -66,11 +67,11 @@ const channelController = {
             next(err);
         }
     },
-    // 채팅 목록 조회
+    // 채팅방 목록 조회
     getChatRoomListByUser: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;
-            const userId = '645bc55b7d8b60a0021cb1b5';
+            const userId = req.userId;
             console.log('channelId:',channelId);
             const chatRoomList = await ChatRoom.find({channelId: channelId});
             console.log('chatRoomList: ',chatRoomList);
@@ -143,7 +144,7 @@ const channelController = {
             // 1. 채널스키마에서 해당 유저 삭제
             const channelId = req.body.channelId;
             console.log('channelId: ', channelId);
-            const userId = '645bc55b7d8b60a0021cb1b5';
+            const userId = req.userId;
             const matchedChannel = await Channel.findById(channelId);
 
             const updatedUsers = matchedChannel.users.filter(id => id.toString() !== userId.toString());
@@ -176,7 +177,7 @@ const channelController = {
         try {
             const channelId = req.params.channelId;
             const roomName = req.body.roomName;
-            const userId = '6462cf17e4bde5c830aad9bf';
+            const userId = req.userId;
 
             const chatRoom = new ChatRoom({
                 channelId: channelId,
