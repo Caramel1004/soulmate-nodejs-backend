@@ -47,7 +47,7 @@ const channelController = {
             }
 
             // 2. 유저가 해당 채널의 아이디를 가지고있으면 다음 채널아이디로 해당채널 조회
-            const finalChannel = await Channel.findById(matchedChannel._id);
+            const finalChannel = await Channel.findById(matchedChannel._id).populate('users');
 
             if (!finalChannel) {
                 const error = new Error('해당채널을 찾지 못했습니다.');
@@ -72,13 +72,13 @@ const channelController = {
         try {
             const channelId = req.params.channelId;
             const userId = req.userId;
-            console.log('channelId:',channelId);
-            const chatRoomList = await ChatRoom.find({channelId: channelId});
-            console.log('chatRoomList: ',chatRoomList);
+            console.log('channelId:', channelId);
+            const chatRoomList = await ChatRoom.find({ channelId: channelId });
+            console.log('chatRoomList: ', chatRoomList);
 
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const idx = chatRoom.users.indexOf(userId);
-                if(idx !== -1){
+                if (idx !== -1) {
                     return chatRoom;
                 }
             })
@@ -165,6 +165,40 @@ const channelController = {
                 msg: '해당 유저가 채널에서 퇴장하였습니다.',
                 exitedUser: exitedUser
             })
+        } catch (err) {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        }
+    },
+    // 해당채널에 유저 초대
+    patchInviteUserToChannel: async (req, res, next) => {
+        try {
+            const reqUserId = req.userId;
+            const channelId = req.params.channelId;
+            const clientId = req.body.clientId;
+            const invitedUserId = req.body.invitedUserId;
+
+            const matchedChannel = await Channel.findById(channelId);
+
+            const findIndex = matchedChannel.users.findIndex(id => id.toString() === invitedUserId.toString());
+
+            if (findIndex != -1) {
+                const error = new Error('해당 유저는 이미 채널에 참여하고 있습니다.');
+                error.statusCode = 401;
+                throw error;
+            }
+
+            matchedChannel.users.push(invitedUserId);
+            await matchedChannel.save();
+
+            res.status(200).json({
+                msg: '유저가 초대되였습니다.',
+                clientId: clientId,
+                channel: matchedChannel
+            })
+
         } catch (err) {
             if (!err.statusCode) {
                 err.statusCode = 500;

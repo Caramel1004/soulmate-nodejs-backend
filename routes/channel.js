@@ -20,6 +20,9 @@ router.post('/create', hasJsonWebToken,channelController.postCreateChannel);// �
 //PATCH /v1/channel/exit/:channelId
 router.patch('/exit/:channelId', hasJsonWebToken,channelController.patchExitChannel);// 채널 퇴장
 
+// PATCH /v1/channel/invite/:channelId
+router.patch('/invite/:channelId', channelController.patchInviteUserToChannel);// 해당 채널에 유저 초대
+
 // POST /v1/channel/:channelId/chatRoom/create
 router.post('/:channelId/chatRoom/create', hasJsonWebToken,channelController.postCreateChatRoom);// 채팅방 생성
 

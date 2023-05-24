@@ -83,6 +83,18 @@ const userController = {
             }
             next(err);
         }
+    },
+    // 유저 정보 가져오기
+    getUserInfo: async (req,res,next) => {
+        const reqUserId = req.userId;
+        const clientId = req.body.clientId;
+
+        const matchedUser = await User.findOne({clientId: clientId});
+
+        res.status(200).json({
+            msg: '유저를 찾았습니다.',
+            user: matchedUser
+        });
     }
 }
 
