@@ -72,6 +72,7 @@ const userController = {
                 error.statusCode = 422;
                 throw error;
             } else {
+
                 res.status(201).json({
                     token: token,
                     clientId: clientId
@@ -85,13 +86,13 @@ const userController = {
         }
     },
     // 유저 정보 가져오기
-    getUserInfo: async (req,res,next) => {
+    getUserInfo: async (req, res, next) => {
         const reqUserId = req.userId;
         const clientId = req.params.clientId;
 
-        const matchedUser = await User.findOne({clientId: clientId});
+        const matchedUser = await User.findOne({ clientId: clientId });
 
-        console.log('matchedUser: ',matchedUser);
+        console.log('matchedUser: ', matchedUser);
         res.status(200).json({
             msg: '유저를 찾았습니다.',
             user: matchedUser
