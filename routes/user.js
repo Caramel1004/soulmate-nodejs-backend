@@ -10,7 +10,7 @@ router.post('/check', userController.postLogin);
 //POST /v1/user/signup
 router.post('/signup', userController.postSignUp);
 
-//GET /v1/user/userInfo
-router.get('/userInfo', userController.getUserInfo);
+//GET /v1/user/userInfo:/clientId
+router.get('/userInfo/:clientId', userController.getUserInfo);
 
 export default router;

@@ -35,7 +35,7 @@ const channelController = {
             const channelId = req.params.channelId;
 
             // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 없으면 에러 스루
-            const userInfo = await User.findById(userId);// 나중에는 토큰으로 유저 유무 구분 할거임
+            const userInfo = await User.findById(userId);
             const userChannelIdList = userInfo.channels;
 
             const matchedChannel = userChannelIdList.find(userChId => userChId.toString() === channelId.toString());
@@ -142,9 +142,9 @@ const channelController = {
     patchExitChannel: async (req, res, next) => {
         try {
             // 1. 채널스키마에서 해당 유저 삭제
+            const userId = req.userId;
             const channelId = req.body.channelId;
             console.log('channelId: ', channelId);
-            const userId = req.userId;
             const matchedChannel = await Channel.findById(channelId);
 
             const updatedUsers = matchedChannel.users.filter(id => id.toString() !== userId.toString());
@@ -155,7 +155,7 @@ const channelController = {
             await matchedChannel.save();
 
             // 2. 유저스키마에서 해당 채널 삭제
-            const exitedUser = await User.findById('645bc55b7d8b60a0021cb1b5');
+            const exitedUser = await User.findById(userId);
             const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
 
             exitedUser.channels = [...updatedChannels];
@@ -177,10 +177,13 @@ const channelController = {
         try {
             const reqUserId = req.userId;
             const channelId = req.params.channelId;
-            const clientId = req.body.clientId;
+            // const clientId = req.body.clientId;
             const invitedUserId = req.body.invitedUserId;
+            // console.log('invitedUserId: ',invitedUserId);
+            // console.log('channelId: ',channelId);
 
             const matchedChannel = await Channel.findById(channelId);
+            // console.log('matchedChannel: ',matchedChannel);
 
             const findIndex = matchedChannel.users.findIndex(id => id.toString() === invitedUserId.toString());
 
@@ -193,9 +196,14 @@ const channelController = {
             matchedChannel.users.push(invitedUserId);
             await matchedChannel.save();
 
+            const user = await User.findById(invitedUserId);
+
+            user.channels.push(matchedChannel._id);
+            await user.save();
+
             res.status(200).json({
                 msg: '유저가 초대되였습니다.',
-                clientId: clientId,
+                clientId: user.clientId,
                 channel: matchedChannel
             })
 
@@ -230,7 +238,7 @@ const channelController = {
             userInfo.chatRooms.push(updatedUserToChatRoom._id);
             await userInfo.save();
 
-            // 4. 해당 채널스키마에 채팅룸 컬럼에  채팅룸 아이디 푸쉬 후 저장 
+            // 4. 해당 채널스키마에 채팅룸 컬럼에 채팅룸 아이디 푸쉬 후 저장 
             const channel = await Channel.findById(updatedUserToChatRoom.channelId);
             channel.chatRooms.push(updatedUserToChatRoom._id);
             await channel.save();
