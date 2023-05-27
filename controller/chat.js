@@ -13,11 +13,16 @@ const chatController = {
 
             const matchedUser = await User.findById(userId).populate('chatRooms');
             const chatRoomList = matchedUser.chatRooms.filter(room => room.channelId.toString() === clientChannelId.toString())
-            const chatRoom = await ChatRoom.findById(chatRoomId);
+            const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
 
+            console.log('matchedUser: ', matchedUser);
             console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
             console.log('chatRoomList: ', chatRoomList);
             console.log('chatRoom: ', chatRoom);
+
+            const clientIds = chatRoom.users.map(user => {
+                return user.clientId;
+            })
             if (chatRoom.channelId.toString() !== clientChannelId.toString()) {
                 const error = new Error('데이터베이스 채널아이디랑 일치하지 않습니다!');
                 error.statusCode = 403;
@@ -26,7 +31,8 @@ const chatController = {
                 res.status(200).json({
                     msg: '채팅방이 로딩 되었습니다.',
                     chatRooms: chatRoomList,
-                    chatRoom: chatRoom
+                    chatRoom: chatRoom,
+                    clientIds: clientIds
                 });
             }
         } catch (err) {
@@ -92,10 +98,12 @@ const chatController = {
     patchSendChat: async (req, res, next) => {
         try {
             const clientChannelId = req.params.channelId;
+            const userId = req.userId;
             const chatRoomId = req.body.chatRoomId;
             const reqChat = req.body.chat;
             console.log('reqChat: ', reqChat);
-            const chatRoom = await ChatRoom.findById(chatRoomId);
+            const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
+            const matchedUser = chatRoom.users.find(user => user._id.toString() === userId.toString());
 
             chatRoom.chat.push(reqChat);
 
@@ -107,12 +115,16 @@ const chatController = {
             serverIO.emit('sendChat', {
                 msg: '소켓 메세지 전송',
                 chatRoom: chatRoom,
-                currentChat: reqChat
+                currentChat: reqChat,
+                photo: matchedUser.photo,
+                clientId: matchedUser.clientId
             });
 
             res.status(200).json({
                 msg: '채팅 중',
-                chatRoom: chatRoom
+                chatRoom: chatRoom,
+                photo: matchedUser.photo,
+                clientId: matchedUser.clientId
             });
 
             // next();

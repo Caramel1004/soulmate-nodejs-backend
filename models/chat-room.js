@@ -7,12 +7,13 @@ const chatRoomSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    roomName:{
+    roomName: {
         type: String,
         required: true
     },
     users: [{
         type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     }],
     imageUrl: [{
@@ -24,6 +25,6 @@ const chatRoomSchema = new Schema({
     createdAt: {
         type: Date
     }
-},{timestamps: true});
+}, { timestamps: true });
 
-export default mongoose.model('ChatRoom',chatRoomSchema);
+export default mongoose.model('ChatRoom', chatRoomSchema);
