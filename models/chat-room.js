@@ -20,7 +20,17 @@ const chatRoomSchema = new Schema({
         type: String
     }],
     chat: [{
-        type: String
+        chat: {
+            type: Object
+        },
+        creator: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        createdAt: {
+            type: Date
+        }
     }],
     createdAt: {
         type: Date

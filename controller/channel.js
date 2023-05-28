@@ -104,6 +104,7 @@ const channelController = {
             const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
+            
             const matchedUser = await User.findById(userId);
 
             console.log('thumbnail: ', thumbnail);
