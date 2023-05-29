@@ -1,4 +1,4 @@
-import ChatRoom from '../models/chat-room.js'
+import { ChatRoom, Chat } from '../models/chat-room.js'
 import Channel from '../models/channel.js';
 import User from '../models/user.js';
 import SocketIO from '../socket.js';
@@ -13,16 +13,46 @@ const chatController = {
 
             const matchedUser = await User.findById(userId).populate('chatRooms');
             const chatRoomList = matchedUser.chatRooms.filter(room => room.channelId.toString() === clientChannelId.toString())
-            const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
+            const chatRoom = await ChatRoom.findById(chatRoomId)
+            .populate('users')
+            .populate({
+                path: 'chatList',
+                populate: {
+                    path: 'creator'
+                }
+            })
+            .sort({createdAt: -1});
 
             console.log('matchedUser: ', matchedUser);
-            console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
-            console.log('chatRoomList: ', chatRoomList);
+            // console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
+            // console.log('chatRoomList.chatList: ', chatRoomList.chatList);
             console.log('chatRoom: ', chatRoom);
 
-            const clientIds = chatRoom.users.map(user => {
-                return user.clientId;
-            })
+            // 클라이언트에 보낼 데이터
+            const userList = chatRoom.users.map(user => {
+                return {
+                    photo: user.photo,
+                    clientId: user.clientId
+                };
+            });
+
+            const chatList = chatRoom.chatList.map(chat => {
+                return {
+                    chat: chat.chat,
+                    creator: {
+                        clientId: chat.creator.clientId,
+                        photo: chat.creator.photo
+                    },
+                    createdAt: chat.createdAt
+                }
+            });
+
+            // 챗 오브젝트
+            const chatRoomData = {
+                roomName: chatRoom.roomName,
+                chatList: chatList,
+            };
+
             if (chatRoom.channelId.toString() !== clientChannelId.toString()) {
                 const error = new Error('데이터베이스 채널아이디랑 일치하지 않습니다!');
                 error.statusCode = 403;
@@ -31,8 +61,8 @@ const chatController = {
                 res.status(200).json({
                     msg: '채팅방이 로딩 되었습니다.',
                     chatRooms: chatRoomList,
-                    chatRoom: chatRoom,
-                    clientIds: clientIds
+                    chatRoomData: chatRoomData,
+                    userList: userList
                 });
             }
         } catch (err) {
@@ -95,17 +125,24 @@ const chatController = {
         }
     },
     // 실시간 채팅
-    patchSendChat: async (req, res, next) => {
+    postSendChat: async (req, res, next) => {
         try {
             const clientChannelId = req.params.channelId;
             const userId = req.userId;
             const chatRoomId = req.body.chatRoomId;
             const reqChat = req.body.chat;
             console.log('reqChat: ', reqChat);
+
+            const chat = new Chat({
+                chat: reqChat,
+                creator: userId
+            });
+            const savedChat = await chat.save();
+
             const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
             const matchedUser = chatRoom.users.find(user => user._id.toString() === userId.toString());
 
-            chatRoom.chat.push(reqChat);
+            chatRoom.chatList.push(savedChat._id);
 
             await chatRoom.save();
             console.log('chatRoom: ', chatRoom);

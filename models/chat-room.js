@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
+//채팅방 스키마
 const chatRoomSchema = new Schema({
     channelId: {
         type: Schema.Types.ObjectId,
@@ -19,22 +20,36 @@ const chatRoomSchema = new Schema({
     imageUrl: [{
         type: String
     }],
-    chat: [{
-        chat: {
-            type: Object
-        },
-        creator: {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
-        createdAt: {
-            type: Date
-        }
+    chatList: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Chat',
+        required: true
     }],
     createdAt: {
         type: Date
     }
 }, { timestamps: true });
 
-export default mongoose.model('ChatRoom', chatRoomSchema);
+// 채팅 스키마
+const chatSchema = new Schema({
+    chat: {
+        type: String,
+        required: true
+    },
+    creator: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }],
+    createdAt: {
+        type: Date
+    }
+}, { timestamps: true });
+
+const ChatRoom = mongoose.model('ChatRoom', chatRoomSchema);
+const Chat = mongoose.model('Chat', chatSchema);
+
+export { ChatRoom };
+export { Chat };
+
+// export default { ChatRoom,Chat}

@@ -1,6 +1,6 @@
 import Channel from '../models/channel.js';
 import User from '../models/user.js';
-import ChatRoom from '../models/chat-room.js';
+import { ChatRoom } from '../models/chat-room.js';
 
 const channelController = {
     // 해당 유저의 채널 리스트 조회
@@ -104,7 +104,7 @@ const channelController = {
             const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
-            
+
             const matchedUser = await User.findById(userId);
 
             console.log('thumbnail: ', thumbnail);
