@@ -36,11 +36,11 @@ const chatSchema = new Schema({
         type: String,
         required: true
     },
-    creator: [{
+    creator: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    }],
+    },
     createdAt: {
         type: Date
     }

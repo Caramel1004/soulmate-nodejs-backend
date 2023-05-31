@@ -14,39 +14,42 @@ const chatController = {
             const matchedUser = await User.findById(userId).populate('chatRooms');
             const chatRoomList = matchedUser.chatRooms.filter(room => room.channelId.toString() === clientChannelId.toString())
             const chatRoom = await ChatRoom.findById(chatRoomId)
-            .populate('users')
-            .populate({
-                path: 'chatList',
-                populate: {
-                    path: 'creator'
-                }
-            })
-            .sort({createdAt: -1});
+                .populate('users', {
+                    clientId: 1,
+                    name: 1,
+                    photo: 1
+                })
+                .populate('chatList');
+            // .populate({
+            //     path: 'chatList',
+            //     populate: {
+            //         path: 'creator',
+            //         select: {
+            //             _id: 1
+            //         },
+            //         sort: {createdAt: -1}
+            //     }
+            // });
 
             console.log('matchedUser: ', matchedUser);
             // console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
             // console.log('chatRoomList.chatList: ', chatRoomList.chatList);
             console.log('chatRoom: ', chatRoom);
+            console.log('chatRoom.chatList: ', chatRoom.chatList);
 
             // 클라이언트에 보낼 데이터
-            const userList = chatRoom.users.map(user => {
-                return {
-                    photo: user.photo,
-                    clientId: user.clientId
-                };
-            });
+            const userList = chatRoom.users;
 
+            // 생성자 디테일 반환
             const chatList = chatRoom.chatList.map(chat => {
+                const matchedCreator = userList.find(user => user._id.toString() === chat.creator.toString());
                 return {
                     chat: chat.chat,
-                    creator: {
-                        clientId: chat.creator.clientId,
-                        photo: chat.creator.photo
-                    },
+                    creator: matchedCreator,
                     createdAt: chat.createdAt
                 }
             });
-
+            console.log('chatList: ', chatList);
             // 챗 오브젝트
             const chatRoomData = {
                 roomName: chatRoom.roomName,
@@ -138,6 +141,8 @@ const chatController = {
                 creator: userId
             });
             const savedChat = await chat.save();
+
+            console.log('savedChat: ', savedChat);
 
             const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
             const matchedUser = chatRoom.users.find(user => user._id.toString() === userId.toString());

@@ -90,13 +90,29 @@ const userController = {
         const reqUserId = req.userId;
         const clientId = req.params.clientId;
 
-        const matchedUser = await User.findOne({ clientId: clientId });
+        const matchedUser = await User.findOne(
+            { clientId: clientId },
+            {
+                _id: 1,
+                clientId: 1,
+                name: 1,
+                photo:1
+            });
 
         console.log('matchedUser: ', matchedUser);
-        res.status(200).json({
-            msg: '유저를 찾았습니다.',
-            user: matchedUser
-        });
+        if(matchedUser === null){
+            res.status(200).json({
+                statusCode: 400,
+                msg: '존재하지 않는 유저 입니다.',
+            });
+        }else{
+            res.status(200).json({
+                statusCode: 200,
+                msg: '유저를 찾았습니다.',
+                user: matchedUser
+            });
+        }
+        
     }
 }
 

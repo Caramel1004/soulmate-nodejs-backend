@@ -19,7 +19,7 @@ const channelSchema = new Schema({
     },
     headcount: {
         type: 'Number',
-        default: '1'
+        default: 1
     },
     thumbnail: {
         type: String,
