@@ -87,7 +87,6 @@ const userController = {
     },
     // 유저 정보 가져오기
     getUserInfo: async (req, res, next) => {
-        const reqUserId = req.userId;
         const clientId = req.params.clientId;
 
         const matchedUser = await User.findOne(
@@ -101,8 +100,8 @@ const userController = {
 
         console.log('matchedUser: ', matchedUser);
         if(matchedUser === null){
-            res.status(200).json({
-                statusCode: 400,
+            res.status(404).json({
+                statusCode: 404,
                 msg: '존재하지 않는 유저 입니다.',
             });
         }else{

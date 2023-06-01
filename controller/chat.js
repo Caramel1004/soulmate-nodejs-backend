@@ -30,6 +30,11 @@ const chatController = {
             //         sort: {createdAt: -1}
             //     }
             // });
+            if (chatRoom.channelId.toString() !== clientChannelId.toString()) {
+                const error = new Error('데이터베이스 채널아이디랑 일치하지 않습니다!');
+                error.statusCode = 404;
+                throw error;
+            }
 
             console.log('matchedUser: ', matchedUser);
             // console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
@@ -56,18 +61,42 @@ const chatController = {
                 chatList: chatList,
             };
 
-            if (chatRoom.channelId.toString() !== clientChannelId.toString()) {
-                const error = new Error('데이터베이스 채널아이디랑 일치하지 않습니다!');
-                error.statusCode = 403;
-                throw error;
-            } else {
-                res.status(200).json({
-                    msg: '채팅방이 로딩 되었습니다.',
-                    chatRooms: chatRoomList,
-                    chatRoomData: chatRoomData,
-                    userList: userList
-                });
+            res.status(200).json({
+                msg: '채팅방이 로딩 되었습니다.',
+                chatRooms: chatRoomList,
+                chatRoomData: chatRoomData,
+                userList: userList
+            });
+        } catch (err) {
+            if (!err.statusCode) {
+                err.statusCode = 500;
             }
+            next(err);
+        }
+    },
+    // 채널에 속한 유저 불러오기 => 채팅룸에있는 채널유저리스트 보드에 렌더링 할거임
+    getLoadUsersInChannel: async (req, res, next) => {
+        try {
+            const channelId = req.params.channelId;
+
+            console.log(channelId);
+            const channelUsers = await Channel.findById(channelId)
+                .select('users')
+                .populate('users', {
+                    clientId: 1,
+                    name: 1,
+                    photo: 1
+                })
+                .sort({ clientId: 1 });
+
+            const users = channelUsers.users;
+            
+            console.log('users: ', users);
+
+            res.status(200).json({
+                msg: '채널에있는 유저들 입니다.',
+                users: users
+            })
         } catch (err) {
             if (!err.statusCode) {
                 err.statusCode = 500;
