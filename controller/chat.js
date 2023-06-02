@@ -57,6 +57,7 @@ const chatController = {
             console.log('chatList: ', chatList);
             // 챗 오브젝트
             const chatRoomData = {
+                _id: chatRoom._id,
                 roomName: chatRoom.roomName,
                 chatList: chatList,
             };
@@ -111,11 +112,11 @@ const chatController = {
 
             const channelId = req.params.channelId
             const chatRoomId = req.params.chatRoomId;
-            const selectedMemberId = req.body.memberId;// 배열 형태로 넘길 거임
+            const selectedId = req.body.selectedId;// 배열 형태로 넘길 거임
 
             console.log('channelId: ', channelId);
             console.log('chatRoomId: ', chatRoomId);
-            console.log('selectedMemberId: ', selectedMemberId);
+            console.log('selectedId: ', selectedId);
             // 채널아이디로 해당 채팅룸이 있는지 부터 검사
             // 그 채팅룸 정보 가져오기 가져오기
             const matchedChannel = await Channel.findById(channelId).populate('chatRooms').populate('users');
@@ -129,7 +130,7 @@ const chatController = {
                 throw error;
             }
             // 1. 채팅룸 스키마에 선택된 유저 추가
-            const updatedChatRoomUsers = [...matchedChatRoom.users, ...selectedMemberId];
+            const updatedChatRoomUsers = [...matchedChatRoom.users, ...selectedId];
             matchedChatRoom.users = [...updatedChatRoomUsers];
 
             await matchedChatRoom.save();
@@ -137,10 +138,10 @@ const chatController = {
             const channelUsers = matchedChannel.users;
             const selectdUsers = [];
 
-            for (let selectedId of selectedMemberId) {
-                const selectedUser = channelUsers.find(user => user._id.toString() === selectedId);
+            for (let id of selectedId) {
+                const selectedUser = channelUsers.find(user => user._id.toString() === id);
                 selectdUsers.push(selectedUser);
-                selectedUser.chatRooms.push(selectedId);
+                selectedUser.chatRooms.push(id);
                 await selectedUser.save();
             }
 
