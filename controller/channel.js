@@ -2,30 +2,23 @@ import Channel from '../models/channel.js';
 import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
+import channelService from '../service/channel.js'
+import { successType } from '../util/status.js';
+
 const channelController = {
     // 해당 유저의 채널 리스트 조회
-    getChannelList: async (req, res, next) => {
+    getChannelListByUserId: async (req, res, next) => {
         try {
             const userId = req.userId;// 토큰에서 파싱한 유저아이디
-            const user = await User.findById(userId).populate('channels');//poplate함수로 해당아이디에대한 채널정보 모두 가져오기
-            // console.log(user)
-            if (!user) {
-                const error = new Error('채널리스트를 불러오지 못했습니다.');
-                error.statusCode = 401;
-                throw error;
-            } else {
-                const channels = user.channels;
-                // console.log(channels);
-                res.status(200).json({
-                    msg: '채널 리스트 입니다.',
-                    channels: channels
-                });
-            }
+
+            const resData = await channelService.getChannelListByUserId(userId);
+
+            res.status(resData.status.code).json({
+                status: resData.status,
+                channels: resData.channels
+            });
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            throw err;
         }
     },
     // 채널아이디로 해당 채널 조회
@@ -104,33 +97,19 @@ const channelController = {
             const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
+            const category = req.body.category;
 
-            const matchedUser = await User.findById(userId);
-
-            console.log('thumbnail: ', thumbnail);
-            if (thumbnail === '') {
-                thumbnail = '/images/android-chrome-192x192.png';
-            }
-            const owner = {
-                ownerId: matchedUser._id,
-                ownerName: matchedUser.name
-            }
-
-            const channel = new Channel({
+            const body = {
+                userId: userId,
                 channelName: channelName,
-                owner: owner,
-                thumbnail: thumbnail
-            });
+                thumbnail: thumbnail,
+                category: category
+            }
 
-            const createChannel = await channel.save();
+            const resData = await channelService.postCreateChannel(body);
 
-            console.log(createChannel);
-            matchedUser.channels.push(createChannel._id);
-            await matchedUser.save();
-
-            res.status(201).json({
-                msg: '채널이 생성되었습니다.',
-                channel: createChannel
+            res.status(resData.code).json({
+                resData: resData
             });
         } catch (err) {
             if (!err.statusCode) {

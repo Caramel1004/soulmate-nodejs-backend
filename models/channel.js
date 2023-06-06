@@ -25,6 +25,15 @@ const channelSchema = new Schema({
         type: String,
         default: 'images/apple-touch-icon.png'
     },
+    category: [
+        {
+            type: String,
+            required: true
+        }
+    ],
+    content: {
+        type: String
+    },
     users: [
         {
             type: Schema.Types.ObjectId,
@@ -33,10 +42,10 @@ const channelSchema = new Schema({
     ],
     chatRooms: [
         {
-        type: Schema.Types.ObjectId,
-        ref: 'ChatRoom'
-    }
-],
+            type: Schema.Types.ObjectId,
+            ref: 'ChatRoom'
+        }
+    ],
     posts: [{
         type: Schema.Types.ObjectId,
         ref: 'post'

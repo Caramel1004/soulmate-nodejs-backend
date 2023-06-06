@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import SocketIO from './socket.js';
 
+import { errorType } from './util/status.js';
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
@@ -12,8 +13,8 @@ const app = express();
 
 app.use(bodyParser.json());
 
+//cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {
-    //cors에러 해결을 위한 헤더설정
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization');
@@ -27,15 +28,12 @@ app.use('/v1/chat', chatRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    console.log('app.js: ', error);
-    const statusCode = (!error.statusCode) ? 500 : error.statusCode;
-    const msg = error.message;
-    const data = error.data;
-
-    res.status(statusCode).json({
-        message: msg,
-        statusCode: statusCode,
-        data: data
+    console.log(error);
+    if (!error.errReport) {
+        error.errReport = errorType.E05.e00;
+    }
+    res.status(error.errReport.code).json({
+        error: error
     });
     next();
 });
@@ -52,5 +50,5 @@ mongoose.connect('mongodb+srv://caramel1004:sK0eztAhijnYoDlT@cluster0.vkqqcqz.mo
             return socket;
         });
     }).catch(err => {
-        console.log('app.js err:', err);
+        console.log('몽구스 오류!!! : ', err);
     });

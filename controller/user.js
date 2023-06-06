@@ -57,11 +57,10 @@ const userController = {
 
             // jwt 발급
             const token = jwt.sign({
-                userId: user._id,
-                password: user.password
+                userId: user._id
             },
                 'caramel',
-                { expiresIn: '1h' }
+                { expiresIn: '2h' }
             );
 
             console.log('로그인 인증 token: ', token);
