@@ -28,10 +28,10 @@ app.use('/v1/chat', chatRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    console.log(error);
     if (!error.errReport) {
         error.errReport = errorType.E05.e00;
     }
+    console.log(error);
     res.status(error.errReport.code).json({
         error: error
     });

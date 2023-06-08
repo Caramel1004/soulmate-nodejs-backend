@@ -99,12 +99,18 @@ const channelController = {
             let thumbnail = req.body.thumbnail;
             const category = req.body.category;
 
+            const categoryArr = [];
+            categoryArr.push(category);
+
+
             const body = {
                 userId: userId,
                 channelName: channelName,
                 thumbnail: thumbnail,
-                category: category
+                category: categoryArr
             }
+
+            console.log(body.category);
 
             const resData = await channelService.postCreateChannel(body);
 
@@ -112,10 +118,7 @@ const channelController = {
                 resData: resData
             });
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            throw err;
         }
     },
     // 해당 채널에서 퇴장
