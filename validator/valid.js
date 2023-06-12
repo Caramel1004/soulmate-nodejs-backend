@@ -7,7 +7,7 @@ export function hasJsonWebToken(req, res, next) {
     const authHeader = req.get('Authorization');
 
     if (!authHeader) {
-        const error = new Error(errorType.E04.e01);
+        const error = new Error(errorType.E04.e401);
         throw error;
     }
 
@@ -18,10 +18,8 @@ export function hasJsonWebToken(req, res, next) {
         req.userId = decodedToken.userId;
         next();
     } catch (err) {
-        
-        console.log('복호화중 문제가 생겼습니다.', err);
-        err.msg = '복호화중 문제가 생겼습니다.'
-        err.statusCode = 500;
+        err.errReport = errorType.E04.e401;
+        err.errReport.msg = '인증 토큰이 만료 되었습니다.'
         throw err;
     }
 }

@@ -1,11 +1,11 @@
 import User from '../models/user.js'
-import jwt from 'jsonwebtoken';
+import userService from '../service/user.js'
 
 const userController = {
     //회원가입
     postSignUp: async (req, res, next) => {
         try {
-            const resData = await userService(req,next);//successType
+            const resData = await userService.postSignUp(req, next);//successType
 
             res.status(resData.code).json({
                 resData: resData
@@ -19,55 +19,23 @@ const userController = {
         try {
             const clientId = req.body.clientId;
             const pwd = req.body.password;
-            console.log('clientId: ', clientId);
-            console.log('pwd: ', pwd);
+            // console.log('clientId: ', clientId);
+            // console.log('pwd: ', pwd);
 
-            const user = await User.findOne({ clientId: clientId });
+            const resData = await userService.postLogin(clientId, pwd);
 
-            // 사용자 존재유무 체크
-            if (!user) {
-                const error = new Error('사용자 정보가 없습니다.');
-                error.statusCode = 401;
-                throw error;
-            }
-            console.log('user: ', user);
-            console.log('user.password: ', user.password);
+            const token = resData.token;
+            const photo = resData.photo;
+            const status = resData.status;
 
-            // 나중에 bcrypt 추가할 예정
-            // 비밀번호 일치하는지 체크
-            if (user.password !== pwd.toString()) {
-                const error = new Error('비밀번호가 일치하지 않습니다.');
-                error.statusCode = 401;
-                throw error;
-            }
+            res.status(status.code).json({
+                token: token,
+                clientId: clientId,
+                photo: photo
+            });
 
-            // jwt 발급
-            const token = jwt.sign({
-                userId: user._id
-            },
-                'caramel',
-                { expiresIn: '2h' }
-            );
-
-            console.log('로그인 인증 token: ', token);
-
-            // 토큰 발급 유무
-            if (!token) {
-                const error = new Error('토큰이 부여되지 않았습니다!!');
-                error.statusCode = 422;
-                throw error;
-            } else {
-
-                res.status(201).json({
-                    token: token,
-                    clientId: clientId
-                });
-            }
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            throw err;
         }
     },
     // 유저 정보 가져오기
@@ -80,23 +48,23 @@ const userController = {
                 _id: 1,
                 clientId: 1,
                 name: 1,
-                photo:1
+                photo: 1
             });
 
         console.log('matchedUser: ', matchedUser);
-        if(matchedUser === null){
+        if (matchedUser === null) {
             res.status(404).json({
                 statusCode: 404,
                 msg: '존재하지 않는 유저 입니다.',
             });
-        }else{
+        } else {
             res.status(200).json({
                 statusCode: 200,
                 msg: '유저를 찾았습니다.',
                 user: matchedUser
             });
         }
-        
+
     }
 }
 

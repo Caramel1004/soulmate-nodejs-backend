@@ -16,7 +16,7 @@ const channelService = {
                 const error = new Error(errReport);
                 throw error;
             }
-            const status = successType.S02.s00;
+            const status = successType.S02.s200;
             return {
                 status: status,
                 channels: user.channels
@@ -51,7 +51,7 @@ const channelService = {
 
             await matchedUser.save();
 
-            return successType.S02.s01;
+            return successType.S02.s201;
         } catch (err) {
             throw err;
         }

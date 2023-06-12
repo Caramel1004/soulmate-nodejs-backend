@@ -29,13 +29,13 @@ app.use('/v1/chat', chatRoutes);
 // 오류 처리
 app.use((error, req, res, next) => {
     if (!error.errReport) {
-        error.errReport = errorType.E05.e00;
+        error.errReport = errorType.E05.e500;
     }
     console.log(error);
     res.status(error.errReport.code).json({
         error: error
     });
-    next();
+    // next();
 });
 
 //몽구스와 연결후 서버 실행
