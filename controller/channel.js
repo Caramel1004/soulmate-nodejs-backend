@@ -98,6 +98,7 @@ const channelController = {
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
             const category = req.body.category;
+            const contents = req.body.contents;
 
             const categoryArr = [];
             categoryArr.push(category);
@@ -107,7 +108,8 @@ const channelController = {
                 userId: userId,
                 channelName: channelName,
                 thumbnail: thumbnail,
-                category: categoryArr
+                category: categoryArr,
+                content: contents
             }
 
             console.log(body.category);

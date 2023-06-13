@@ -6,7 +6,7 @@ const userSchema = new Schema({
     clientId: {
         type: String,
         required: true
-    },
+    }, 
     name: {
         type: String,
         required: true
