@@ -1,6 +1,9 @@
-import { ChatRoom, Chat } from '../models/chat-room.js'
+import chatService from '../service/chat.js'
+
 import Channel from '../models/channel.js';
 import User from '../models/user.js';
+import { ChatRoom, Chat } from '../models/chat-room.js'
+
 import SocketIO from '../socket.js';
 
 const chatController = {
@@ -36,11 +39,11 @@ const chatController = {
                 throw error;
             }
 
-            console.log('matchedUser: ', matchedUser);
+            // console.log('matchedUser: ', matchedUser);
             // console.log(`clientChannelId: ${clientChannelId}, chatRoomId: ${chatRoomId}`);
             // console.log('chatRoomList.chatList: ', chatRoomList.chatList);
-            console.log('chatRoom: ', chatRoom);
-            console.log('chatRoom.chatList: ', chatRoom.chatList);
+            // console.log('chatRoom: ', chatRoom);
+            // console.log('chatRoom.chatList: ', chatRoom.chatList);
 
             // 클라이언트에 보낼 데이터
             const userList = chatRoom.users;
@@ -54,7 +57,7 @@ const chatController = {
                     createdAt: chat.createdAt
                 }
             });
-            console.log('chatList: ', chatList);
+            // console.log('chatList: ', chatList);
             // 챗 오브젝트
             const chatRoomData = {
                 _id: chatRoom._id,
@@ -81,28 +84,15 @@ const chatController = {
             const channelId = req.params.channelId;
 
             console.log(channelId);
-            const channelUsers = await Channel.findById(channelId)
-                .select('users')
-                .populate('users', {
-                    clientId: 1,
-                    name: 1,
-                    photo: 1
-                })
-                .sort({ clientId: 1 });
 
-            const users = channelUsers.users;
+            const resData = await chatService.getLoadUsersInChannel(channelId);
             
-            console.log('users: ', users);
-
-            res.status(200).json({
-                msg: '채널에있는 유저들 입니다.',
-                users: users
+            res.status(resData.status.code).json({
+                status: resData.status,
+                users: resData.users
             })
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            throw err
         }
     },
     // 채팅룸에 유저 추가, 멤버 초대
@@ -151,61 +141,46 @@ const chatController = {
             });
 
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            throw err;
         }
     },
     // 실시간 채팅
     postSendChat: async (req, res, next) => {
         try {
-            const clientChannelId = req.params.channelId;
-            const userId = req.userId;
-            const chatRoomId = req.body.chatRoomId;
-            const reqChat = req.body.chat;
-            console.log('reqChat: ', reqChat);
+            const channelId = req.params.channelId;// 해당 채널 doc아이디
+            const userId = req.userId;// 현재 접속한 유저 doc아이디
+            const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
+            const reqChat = req.body.chat;// 저장할 채팅
 
-            const chat = new Chat({
+            console.log('reqChat: ',reqChat);
+
+            //요청 바디
+            const body = {
                 chat: reqChat,
                 creator: userId
-            });
-            const savedChat = await chat.save();
-
-            console.log('savedChat: ', savedChat);
-
-            const chatRoom = await ChatRoom.findById(chatRoomId).populate('users');
-            const matchedUser = chatRoom.users.find(user => user._id.toString() === userId.toString());
-
-            chatRoom.chatList.push(savedChat._id);
-
-            await chatRoom.save();
-            console.log('chatRoom: ', chatRoom);
-
-            const serverIO = SocketIO.getSocketIO();
-
-            serverIO.emit('sendChat', {
-                msg: '소켓 메세지 전송',
-                chatRoom: chatRoom,
-                currentChat: reqChat,
-                photo: matchedUser.photo,
-                clientId: matchedUser.clientId
-            });
-
-            res.status(200).json({
-                msg: '채팅 중',
-                chatRoom: chatRoom,
-                photo: matchedUser.photo,
-                clientId: matchedUser.clientId
-            });
-
-            // next();
-        } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
             }
-            next(err);
+
+            const resData = await chatService.postSendChat(body, channelId, chatRoomId, userId);// 실시간으로 업데이트할 리턴 값
+
+            // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
+            const serverIO = SocketIO.getSocketIO();
+            serverIO.emit('sendChat', {
+                status: resData.status,
+                chatRoom: resData.chatRoom,
+                currentChat: resData.chat,
+                photo: resData.matchedUser.photo,
+                clientId: resData.matchedUser.clientId
+            });
+
+            // 응답
+            res.status(resData.status.code).json({
+                status: resData.status
+            });
+        } catch (err) {
+            throw err;
         }
+    },
+    postUploadFile: async (req, res, next) => {
 
     }
 }

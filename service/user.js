@@ -8,7 +8,7 @@ import { successType, errorType } from '../util/status.js';
 
 
 const channelService = {
-    // 해당 아이디의 채널목록 조회
+    // 회원 가입
     postSignUp: async (req, next) => {
         try {
             const user = new User({

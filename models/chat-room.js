@@ -33,8 +33,10 @@ const chatRoomSchema = new Schema({
 // 채팅 스키마
 const chatSchema = new Schema({
     chat: {
-        type: String,
-        required: true
+        type: String
+    },
+    fileUrl: {
+        type: String
     },
     creator: {
         type: Schema.Types.ObjectId,

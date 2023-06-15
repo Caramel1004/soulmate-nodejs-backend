@@ -27,6 +27,11 @@ export const errorType = {
             status: 'Unauthorized',
             msg: '권한이 없습니다.'
         },
+        e404: {
+            code: 404,
+            status: 'Not Found Data',
+            msg: '요구 데이터가 없습니다.'
+        },
         e422: {
             code: 422,
             status: 'Unprocessable Entity',
