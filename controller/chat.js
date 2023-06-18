@@ -86,7 +86,7 @@ const chatController = {
             console.log(channelId);
 
             const resData = await chatService.getLoadUsersInChannel(channelId);
-            
+
             res.status(resData.status.code).json({
                 status: resData.status,
                 users: resData.users
@@ -152,7 +152,7 @@ const chatController = {
             const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
             const reqChat = req.body.chat;// 저장할 채팅
 
-            console.log('reqChat: ',reqChat);
+            console.log('reqChat: ', reqChat);
 
             //요청 바디
             const body = {
@@ -180,8 +180,36 @@ const chatController = {
             throw err;
         }
     },
-    postUploadFile: async (req, res, next) => {
+    // 실시간으로 채팅방에 파일 업로드
+    postUploadFileToChatRoom: async (req, res, next) => {
+        const channelId = req.params.channelId;// 해당 채널 doc아이디
+        const userId = req.userId;// 현재 접속한 유저 doc아이디
+        const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
+        const fileUrl = req.body.fileUrl;// 파일
 
+        console.log('fileUrl: ',fileUrl);
+        //요청 바디
+        const body = {
+            fileUrl: fileUrl,
+            creator: userId
+        }
+
+        const resData = await chatService.postUploadFileToChatRoom(body, channelId, chatRoomId, userId);// 실시간으로 업데이트할 리턴 값
+
+        // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
+        const serverIO = SocketIO.getSocketIO();
+        serverIO.emit('sendChat', {
+            status: resData.status,
+            chatRoom: resData.chatRoom,
+            currentFile: resData.fileUrl,
+            photo: resData.matchedUser.photo,
+            clientId: resData.matchedUser.clientId
+        });
+
+        // 응답
+        res.status(resData.status.code).json({
+            status: resData.status
+        });
     }
 }
 

@@ -15,7 +15,7 @@ router.get('/:channelId/:chatRoomId', hasJsonWebToken, chatController.getLoadCha
 router.post('/:channelId/:chatRoomId', hasJsonWebToken, hasChat, chatController.postSendChat);// 실시간 채팅
 
 // POST /v1/chat/upload-file/:channelId/:chatRoomId
-router.post('/upload-file/:channelId/:chatRoomId', hasJsonWebToken, hasFile);//실시간 파일 업로드
+router.post('/upload-file/:channelId/:chatRoomId', hasJsonWebToken, hasFile, chatController.postUploadFileToChatRoom);//실시간 파일 업로드
 
 // PATCH /v1/chat/invite/:channelId/:chatRoomId
 router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUser);// 채팅방에 채널 멤버 초대

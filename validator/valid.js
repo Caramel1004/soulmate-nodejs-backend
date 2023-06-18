@@ -27,7 +27,7 @@ export function hasJsonWebToken(req, res, next) {
 
 // 채팅 내용 유무
 export function hasChat (req, res, next) {
-    if(!req.body.chat) {
+    if(req.body.chat == undefined || req.body.chat == null) {
         console.log('채팅 내용이 없음');
         const error = new Error(errorType.E04.e404);
         throw error;
@@ -37,8 +37,16 @@ export function hasChat (req, res, next) {
 // 파일 유무
 export function hasFile (req, res, next) {
     if(!req.file) {
-        const error = new Error(errorType.E04.e404);
+        console.log('파일이 없습니다.');
+        const errReport = errorType.E04.e404
+        const error = new Error(errReport);
         throw error;
     }
+    console.log('req.file');
+    const fileUrl = req.file.path.replace('\\','/');
+    req.body.fileUrl = fileUrl;
+
+    console.log(fileUrl);
+    
     next();
 }

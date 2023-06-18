@@ -5,8 +5,11 @@ import channelController from '../controller/channel.js';
 
 const router = Router();
 
+//GET /v1/channel/channel-list
+router.get('/channel-list', channelController.getChannelListToServer);// 서버에있는 모든 채널 리스트 조회 
+
 // GET /v1/channel
-router.get('/', hasJsonWebToken, channelController.getChannelListByUserId);// 모든 채널 리스트 조회
+router.get('/', hasJsonWebToken, channelController.getChannelListByUserId);// 해당 유저의 모든 채널 리스트 조회
 
 //GET /v1/channel/:channelId
 router.get('/:channelId', hasJsonWebToken,channelController.getChannelById);// 해당 채널에 접속

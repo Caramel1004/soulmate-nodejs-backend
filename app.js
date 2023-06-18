@@ -19,10 +19,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// 파일 저장할 위치와 저장 형태 정의
 // 해결: uuid패키지 사용
 const fileStorage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, 'chat');
+        callback(null, 'images');
     },
     filename: (req, file, callback) => {
         callback(null, v4());
@@ -52,7 +53,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));// 이미지 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'multipart/form-data','Authorization');
     next();
 })
 
@@ -63,7 +64,7 @@ app.use('/v1/chat', chatRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    if (!error.errReport) {
+    if (!error) {
         error.errReport = errorType.E05.e500;
     }
     console.log(error);

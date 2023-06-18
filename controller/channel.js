@@ -6,6 +6,21 @@ import channelService from '../service/channel.js'
 import { successType } from '../util/status.js';
 
 const channelController = {
+    // 서버에 있는 모든채널 목록 조회
+    getChannelListToServer: async (req, res, next) => {
+        try {
+            const resData = await channelService.getChannelListToServer();
+            const status = successType.S02.s200;
+            // console.log('resData: ', resData);
+            
+            res.status(resData.status.code).json({
+                status: resData.status,
+                channels: resData.channels
+            });
+        } catch (err) {
+            throw err;
+        }
+    },
     // 해당 유저의 채널 리스트 조회
     getChannelListByUserId: async (req, res, next) => {
         try {
@@ -65,18 +80,18 @@ const channelController = {
         try {
             const channelId = req.params.channelId;
             const userId = req.userId;
-            console.log('channelId:', channelId);
+            // console.log('channelId:', channelId);
             const chatRoomList = await ChatRoom.find({ channelId: channelId });
-            console.log('chatRoomList: ', chatRoomList);
+            // console.log('chatRoomList: ', chatRoomList);
 
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const idx = chatRoom.users.indexOf(userId);
                 if (idx !== -1) {
                     return chatRoom;
                 }
-            })
+            });
 
-            console.log('userChatRooms :', userChatRooms);
+            // console.log('userChatRooms :', userChatRooms);
             res.status(200).json({
                 msg: '채팅방 목록을 조회하였습니다.',
                 chatRooms: userChatRooms
@@ -92,8 +107,7 @@ const channelController = {
     // 채널 생성
     postCreateChannel: async (req, res, next) => {
         try {
-            // 채널 이벤트 발생
-            // 1. 채널 생성 2. 해당유저 소유자로 지정 3. 참여 채널 저장 4. 해당유저의 채널에 추가
+            console.log('req.body :',req.body);
             const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
@@ -102,7 +116,6 @@ const channelController = {
 
             const categoryArr = [];
             categoryArr.push(category);
-
 
             const body = {
                 userId: userId,
