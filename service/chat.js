@@ -127,6 +127,53 @@ const chatService = {
         } catch (err) {
             throw err;
         }
+    },
+    // 채팅룸 유저 초대
+    patchInviteUserToChatRoom: async (selectedId, channelId, chatRoomId) => {
+        try {
+            // 채널아이디로 해당 채팅룸이 있는지 부터 검사
+            // 1. 채널 정보 가져오기
+            const matchedChannel = await Channel.findById(channelId).populate('chatRooms')
+                .populate('users', {
+                    _id: 1,
+                    chatRooms: 1
+                });
+
+            if (!matchedChannel) {
+                const error = new Error(errorType.D04.d404);// 데이터베이스에서 조회 실패
+                throw error;
+            }
+
+            // 2. 해당 채팅룸 조회
+            const matchedChatRoom = matchedChannel.chatRooms.find(room => room._id.toString() === chatRoomId.toString());
+            // console.log('matchedChatRoom: ', matchedChatRoom);
+            if (!matchedChatRoom) {
+                const error = new Error(errorType.D04.d404);// 데이터베이스에서 조회 실패
+                throw error;
+            }
+
+            // 3. 채팅룸 스키마에 선택된 유저 추가
+            const updatedChatRoomUsers = [...matchedChatRoom.users, ...selectedId];
+            matchedChatRoom.users = [...updatedChatRoomUsers];
+            await matchedChatRoom.save();
+
+            // 4. 선택된 유저 스키마에 채팅룸 추가
+            const channelUsers = matchedChannel.users;
+
+            for (let id of selectedId) {
+                const selectedUser = channelUsers.find(user => user._id.toString() === id);
+                selectedUser.chatRooms.push(chatRoomId);
+                await selectedUser.save();
+            }
+
+            const status = successType.S02.s200;
+
+            return {
+                status: status
+            }
+        } catch (err) {
+            throw err;
+        }
     }
 }
 

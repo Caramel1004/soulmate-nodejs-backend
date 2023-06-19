@@ -18,7 +18,7 @@ router.post('/:channelId/:chatRoomId', hasJsonWebToken, hasChat, chatController.
 router.post('/upload-file/:channelId/:chatRoomId', hasJsonWebToken, hasFile, chatController.postUploadFileToChatRoom);//실시간 파일 업로드
 
 // PATCH /v1/chat/invite/:channelId/:chatRoomId
-router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUser);// 채팅방에 채널 멤버 초대
+router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUserToChatRoom);// 채팅방에 채널 멤버 초대
 
 
 export default router;

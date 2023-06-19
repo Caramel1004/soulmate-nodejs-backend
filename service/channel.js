@@ -46,6 +46,7 @@ const channelService = {
     // 채널 생성
     postCreateChannel: async body => {
         try {
+            console.log('service => body: ',body);
             // 1. 채널추가 요청한 유저의 아이디에 의한 데이터 조회
             const matchedUser = await User.findById(body.userId);
 

@@ -26,7 +26,8 @@ const channelSchema = new Schema({
         default: 'images/apple-touch-icon.png'
     },
     category: [{
-        type: String
+        type: String,
+        required: true
     }],
     content: {
         type: String

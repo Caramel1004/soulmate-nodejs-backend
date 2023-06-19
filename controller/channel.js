@@ -12,7 +12,7 @@ const channelController = {
             const resData = await channelService.getChannelListToServer();
             const status = successType.S02.s200;
             // console.log('resData: ', resData);
-            
+
             res.status(resData.status.code).json({
                 status: resData.status,
                 channels: resData.channels
@@ -28,9 +28,15 @@ const channelController = {
 
             const resData = await channelService.getChannelListByUserId(userId);
 
+            // 해당 유저가 생성한 채널
+            const ownedChannelList = resData.channels.filter(channel => channel.owner.ownerId.toString() === userId.toString());
+            // 해당 유저가 참여하고있는 채널
+            const invitedChannelList = resData.channels.filter(channel => channel.owner.ownerId.toString() !== userId.toString());
+
             res.status(resData.status.code).json({
                 status: resData.status,
-                channels: resData.channels
+                ownedChannelList: ownedChannelList,
+                invitedChannelList: invitedChannelList
             });
         } catch (err) {
             throw err;
@@ -107,15 +113,18 @@ const channelController = {
     // 채널 생성
     postCreateChannel: async (req, res, next) => {
         try {
-            console.log('req.body :',req.body);
+            console.log('req.body :', req.body);
             const userId = req.userId;
             const channelName = req.body.channelName;
             let thumbnail = req.body.thumbnail;
             const category = req.body.category;
             const contents = req.body.contents;
 
+            console.log('req.body.category: ', req.body.category);
+
             const categoryArr = [];
             categoryArr.push(category);
+            console.log('categoryArr: ', categoryArr);
 
             const body = {
                 userId: userId,
