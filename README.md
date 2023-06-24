@@ -28,7 +28,7 @@ DB: MongDB
 MongoDB ODM: mongoose
 
 # soulmate ERD 설계도
-<img src="./soulmate ERD_white.png" style="width: 1000px; height: 700px;">
+<img src="./readme-images/soulmate ERD_white.png" style="width: 1100px; height: 800px;">
 
 
 
