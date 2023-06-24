@@ -27,8 +27,6 @@ NoSQL 방식 사용
 DB: MongDB
 MongoDB ODM: mongoose
 
-# 스키마
-1. 유저(User)
-2. 채널(Channel)
-3. 채팅방
+# soulmate ERD 설계도
+![soulmate ERD](./reference/soulmate ERD_white.jpg)
 

@@ -79,6 +79,62 @@ const channelService = {
         } catch (err) {
             throw err;
         }
+    },
+    // 유저 정보 조회
+    getUserInfo: async clientId => {
+        try {
+            const matchedUser = await User.findOne(
+                { clientId: clientId },
+                {
+                    _id: 1,
+                    clientId: 1,
+                    name: 1,
+                    photo: 1
+                });
+
+            let status;
+
+            if (!matchedUser) {
+                status = errorType.D04.d404
+                status.msg = '존재하지 않는 유저 입니다.'
+            } else {
+                status = successType.S02.s200;
+                status.msg = '유저를 찾았습니다.';
+            }
+
+            return {
+                status: status,
+                matchedUser: matchedUser
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
+    // 나의 프로필 조회(유저 정보)
+    getMyProfile: async userId => {
+        try {
+            const matchedUser = await User.findOne(
+                { _id: userId },
+                {
+                    clientId: 1,
+                    name: 1,
+                    photo: 1
+                });
+
+            if (!matchedUser) {
+                const error = new Error(errorType.D04.d404);
+                throw error;
+            }
+
+            const status = successType.S02.s200;
+
+            return {
+                matchedUser: matchedUser,
+                status: status
+            }
+        } catch (err) {
+            throw err;
+        }
     }
 }
 

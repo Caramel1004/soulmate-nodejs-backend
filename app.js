@@ -68,7 +68,7 @@ app.use((error, req, res, next) => {
         error.errReport = errorType.E05.e500;
     }
     console.log(error);
-    res.status(error.errReport.code).json({
+    res.status(error.code).json({
         error: error
     });
     // next();

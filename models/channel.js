@@ -8,18 +8,8 @@ const channelSchema = new Schema({
         required: true
     },
     owner: {
-        ownerId: {
-            type: Schema.Types.ObjectId,
-            required: true
-        },
-        ownerName: {
-            type: String,
-            required: true
-        }
-    },
-    headcount: {
-        type: 'Number',
-        default: 1
+        type: Schema.Types.ObjectId,
+        required: true
     },
     thumbnail: {
         type: String,

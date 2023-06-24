@@ -55,10 +55,7 @@ const channelService = {
             }
 
             // 2. 채널 추가 요청한 유저가 오너
-            const owner = {
-                ownerId: matchedUser._id,
-                ownerName: matchedUser.name
-            }
+            const owner = matchedUser._id;
 
             body.owner = owner;
             body.users = [];

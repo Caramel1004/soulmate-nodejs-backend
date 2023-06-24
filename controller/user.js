@@ -29,6 +29,7 @@ const userController = {
             const status = resData.status;
 
             res.status(status.code).json({
+                status: status,
                 token: token,
                 clientId: clientId,
                 photo: photo
@@ -38,33 +39,27 @@ const userController = {
             throw err;
         }
     },
-    // 유저 정보 가져오기
+    // 유저 정보 조회
     getUserInfo: async (req, res, next) => {
         const clientId = req.params.clientId;
 
-        const matchedUser = await User.findOne(
-            { clientId: clientId },
-            {
-                _id: 1,
-                clientId: 1,
-                name: 1,
-                photo: 1
-            });
+        const resData = await userService.getUserInfo(clientId);
 
-        console.log('matchedUser: ', matchedUser);
-        if (matchedUser === null) {
-            res.status(404).json({
-                statusCode: 404,
-                msg: '존재하지 않는 유저 입니다.',
-            });
-        } else {
-            res.status(200).json({
-                statusCode: 200,
-                msg: '유저를 찾았습니다.',
-                user: matchedUser
-            });
-        }
+        res.status(resData.status.code).json({
+            status: resData.status,
+            matchedUser: resData.matchedUser
+        });
+    },
+    // 나의 프로필 조회(유저 정보)
+    getMyProfile: async (req, res, next) => {
+        const userId = req.userId;
 
+        const resData = await userService.getMyProfile(userId);
+
+        res.status(resData.status.code).json({
+            status: resData.status,
+            matchedUser: resData.matchedUser
+        });
     }
 }
 
