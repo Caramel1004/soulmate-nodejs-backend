@@ -29,7 +29,7 @@ MongoDB ODM: mongoose
 
 # soulmate ERD 설계도
 ```html
-<img src="./referencesoulmate ERD_white.png" style="width: 500px; height: 500px;">
+<img src="./reference/soulmate ERD_white.png" style="width: 500px; height: 500px;">
 ```
 
 
