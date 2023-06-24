@@ -28,6 +28,6 @@ DB: MongDB
 MongoDB ODM: mongoose
 
 # soulmate ERD 설계도
-![스크린샷 2023-06-16 오후 6.41.20](../스크린샷 2023-06-16 오후 6.41.20.png)
+![android-chrome-512x512](./android-chrome-512x512.png)
 
 
