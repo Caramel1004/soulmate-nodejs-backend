@@ -28,8 +28,7 @@ DB: MongDB
 MongoDB ODM: mongoose
 
 # soulmate ERD 설계도
-```html
 <img src="./android-chrome-512x512.png" style="width: 500px; height: 500px;">
-```
+
 
 
