@@ -28,6 +28,6 @@ DB: MongDB
 MongoDB ODM: mongoose
 
 # soulmate ERD 설계도
-![soulmate ERD_white.png](./reference/soulmate ERD_white.png)
+![soulmate ERD_white](./soulmate ERD_white.png)
 
 
