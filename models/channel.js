@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const channelSchema = new Schema({
+    open: {
+        type: String,
+        required: true,
+        default: 'N'
+    },
     channelName: {
         type: String,
         required: true
@@ -13,19 +18,33 @@ const channelSchema = new Schema({
     },
     thumbnail: {
         type: String,
-        default: 'images/apple-touch-icon.png'
+        default: 'images/soulmate.jpeg'
     },
-    category: [{
-        type: String,
-        required: true
-    }],
-    content: {
+    category: [
+        {
+            type: String,
+            required: true
+        }
+    ],
+    comment: {
         type: String
     },
-    users: [
+    members: [
         {
             type: Schema.Types.ObjectId,
             ref: 'User'
+        }
+    ],
+    workSpaces: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'WorkSpace'
+        }
+    ],
+    scraps: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Scrap'
         }
     ],
     chatRooms: [
@@ -34,10 +53,6 @@ const channelSchema = new Schema({
             ref: 'ChatRoom'
         }
     ],
-    posts: [{
-        type: Schema.Types.ObjectId,
-        ref: 'post'
-    }],
     createdAt: {
         type: Date
     }

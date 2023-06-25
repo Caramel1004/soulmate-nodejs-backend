@@ -3,15 +3,19 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-    clientId: {
+    email: {
         type: String,
         required: true
-    }, 
+    },
     name: {
         type: String,
         required: true
     },
     password: {
+        type: String,
+        required: true
+    },
+    gender: {
         type: String,
         required: true
     },
@@ -25,16 +29,10 @@ const userSchema = new Schema({
             ref: 'Channel'
         }
     ],
-    chatRooms: [
+    wishChannels: [
         {
             type: Schema.Types.ObjectId,
             ref: 'ChatRoom'
-        }
-    ],
-    posts: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Post'
         }
     ],
     createdAt: {

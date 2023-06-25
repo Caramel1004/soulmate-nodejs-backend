@@ -67,11 +67,10 @@ app.use((error, req, res, next) => {
     if (!error) {
         error.errReport = errorType.E05.e500;
     }
-    console.log(error);
-    res.status(error.code).json({
+    console.log('미들웨어 에러 처리: ',error);
+    res.status(error.errReport.code).json({
         error: error
     });
-    // next();
 });
 
 //몽구스와 연결후 서버 실행

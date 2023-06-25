@@ -5,13 +5,39 @@ import { ChatRoom } from '../models/chat-room.js';
 import channelService from '../service/channel.js'
 import { successType } from '../util/status.js';
 
+/**
+ * 함수 목록
+ * # 채널 입장 전
+ * 1. 오픈 채널 목록 조회
+ *      1-1. 오픈 채널 박스 클릭 -> 오픈 채널 세부정보 페이지
+ *      1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
+ * 2. 해당 유저의 채널 리스트 조회
+ *      분류 목록: 내가만든 채널, 초대 받은 채널, 오픈 채널 -> 필터
+ *      - 업무(비공개) 채널 조회
+ *      - 초대 받은 채널
+ *      - 오픈 채널 조회
+ * 3. 채널 생성
+ * 4. 관심 채널 조회 
+ * 5. 관심 채널 삭제
+ * 
+ * #채널 입장 후
+ * 1. 채널아이디로 해당 채널 조회 -> 채널 세부페이지
+ *      1-1. 채널에 팀원 초대
+ *      1-2. 채널 세부정보
+ * 2. 워크스페이스 목록 조회
+ *      2-1. 워크 스페이스 목록중 하나 클릭 -> 세부정보 로딩
+ *      2-2. 게시물 로딩
+ * 3. 채팅방 목록 조회
+ *      3-1. 채팅 방 입장 -> 채팅 히스토리 로딩
+ * 4. 채팅룸 생성
+ */
+
+
 const channelController = {
-    // 서버에 있는 모든채널 목록 조회
-    getChannelListToServer: async (req, res, next) => {
+    // 1. 생성된 오픈 채널 목록 조회
+    getOpenChannelList: async (req, res, next) => {
         try {
-            const resData = await channelService.getChannelListToServer();
-            const status = successType.S02.s200;
-            // console.log('resData: ', resData);
+            const resData = await channelService.getOpenChannelList();
 
             res.status(resData.status.code).json({
                 status: resData.status,
@@ -21,7 +47,38 @@ const channelController = {
             throw err;
         }
     },
-    // 해당 유저의 채널 리스트 조회
+    // 1-1. 오픈 채널 세부 정보 조회
+    getOpenChannelDetail: async (req, res, next) => {
+        try {
+            const channelId = req.params.ChannelId;// 해당 오픈채널 아이디
+
+            const resData = await channelService.getOpenChannelDetail(channelId);
+            
+            
+            res.status(resData.Error.error.code).json({
+                status: resData.Error.error,
+                channelDetail: resData.channelDetail
+            });
+        } catch (err) {
+            throw err;
+        }
+    },
+    // 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
+    patchAddOpenChannelToWishChannel: async (req, res, next) => {
+        try {
+            const userId = req.userId;// 토큰에서 파싱한 유저아이디
+            const channelId = req.body.ChannelId;// 채널 아이디
+
+            const resData = await channelService.patchAddOpenChannelToWishChannel(channelId, userId);
+
+            res.status(resData.status.code).json({
+                status: resData.status
+            });
+        } catch (err) {
+            throw err;
+        }
+    },
+    // 2. 해당 유저의 채널 리스트 조회
     getChannelListByUserId: async (req, res, next) => {
         try {
             const userId = req.userId;// 토큰에서 파싱한 유저아이디
@@ -42,7 +99,7 @@ const channelController = {
             throw err;
         }
     },
-    // 채널아이디로 해당 채널 조회
+    // 3. 채널아이디로 해당 채널 조회
     getChannelById: async (req, res, next) => {
         try {
             const userId = req.userId;
@@ -81,7 +138,7 @@ const channelController = {
             next(err);
         }
     },
-    // 채팅방 목록 조회
+    // 4. 채팅방 목록 조회
     getChatRoomListByUser: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;
@@ -110,17 +167,16 @@ const channelController = {
             next(err);
         }
     },
-    // 채널 생성
+    // 5. 채널 생성
     postCreateChannel: async (req, res, next) => {
         try {
             console.log('req.body :', req.body);
             const userId = req.userId;
             const channelName = req.body.channelName;
+            const open = req.body.open;
             let thumbnail = req.body.thumbnail;
             const category = req.body.category;
-            const contents = req.body.contents;
-
-            console.log('req.body.category: ', req.body.category);
+            const comment = req.body.comment;
 
             const categoryArr = [];
             categoryArr.push(category);
@@ -128,10 +184,11 @@ const channelController = {
 
             const body = {
                 userId: userId,
+                open: open,
                 channelName: channelName,
                 thumbnail: thumbnail,
                 category: categoryArr,
-                content: contents
+                comment: comment
             }
 
             console.log(body.category);
@@ -145,7 +202,7 @@ const channelController = {
             throw err;
         }
     },
-    // 해당 채널에서 퇴장
+    // 6. 해당 채널에서 퇴장
     patchExitChannel: async (req, res, next) => {
         try {
             // 1. 채널스키마에서 해당 유저 삭제
@@ -179,7 +236,7 @@ const channelController = {
             next(err);
         }
     },
-    // 해당채널에 유저 초대
+    // 7. 해당채널에 유저 초대
     patchInviteUserToChannel: async (req, res, next) => {
         try {
             const reqUserId = req.userId;
@@ -221,7 +278,7 @@ const channelController = {
             next(err);
         }
     },
-    //채팅룸 생성
+    // 8. 채팅룸 생성
     postCreateChatRoom: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;

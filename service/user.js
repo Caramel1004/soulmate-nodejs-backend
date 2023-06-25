@@ -9,21 +9,18 @@ import { successType, errorType } from '../util/status.js';
 
 const channelService = {
     // 회원 가입
-    postSignUp: async (req, next) => {
+    postSignUp: async body => {
         try {
-            const user = new User({
-                clientId: req.body.clientId,
-                name: req.body.name,
-                password: req.body.password
-            });
+            const user = new User(body);
 
-            await user.save();
+            const savedUser = await user.save();
 
-            if (!user) {
+            if (!savedUser) {
                 const errReport = errorType.D.D04
                 const error = new Error(errReport);
                 throw error;
             }
+
             const status = successType.S02.s201;
             return status;
         } catch (err) {
@@ -31,9 +28,9 @@ const channelService = {
         }
     },
     //회원 로그인
-    postLogin: async (clientId, pwd) => {
+    postLogin: async (email, pwd) => {
         try {
-            const user = await User.findOne({ clientId: clientId });
+            const user = await User.findOne({ email: email });
 
             console.log(user);
             // 사용자 존재유무 체크
@@ -74,6 +71,7 @@ const channelService = {
             return {
                 token: token,
                 photo: user.photo,
+                name: user.name,
                 status: successType.S02.s200
             }
         } catch (err) {
@@ -84,10 +82,10 @@ const channelService = {
     getUserInfo: async clientId => {
         try {
             const matchedUser = await User.findOne(
-                { clientId: clientId },
+                { email: email },
                 {
                     _id: 1,
-                    clientId: 1,
+                    email: 1,
                     name: 1,
                     photo: 1
                 });
@@ -116,7 +114,7 @@ const channelService = {
             const matchedUser = await User.findOne(
                 { _id: userId },
                 {
-                    clientId: 1,
+                    email: 1,
                     name: 1,
                     photo: 1
                 });

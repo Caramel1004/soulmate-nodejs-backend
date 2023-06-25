@@ -4,27 +4,24 @@ const { Schema } = mongoose;
 
 //채팅방 스키마
 const chatRoomSchema = new Schema({
-    channelId: {
-        type: Schema.Types.ObjectId,
-        required: true
-    },
     roomName: {
         type: String,
         required: true
     },
-    users: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    }],
-    imageUrl: [{
-        type: String
-    }],
-    chatList: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Chat',
-        required: true
-    }],
+    users: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        }
+    ],
+    chats: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Chat',
+            required: true
+        }
+    ],
     createdAt: {
         type: Date
     }

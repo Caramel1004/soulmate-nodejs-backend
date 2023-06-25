@@ -5,11 +5,17 @@ import channelController from '../controller/channel.js';
 
 const router = Router();
 
-//GET /v1/channel/channel-list
-router.get('/channel-list', channelController.getChannelListToServer);// 서버에있는 모든 채널 리스트 조회 
+//GET /v1/channel/openchannel-list
+router.get('/openchannel-list', channelController.getOpenChannelList);//1. 오픈 채널 목록 조회
 
-// GET /v1/channel
-router.get('/', hasJsonWebToken, channelController.getChannelListByUserId);// 해당 유저의 모든 채널 리스트 조회
+//GET /v1/channel/openchannel-list/:channelId
+router.get('/openchannel-list/:channelId', channelController.getOpenChannelDetail);// 1-1. 오픈 채널 세부 정보 조회
+
+//PATCH /v1/channel/openchannel-list/:channelId
+router.patch('/openchannel-list/:channelId', hasJsonWebToken, channelController.patchAddOpenChannelToWishChannel);// 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
+
+// GET /v1/channel/mychannels
+router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUserId);// 2. 해당 유저의 채널 리스트 조회
 
 //GET /v1/channel/:channelId
 router.get('/:channelId', hasJsonWebToken,channelController.getChannelById);// 해당 채널에 접속

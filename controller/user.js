@@ -5,7 +5,8 @@ const userController = {
     //회원가입
     postSignUp: async (req, res, next) => {
         try {
-            const resData = await userService.postSignUp(req, next);//successType
+            const body = req.body;
+            const resData = await userService.postSignUp(body);//successType
 
             res.status(resData.code).json({
                 resData: resData
@@ -17,21 +18,22 @@ const userController = {
     //회원 로그인
     postLogin: async (req, res, next) => {
         try {
-            const clientId = req.body.clientId;
+            const email = req.body.email;
             const pwd = req.body.password;
             // console.log('clientId: ', clientId);
             // console.log('pwd: ', pwd);
 
-            const resData = await userService.postLogin(clientId, pwd);
+            const resData = await userService.postLogin(email, pwd);
 
             const token = resData.token;
             const photo = resData.photo;
+            const name = resData.name;
             const status = resData.status;
 
             res.status(status.code).json({
                 status: status,
                 token: token,
-                clientId: clientId,
+                name: name,
                 photo: photo
             });
 
@@ -41,9 +43,9 @@ const userController = {
     },
     // 유저 정보 조회
     getUserInfo: async (req, res, next) => {
-        const clientId = req.params.clientId;
+        const email = req.params.email;
 
-        const resData = await userService.getUserInfo(clientId);
+        const resData = await userService.getUserInfo(email);
 
         res.status(resData.status.code).json({
             status: resData.status,
