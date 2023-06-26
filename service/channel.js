@@ -3,7 +3,7 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import { successType, errorType } from '../util/status.js';
-import error from '../util/error.js'
+import { channelError } from '../util/error.js'
 import channel from '../models/channel.js';
 
 /**
@@ -49,7 +49,7 @@ const channelService = {
                 });
             // 에러: DB 에러
             if (!channels) {
-                const error = new Error('채널 세부정보가 존재하지 않습니다.');
+                const error = new Error('오픈 채널 컬럼이 존해하지 않습니다.');
                 error.errorType = errorType.D04.d404;
                 throw error;
             }
@@ -90,13 +90,9 @@ const channelService = {
                     photo: 1
                 })
 
-            // 에러: 채널 세부 정보가 존재하지 않을때 -> DB 데이터 존재 x
-            if (!channelDetail) {
-                const error = new Error('채널 세부정보가 존재하지 않습니다.');
-                error.errorType = errorType.D04.d404;
-                throw error;
-            }
-
+            // 존재하지 않으면 에러처리
+            channelError.hasChannelDetail(channelDetail);
+            
             const status = successType.S02.s200;
 
             return {

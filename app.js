@@ -71,7 +71,7 @@ app.use((error, req, res, next) => {
     const statusCode = error.errorType.code;
 
     res.status(statusCode).json({
-        error: error.errorType
+        error: error.getErrorReport()
     });
 });
 
