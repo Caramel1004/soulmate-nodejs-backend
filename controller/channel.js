@@ -3,7 +3,7 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import channelService from '../service/channel.js'
-import { successType } from '../util/status.js';
+import { errorType, successType } from '../util/status.js';
 
 /**
  * 함수 목록
@@ -37,7 +37,7 @@ const channelController = {
     // 1. 생성된 오픈 채널 목록 조회
     getOpenChannelList: async (req, res, next) => {
         try {
-            const resData = await channelService.getOpenChannelList();
+            const resData = await channelService.getOpenChannelList(next);
 
             res.status(resData.status.code).json({
                 status: resData.status,
@@ -50,17 +50,18 @@ const channelController = {
     // 1-1. 오픈 채널 세부 정보 조회
     getOpenChannelDetail: async (req, res, next) => {
         try {
-            const channelId = req.params.ChannelId;// 해당 오픈채널 아이디
+            const channelId = req.params.channelId;// 해당 오픈채널 아이디
 
-            const resData = await channelService.getOpenChannelDetail(channelId);
-            
-            
-            res.status(resData.Error.error.code).json({
-                status: resData.Error.error,
+            const resData = await channelService.getOpenChannelDetail(channelId, next);
+
+            console.log('resData: ',resData);
+            res.status(resData.status.code).json({
+                status: resData.status,
                 channelDetail: resData.channelDetail
             });
         } catch (err) {
-            throw err;
+            console.log('controller err: ',err)
+            next(err);
         }
     },
     // 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가

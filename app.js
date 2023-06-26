@@ -64,12 +64,14 @@ app.use('/v1/chat', chatRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    if (!error) {
-        error.errReport = errorType.E05.e500;
+    console.log('미들웨어 함수 진입.... 에러: ', error);
+    if (!error.errorType) {
+        error.errorType = errorType.E05.e500;
     }
-    console.log('미들웨어 에러 처리: ',error);
-    res.status(error.errReport.code).json({
-        error: error
+    const statusCode = error.errorType.code;
+
+    res.status(statusCode).json({
+        error: error.errorType
     });
 });
 

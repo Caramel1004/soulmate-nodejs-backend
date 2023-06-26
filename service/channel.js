@@ -3,6 +3,7 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import { successType, errorType } from '../util/status.js';
+import error from '../util/error.js'
 import channel from '../models/channel.js';
 
 /**
@@ -34,7 +35,7 @@ import channel from '../models/channel.js';
 
 const channelService = {
     // 1. 생성된 오픈 채널 목록 조회
-    getOpenChannelList: async () => {
+    getOpenChannelList: async next => {
         try {
             // 1. 오픈채널 조회 -> 배열
             const channels = await Channel.find({
@@ -48,8 +49,8 @@ const channelService = {
                 });
             // 에러: DB 에러
             if (!channels) {
-                const errReport = errorType.D04.d404;
-                const error = new Error(errReport);
+                const error = new Error('채널 세부정보가 존재하지 않습니다.');
+                error.errorType = errorType.D04.d404;
                 throw error;
             }
             const status = successType.S02.s200;
@@ -58,11 +59,11 @@ const channelService = {
                 channels: channels
             }
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 1-1. 오픈 채널 세부 정보 조회
-    getOpenChannelDetail: async channelId => {
+    getOpenChannelDetail: async (channelId, next) => {
         try {
             /**
              * 1. 채널 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
@@ -73,6 +74,7 @@ const channelService = {
              * - 채널 세부 정보 -> type: object
              * */
             const channelDetail = await Channel.findOne({
+                _id: channelId,
                 open: 'Y'
             },
                 {
@@ -88,13 +90,11 @@ const channelService = {
                     photo: 1
                 })
 
-            console.log('channelDetail: ', channelDetail);
-
             // 에러: 채널 세부 정보가 존재하지 않을때 -> DB 데이터 존재 x
             if (!channelDetail) {
-                const status = errorType.D04.d404;
-                const error = new Error(status);
-                return error;
+                const error = new Error('채널 세부정보가 존재하지 않습니다.');
+                error.errorType = errorType.D04.d404;
+                throw error;
             }
 
             const status = successType.S02.s200;
@@ -103,8 +103,8 @@ const channelService = {
                 status: status,
                 channelDetail: channelDetail
             }
-        } catch (error) {
-            throw error;
+        } catch (err) {
+            next(err);
         }
     },
     // 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
@@ -119,9 +119,7 @@ const channelService = {
 
             // 에러: 오픈채널컬럼이 존재하지 않을때 에러 처리
             if (!openChannel) {
-                const errReport = errorType.D04.d404;
-                const error = new Error(errReport);
-                throw error;
+                throw new Error(errorType.D04.d404);;
             }
 
             /**
