@@ -27,6 +27,8 @@ NoSQL 방식 사용
 DB: MongDB
 MongoDB ODM: mongoose
 
+- 기능 목록
+
 # soulmate ERD 설계도
 <img src="./readme-images/soulmate ERD_white.png" style="width: 1100px; height: 800px;">
 
