@@ -94,7 +94,7 @@ const channelController = {
             const data = await channelService.getChannelListByUserId(userId, searchWord, next);
 
             hasReturnValue(data);
- 
+
             res.status(data.status.code).json({
                 status: data.status,
                 channels: data.channels
@@ -135,7 +135,41 @@ const channelController = {
                 data: data
             });
         } catch (err) {
-            throw err;
+            next(err);
+        }
+    },
+    // 4. 관심 채널 조회 
+    getWishChannelList: async (req, res, next) => {
+        try {
+            const userId = req.userId;
+
+            const data = await channelService.getWishChannelList(userId, next);
+
+            hasReturnValue(data);
+            console.log(data);
+            res.status(data.status.code).json({
+                status: data.status,
+                wishChannels: data.wishChannels
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 5. 관심 채널 삭제
+    patchRemoveOpenChannelToWishChannel: async (req, res, next) => {
+        try {
+            const userId = req.userId;
+            const { channelId } = req.body;
+
+            const data = await channelService.patchRemoveOpenChannelToWishChannel(userId, channelId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                user: data.updatedUser
+            });
+        } catch (err) {
+            next(err);
         }
     },
     // 3. 채널아이디로 해당 채널 조회

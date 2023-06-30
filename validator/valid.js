@@ -63,12 +63,12 @@ export function hasFile(req, res, next) {
     }
 }
 
-export const hasArrayChannel = channels => {
-    if (!channels) {
-        throw new NotFoundDataError('채널을 담는 배열이 존재하지 않습니다.');
-    }
-    return;
-}
+// export const hasArrayChannel = channels => {
+//     if (!channels) {
+//         throw new NotFoundDataError('채널을 담는 배열이 존재하지 않습니다.');
+//     }
+//     return;
+// }
 
 export const hasChannelDetail = channelDetail => {
     if (!channelDetail) {

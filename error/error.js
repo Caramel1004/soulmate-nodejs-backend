@@ -60,24 +60,32 @@ export const errorHandler = error => {
         name: error.name,
         stack: error.stack
     }
-    
-    if (error instanceof SyntaxError) {
-        errorReport.message = '코드 문법이 틀렸습니다. 다시 확인하세요.';
-        return errorReport;
-    }
+    try {
+        if (error instanceof SyntaxError) {
+            errorReport.message = '코드 문법이 틀렸습니다. 다시 확인하세요.';
+            return errorReport;
+        }
 
-    if (error instanceof ReferenceError) {
-        errorReport.message = '레퍼런스가 존재하지 않습니다. 레퍼런스명을 확인하세요.';
-        return errorReport;
-    }
+        if (error instanceof ReferenceError) {
+            errorReport.message = '레퍼런스가 존재하지 않습니다. 레퍼런스명을 확인하세요.';
+            return errorReport;
+        }
 
-    if (error instanceof TypeError) {
-        errorReport.message = '함수의 인수, 자료형, 변수사용이 적절히 사용되었는지 확인하세요.';
-        return errorReport;
-    }
+        if (error instanceof TypeError) {
+            errorReport.message = '함수의 인수, 자료형, 변수사용이 적절히 사용되었는지 확인하세요.';
+            return errorReport;
+        }
 
-    if (error instanceof RangeError) {
-        errorReport.message = '어떤 값이 집합에 없거나 허용되는 범위가 아닐 때 오류를 나타냅니다.';
-        return errorReport;
+        if (error instanceof RangeError) {
+            errorReport.message = '어떤 값이 집합에 없거나 허용되는 범위가 아닐 때 오류를 나타냅니다.';
+            return errorReport;
+        }
+
+        if (error.name === 'StrictPopulateError') {
+            errorReport.message = '해당 경로가 스키마에 없으므로 채울 수 없습니다. 재정의하려면 strictPupulate 옵션을 false로 설정합니다';
+            return errorReport;
+        }
+    } catch (error) {
+        throw new ReferenceError('레퍼런스가 존재하지 않습니다. 레퍼런스명을 확인하세요.');
     }
 }

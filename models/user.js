@@ -32,7 +32,7 @@ const userSchema = new Schema({
     wishChannels: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'ChatRoom'
+            ref: 'Channel'
         }
     ],
     createdAt: {
