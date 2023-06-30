@@ -5,6 +5,7 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import { successType, errorType } from '../util/status.js';
+import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken } from '../validator/valid.js'
 
 
 const channelService = {
@@ -16,7 +17,7 @@ const channelService = {
             const savedUser = await user.save();
 
             if (!savedUser) {
-                const errReport = errorType.D.D04
+                const errReport = errorType.D.D04;
                 const error = new Error(errReport);
                 throw error;
             }
@@ -28,26 +29,18 @@ const channelService = {
         }
     },
     //회원 로그인
-    postLogin: async (email, pwd) => {
+    postLogin: async (email, pwd, next) => {
         try {
             const user = await User.findOne({ email: email });
 
             console.log(user);
+
             // 사용자 존재유무 체크
-            if (!user) {
-                const errReport = errorType.D04.d404;
-                const error = new Error(errReport);
-                throw error;
-            }
+            hasUser(user);
 
             // 나중에 bcrypt 추가할 예정
             // 비밀번호 일치하는지 체크
-            if (user.password !== pwd.toString()) {
-                const errReport = errorType.D04.d404;
-                errReport.msg = '비밀번호가 일치하지 않습니다.';
-                const error = new Error(errReport);
-                throw error;
-            }
+            vaildatePasswordOfUser(user.password, pwd);
 
             // jwt 발급
             const token = jwt.sign({
@@ -57,14 +50,8 @@ const channelService = {
                 { expiresIn: '2h' }
             );
 
-
             // 토큰 발급 유무
-            if (!token) {
-                const errReport = errorType.E04.e422;
-                errReport.msg = '토큰이 부여되지 않았습니다!!';
-                const error = new Error(errReport);
-                throw error;
-            }
+            hasAuthorizationToken(token);
 
             console.log('token 발급: ', token);
 
@@ -75,7 +62,7 @@ const channelService = {
                 status: successType.S02.s200
             }
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 유저 정보 조회

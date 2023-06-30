@@ -20,10 +20,14 @@ const userController = {
         try {
             const email = req.body.email;
             const pwd = req.body.password;
-            // console.log('clientId: ', clientId);
-            // console.log('pwd: ', pwd);
+            console.log('email: ', email);
+            console.log('pwd: ', pwd);
 
-            const resData = await userService.postLogin(email, pwd);
+            const resData = await userService.postLogin(email, pwd, next);
+
+            if(!resData) {
+                return;
+            }
 
             const token = resData.token;
             const photo = resData.photo;
@@ -36,9 +40,8 @@ const userController = {
                 name: name,
                 photo: photo
             });
-
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 유저 정보 조회

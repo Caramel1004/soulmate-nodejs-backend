@@ -8,6 +8,8 @@ import { v4 } from 'uuid';
 
 import SocketIO from './socket.js';
 import { errorType } from './util/status.js';
+import { errorHandler } from './error/error.js'
+// import { ErrorType } from './util/error.js';
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
@@ -64,14 +66,13 @@ app.use('/v1/chat', chatRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    console.log('미들웨어 함수 진입.... 에러: ', error);
-    if (!error.errorType) {
-        error.errorType = errorType.E05.e500;
+    console.log('미들웨어 함수 진입.... throw 된 에러: ', error);
+    if(!error.statusCode) {
+        error = errorHandler(error);
     }
-    const statusCode = error.errorType.code;
-
-    res.status(statusCode).json({
-        error: error.getErrorReport()
+    
+    res.status(error.statusCode || 500).json({
+        error: error
     });
 });
 

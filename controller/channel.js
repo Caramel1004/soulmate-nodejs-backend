@@ -3,7 +3,8 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import channelService from '../service/channel.js'
-import { errorType, successType } from '../util/status.js';
+
+import { hasReturnValue } from '../validator/valid.js'
 
 /**
  * 함수 목록
@@ -37,14 +38,16 @@ const channelController = {
     // 1. 생성된 오픈 채널 목록 조회
     getOpenChannelList: async (req, res, next) => {
         try {
-            const resData = await channelService.getOpenChannelList(next);
+            const data = await channelService.getOpenChannelList(next);
 
-            res.status(resData.status.code).json({
-                status: resData.status,
-                channels: resData.channels
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                channels: data.channels
             });
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 1-1. 오픈 채널 세부 정보 조회
@@ -52,15 +55,15 @@ const channelController = {
         try {
             const channelId = req.params.channelId;// 해당 오픈채널 아이디
 
-            const resData = await channelService.getOpenChannelDetail(channelId, next);
+            const data = await channelService.getOpenChannelDetail(channelId, next);
 
-            console.log('resData: ',resData);
-            res.status(resData.status.code).json({
-                status: resData.status,
-                channelDetail: resData.channelDetail
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                channelDetail: data.channelDetail
             });
         } catch (err) {
-            console.log('controller err: ',err)
             next(err);
         }
     },
@@ -68,33 +71,68 @@ const channelController = {
     patchAddOpenChannelToWishChannel: async (req, res, next) => {
         try {
             const userId = req.userId;// 토큰에서 파싱한 유저아이디
-            const channelId = req.body.ChannelId;// 채널 아이디
+            const channelId = req.body.channelId;// 채널 아이디
 
-            const resData = await channelService.patchAddOpenChannelToWishChannel(channelId, userId);
+            const data = await channelService.patchAddOpenChannelToWishChannel(channelId, userId, next);
 
-            res.status(resData.status.code).json({
-                status: resData.status
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                user: data.user
             });
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 2. 해당 유저의 채널 리스트 조회
     getChannelListByUserId: async (req, res, next) => {
         try {
             const userId = req.userId;// 토큰에서 파싱한 유저아이디
+            const searchWord = req.query.searchWord;//찾을 종류
 
-            const resData = await channelService.getChannelListByUserId(userId);
+            const data = await channelService.getChannelListByUserId(userId, searchWord, next);
 
-            // 해당 유저가 생성한 채널
-            const ownedChannelList = resData.channels.filter(channel => channel.owner.ownerId.toString() === userId.toString());
-            // 해당 유저가 참여하고있는 채널
-            const invitedChannelList = resData.channels.filter(channel => channel.owner.ownerId.toString() !== userId.toString());
+            hasReturnValue(data);
+ 
+            res.status(data.status.code).json({
+                status: data.status,
+                channels: data.channels
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 3. 채널 생성
+    postCreateChannel: async (req, res, next) => {
+        try {
+            console.log('req.body :', req.body);
+            const userId = req.userId;
+            const channelName = req.body.channelName;
+            const open = req.body.open;
+            let thumbnail = req.body.thumbnail;
+            const category = req.body.category;
+            const comment = req.body.comment;
 
-            res.status(resData.status.code).json({
-                status: resData.status,
-                ownedChannelList: ownedChannelList,
-                invitedChannelList: invitedChannelList
+            const categoryArr = [];
+            categoryArr.push(category);
+            console.log('categoryArr: ', categoryArr);
+
+            const body = {
+                userId: userId,
+                open: open,
+                channelName: channelName,
+                thumbnail: thumbnail,
+                category: categoryArr,
+                comment: comment
+            }
+
+            const data = await channelService.postCreateChannel(body);
+
+            hasReturnValue(data);
+
+            res.status(data.code).json({
+                data: data
             });
         } catch (err) {
             throw err;
@@ -166,41 +204,6 @@ const channelController = {
                 err.statusCode = 500;
             }
             next(err);
-        }
-    },
-    // 5. 채널 생성
-    postCreateChannel: async (req, res, next) => {
-        try {
-            console.log('req.body :', req.body);
-            const userId = req.userId;
-            const channelName = req.body.channelName;
-            const open = req.body.open;
-            let thumbnail = req.body.thumbnail;
-            const category = req.body.category;
-            const comment = req.body.comment;
-
-            const categoryArr = [];
-            categoryArr.push(category);
-            console.log('categoryArr: ', categoryArr);
-
-            const body = {
-                userId: userId,
-                open: open,
-                channelName: channelName,
-                thumbnail: thumbnail,
-                category: categoryArr,
-                comment: comment
-            }
-
-            console.log(body.category);
-
-            const resData = await channelService.postCreateChannel(body);
-
-            res.status(resData.code).json({
-                resData: resData
-            });
-        } catch (err) {
-            throw err;
         }
     },
     // 6. 해당 채널에서 퇴장
