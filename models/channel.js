@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ValidationError } from "../error/error.js";
 
 const { Schema } = mongoose;
 
@@ -58,4 +59,7 @@ const channelSchema = new Schema({
     }
 }, { timestamps: true });
 
+channelSchema.post('save', () => {
+    console.log('몽고디비 데이터베이스에 데이터 저장 성공');
+})
 export default mongoose.model('Channel', channelSchema);

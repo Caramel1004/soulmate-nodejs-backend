@@ -14,6 +14,7 @@ import { errorHandler } from './error/error.js'
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
 import chatRoutes from './routes/chat.js';
+import staticDataRoutes from './routes/static-data.js';
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use((req, res, next) => {
 
 // 라우트 접근
 app.use('/v1/channel', channelRoutes);
+app.use('/v1/static-data', staticDataRoutes);
 app.use('/v1/user', userRoutes);
 app.use('/v1/chat', chatRoutes);
 
@@ -77,7 +79,7 @@ app.use((error, req, res, next) => {
 });
 
 //몽구스와 연결후 서버 실행
-mongoose.connect('mongodb+srv://caramel1004:sK0eztAhijnYoDlT@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://caramel1004:Ij5jzfN4xESmEvdZ@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')
     .then(result => {
         // 서버사이드 웹 소켓
         const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));

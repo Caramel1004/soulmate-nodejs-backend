@@ -63,16 +63,23 @@ export function hasFile(req, res, next) {
     }
 }
 
-// export const hasArrayChannel = channels => {
-//     if (!channels) {
-//         throw new NotFoundDataError('채널을 담는 배열이 존재하지 않습니다.');
-//     }
-//     return;
-// }
+export const hasArrayChannel = channels => {
+    if (!channels) {
+        throw new NotFoundDataError('채널을 담는 배열이 존재하지 않습니다.');
+    }
+    return;
+}
 
 export const hasChannelDetail = channelDetail => {
     if (!channelDetail) {
         throw new NotFoundDataError('채널 세부 정보가 존재하지 않습니다.');
+    }
+    return;
+}
+
+export const hasChatRoom = channelDetail => {
+    if (!channelDetail) {
+        throw new NotFoundDataError('대화방이 존재하지 않습니다.');
     }
     return;
 }
@@ -102,5 +109,11 @@ export const hasAuthorizationToken = token => {
 export const hasReturnValue = data => {
     if(!data) {
         throw new NotFoundDataError('응답받은 데이터가 없습니다.');
+    }
+}
+
+export const hasCategoryData = data => {
+    if(!data) {
+        throw new NotFoundDataError('카테고리 데이터가 없습니다.');
     }
 }

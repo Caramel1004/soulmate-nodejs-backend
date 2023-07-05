@@ -2,8 +2,8 @@ import Channel from '../models/channel.js';
 import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
-import { successType, errorType } from '../util/status.js';
-import { hasChannelDetail, hasUser } from '../validator/valid.js';
+import { successType } from '../util/status.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom } from '../validator/valid.js';
 import channel from '../models/channel.js';
 
 /**
@@ -169,9 +169,11 @@ const channelService = {
             const user = await User.findById(userId)
                 .populate('channels', {
                     open: 1,
+                    owner: 1,
                     channelName: 1,
                     thumbnail: 1,
-                    category: 1
+                    category: 1,
+                    members: 1
                 });//populate함수로 해당아이디에대한 채널정보 모두 가져오기
 
             hasUser(user);
@@ -186,7 +188,7 @@ const channelService = {
                     break;
                 case 'invite':
                     // 해당 유저가 참여하고있는 채널 
-                    filteredChannels = user.channels.filter(channel => channel.owner.toString() !== userId.toString());
+                    filteredChannels = user.channels.filter(channel => channel.owner !== userId.toString());
                     break;
                 case 'work':
                     // 작업 채널
@@ -212,9 +214,8 @@ const channelService = {
         }
     },
     // 3. 채널 생성
-    postCreateChannel: async body => {
+    postCreateChannel: async (body, next) => {
         try {
-            console.log('service => body: ', body);
             // 1. 채널추가 요청한 유저의 아이디에 의한 데이터 조회
             const matchedUser = await User.findById(body.userId);
 
@@ -246,23 +247,23 @@ const channelService = {
         }
     },
     // 4. 관심 채널 조회 
-    getWishChannelList: async (userId, next) => {
+    getWishChannelList: async (userId, searchWord, next) => {
         try {
             const user = await User.findOne()
                 .where('_id').equals(userId)
                 .select({
                     wishChannels: 1
                 })
-                .populate('wishChannels', {
-                    open: 1,
-                    channelName: 1,
-                    thumbnail: 1,
-                    category: 1,
-                    comment: 1,
-                    members: 1
-                })
                 .populate({
                     path: 'wishChannels',
+                    select: {
+                        open: 1,
+                        channelName: 1,
+                        thumbnail: 1,
+                        category: 1,
+                        comment: 1,
+                        members: 1
+                    },
                     populate: { path: 'members', select: 'name photo' }
                 });
 
@@ -298,7 +299,7 @@ const channelService = {
 
             // 2) 제거하려는 채널아이디만 제외하고 나머지 요소들만 배열로 반환
             matchedUser.wishChannels = [...matchedUser.wishChannels.filter(id => id.toString() !== channelId.toString())];
-            
+
             // 3) 수정된 유저 저장
             const updatedUser = await matchedUser.save();
 
@@ -308,6 +309,92 @@ const channelService = {
             return {
                 status: successType.S02.s200,
                 updatedUser: updatedUser
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 6. 채널아이디로 해당 채널 조회
+    getChannelDetailByChannelId: async (userId, channelId, next) => {
+        try {
+            // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 
+            const user = await User.findById(userId).select({ channels: 1 }).populate('channels');
+            console.log('user: ', user)
+
+            const matchedChannel = user.channels.find(channel => channel._id.toString() === channelId.toString());
+
+            hasChannelDetail(matchedChannel);
+
+            // 2. 유저가 해당 채널의 아이디를 가지고있으면 다음 채널아이디로 해당채널 조회
+            const channel = await Channel.findById(matchedChannel._id)
+                .populate('members', {
+                    name: 1,
+                    photo: 1
+                });
+
+            hasChannelDetail(channel);
+
+            return {
+                status: successType.S02.s200,
+                channel: channel
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 8. 채팅방 목록 조회
+    getChatRoomListByChannelAndUserId: async (userId, channelId, next) => {
+        try {
+            /** 1) 채널아이디와 매칭된 채팅방 목록 조회
+             * @params {ObjectId} 요청한 채널 아이디 
+             * @return {Array} 매칭된 채널이 보유하고있는 채팅방 목록
+             * */
+            const chatRoomList = await ChatRoom.find({
+                channelId: channelId
+            },
+                {
+                    channelId: 1,
+                    roomName: 1,
+                    users: 1
+                });
+
+            const userChatRooms = chatRoomList.filter(chatRoom => {
+                const idx = chatRoom.users.indexOf(userId);
+                if (idx !== -1) {
+                    return chatRoom;
+                }
+            });
+
+            return {
+                status: successType.S02.s200,
+                chatRooms: userChatRooms
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 9. 채팅룸 생성
+    postCreateChatRoom: async (channelId, userId, roomName, next) => {
+        try {
+            const chatRoom = new ChatRoom({
+                channelId: channelId,
+                roomName: roomName,
+                users: [userId]
+            });
+
+            // 1. 채팅방 생성
+            const createdChatRoom = await chatRoom.save();
+
+            hasChatRoom(createdChatRoom);
+
+            // 2. 해당 채널스키마에 채팅룸 컬럼에 채팅룸 아이디 푸쉬 후 저장 
+            const channel = await Channel.findById(createdChatRoom.channelId).select({ chatRooms: 1 });
+            channel.chatRooms.push(createdChatRoom._id);
+            await channel.save();
+
+            return {
+                status: successType.S02.s201,
+                chatRoom: createdChatRoom
             }
         } catch (err) {
             next(err);

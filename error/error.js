@@ -61,6 +61,11 @@ export const errorHandler = error => {
         stack: error.stack
     }
     try {
+        if(error instanceof Error) {
+            errorReport.message = error.message;
+            return errorReport;
+        }
+
         if (error instanceof SyntaxError) {
             errorReport.message = '코드 문법이 틀렸습니다. 다시 확인하세요.';
             return errorReport;

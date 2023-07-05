@@ -4,6 +4,11 @@ const { Schema } = mongoose;
 
 //채팅방 스키마
 const chatRoomSchema = new Schema({
+    channelId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Channel',
+        required: true
+    },
     roomName: {
         type: String,
         required: true
@@ -50,5 +55,3 @@ const Chat = mongoose.model('Chat', chatSchema);
 
 export { ChatRoom };
 export { Chat };
-
-// export default { ChatRoom,Chat}
