@@ -66,10 +66,10 @@ const channelService = {
         }
     },
     // 유저 정보 조회
-    getUserInfo: async clientId => {
+    getUserInfo: async (name, next) => {
         try {
             const matchedUser = await User.findOne(
-                { email: email },
+                { name: name },
                 {
                     _id: 1,
                     email: 1,
@@ -77,22 +77,14 @@ const channelService = {
                     photo: 1
                 });
 
-            let status;
-
-            if (!matchedUser) {
-                status = errorType.D04.d404
-                status.msg = '존재하지 않는 유저 입니다.'
-            } else {
-                status = successType.S02.s200;
-                status.msg = '유저를 찾았습니다.';
-            }
+            hasUser(matchedUser);
 
             return {
-                status: status,
+                status: successType.S02.s200,
                 matchedUser: matchedUser
             }
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 나의 프로필 조회(유저 정보)
@@ -118,7 +110,7 @@ const channelService = {
                 status: status
             }
         } catch (err) {
-            throw err;
+            next(err);
         }
     }
 }

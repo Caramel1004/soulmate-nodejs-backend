@@ -33,7 +33,8 @@ const channelSchema = new Schema({
     members: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'User'
+            ref: 'User',
+            required: true
         }
     ],
     workSpaces: [

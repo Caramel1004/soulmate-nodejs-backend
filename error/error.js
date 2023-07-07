@@ -36,6 +36,7 @@ export class AuthorizationTokenError extends Error {
         this.status = errorType.E04.e401.status;
         this.message = message;
         this.name = 'AuthorizationTokenError';
+        this.cause = this.stack;
     }
 }
 

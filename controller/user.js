@@ -1,6 +1,8 @@
 import User from '../models/user.js'
 import userService from '../service/user.js'
 
+import { hasReturnValue } from '../validator/valid.js'
+
 const userController = {
     //회원가입
     postSignUp: async (req, res, next) => {
@@ -25,7 +27,7 @@ const userController = {
 
             const resData = await userService.postLogin(email, pwd, next);
 
-            if(!resData) {
+            if (!resData) {
                 return;
             }
 
@@ -46,14 +48,21 @@ const userController = {
     },
     // 유저 정보 조회
     getUserInfo: async (req, res, next) => {
-        const email = req.params.email;
+        try {
+            const name = req.params.name;
 
-        const resData = await userService.getUserInfo(email);
+            const data = await userService.getUserInfo(name, next);
 
-        res.status(resData.status.code).json({
-            status: resData.status,
-            matchedUser: resData.matchedUser
-        });
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                user: data.matchedUser
+            });
+
+        } catch (err) {
+            next(err)
+        }
     },
     // 나의 프로필 조회(유저 정보)
     getMyProfile: async (req, res, next) => {

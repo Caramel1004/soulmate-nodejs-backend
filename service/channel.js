@@ -319,7 +319,6 @@ const channelService = {
         try {
             // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 
             const user = await User.findById(userId).select({ channels: 1 }).populate('channels');
-            console.log('user: ', user)
 
             const matchedChannel = user.channels.find(channel => channel._id.toString() === channelId.toString());
 
