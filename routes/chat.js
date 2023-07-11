@@ -14,7 +14,7 @@ const router = Router();
  */
 
 // GET /v1/chat/channel-members/:channelId
-router.get('/channel-members/:channelId', chatController.getLoadUsersInChannel);// 2. 팀원 추가 보드에 채널 멤버들 조회
+router.post('/channel-members/:channelId', chatController.postLoadUsersInChannel);// 2. 팀원 추가 보드에 채널 멤버들 조회
 
 // GET /v1/chat/:channelId/:chatRoomId
 router.get('/:channelId/:chatRoomId', hasJsonWebToken, chatController.getLoadChatRoom);// 1. 채팅방 세부정보 로딩

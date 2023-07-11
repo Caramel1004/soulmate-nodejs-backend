@@ -45,7 +45,7 @@ const chatService = {
 
             hasChatRoom(chatRoom);
 
-            console.log(chatRoom.users);
+            // console.log(chatRoom.users);
 
             // 2) 채팅룸에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
             const chatRoomUser = chatRoom.users.find(user => user._id.toString() === userId.toString());
@@ -73,27 +73,42 @@ const chatService = {
         }
     },
     // 2. 팀원 추가 보드에 채널 멤버들 조회
-    getLoadUsersInChannel: async (channelId, next) => {
+    postLoadUsersInChannel: async (channelId, chatRoomId, next) => {
         try {
             console.log('channel:', channelId);
-            const channelUsers = await Channel.findById(channelId)
+            const channel = await Channel.findById(channelId)
                 .select({
                     members: 1
                 })
                 .populate('members', {
                     name: 1,
-                    photo: 1
+                    photo: 1,
                 });
 
-            hasChannelDetail(channelUsers);
-            console.log(channelUsers);
+            const chatRoom = await ChatRoom.findOne({
+                _id: chatRoomId,
+                channelId: channelId
+            })
+            .select({ users: 1 });
 
-            const users = channelUsers.members;
+            // 프로퍼티 추가시 프로퍼티 _doc에 추가
+            // 채팅방에 이미 존재하는지 여부 추가
+            channel.members.map(member => {
+                for (let user of chatRoom.users) {
+                    member._doc.exist = false;
+                    if (member._id.toString() === user.toString()) {
+                        member._doc.exist = true;
+                        return member;
+                    }
+                }
+                return member;
+            })
+
             const status = successType.S02.s200;
 
             return {
                 status: status,
-                users: users
+                users: channel.members
             }
         } catch (err) {
             next(err);
@@ -211,19 +226,23 @@ const chatService = {
             console.log('matchedChatRoom: ', matchedChatRoom);
             hasChatRoom(matchedChatRoom);
 
+            // 중복되는 유저는 필터링
+            const filterSelectedId = selectedId.filter(selectedUser => {
+                for (const existUser of matchedChatRoom.users) {
+                    if (selectedUser.toString() === existUser.toString()) {
+                        console.log('중복');
+                        return;
+                    }
+                }
+                return selectedUser;
+            })
+            
+            console.log(filterSelectedId);
+
             // 3. 채팅룸 스키마에 선택된 유저 추가
-            const updatedChatRoomUsers = [...matchedChatRoom.users, ...selectedId];
+            const updatedChatRoomUsers = [...matchedChatRoom.users, ...filterSelectedId];
             matchedChatRoom.users = [...updatedChatRoomUsers];
             await matchedChatRoom.save();
-
-            // 4. 선택된 유저 스키마에 채팅룸 추가
-            // const channelUsers = matchedChannel.users;
-
-            // for (let id of selectedId) {
-            //     const selectedUser = channelUsers.find(user => user._id.toString() === id);
-            //     selectedUser.chatRooms.push(chatRoomId);
-            //     await selectedUser.save();
-            // }
 
             const status = successType.S02.s200;
 

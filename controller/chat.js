@@ -38,11 +38,12 @@ const chatController = {
         }
     },
     // 2. 팀원 추가 보드에 채널 멤버들 조회
-    getLoadUsersInChannel: async (req, res, next) => {
+    postLoadUsersInChannel: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;
+            const chatRoomId = req.body.chatRoomId;
 
-            const data = await chatService.getLoadUsersInChannel(channelId, next);
+            const data = await chatService.postLoadUsersInChannel(channelId, chatRoomId, next);
 
             hasReturnValue(data);
 
