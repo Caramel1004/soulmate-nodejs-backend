@@ -205,7 +205,7 @@ const chatService = {
                 fileUrl: savedChat.fileUrl
             }
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
     // 5. 채팅방에 채널 멤버 초대
