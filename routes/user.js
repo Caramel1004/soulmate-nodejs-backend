@@ -12,7 +12,7 @@ router.post('/signup', userController.postSignUp);// 1. 회원가입
 router.post('/login', userController.postLogin);// 2. 로그인 요청한 유저 조회
 
 //GET /v1/user/userInfo/:name
-router.get('/userInfo/:name', userController.getUserInfo);// 3. 유저 조회
+router.post('/userInfo/:name', userController.getUserInfo);// 3. 유저 조회
 
 //GET /v1/user/myprofile
 router.get('/myprofile', hasJsonWebToken, userController.getMyProfile);

@@ -5,30 +5,26 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import { successType, errorType } from '../util/status.js';
-import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken } from '../validator/valid.js'
+import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
 
 
 const channelService = {
-    // 회원 가입
-    postSignUp: async body => {
+    // 1. 회원 가입
+    postSignUp: async (body, next) => {
         try {
             const user = new User(body);
 
             const savedUser = await user.save();
 
-            if (!savedUser) {
-                const errReport = errorType.D.D04;
-                const error = new Error(errReport);
-                throw error;
-            }
+            hasUser(savedUser);
 
             const status = successType.S02.s201;
             return status;
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
-    //회원 로그인
+    // 2. 회원 로그인
     postLogin: async (email, pwd, next) => {
         try {
             const user = await User.findOne({ email: email });
@@ -65,19 +61,23 @@ const channelService = {
             next(err);
         }
     },
-    // 유저 정보 조회
-    getUserInfo: async (name, next) => {
+    // 3. 유저 정보 조회
+    getUserInfo: async (channelId, name, next) => {
         try {
             const matchedUser = await User.findOne(
                 { name: name },
                 {
-                    _id: 1,
                     email: 1,
                     name: 1,
                     photo: 1
                 });
+                hasUser(matchedUser);
 
-            hasUser(matchedUser);
+                const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
+
+                // 이미 유저가 참여하고 있는지 확인
+                const existUser = matchedChannel.members.find(id => id.toString() === matchedUser._id.toString());
+                hasExistUserInChannel(existUser);
 
             return {
                 status: successType.S02.s200,

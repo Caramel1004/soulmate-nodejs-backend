@@ -3,7 +3,7 @@ import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 
 import { successType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom } from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel} from '../validator/valid.js';
 import channel from '../models/channel.js';
 
 /**
@@ -336,6 +336,31 @@ const channelService = {
             return {
                 status: successType.S02.s200,
                 channel: channel
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 6-1. 해당채널에 유저 초대
+    patchInviteUserToChannel: async (channelId, invitedUserId, next) => {
+        try {
+            const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
+
+            // 이미 유저가 참여하고 있는지 확인
+            const existUser = matchedChannel.members.find(id => id.toString() === invitedUserId.toString());
+            hasExistUserInChannel(existUser);
+
+            matchedChannel.members.push(invitedUserId);
+            await matchedChannel.save();
+
+            const user = await User.findById(invitedUserId).select({ channels: 1 });
+            hasUser(user);
+
+            user.channels.push(matchedChannel._id);
+            await user.save();
+
+            return {
+                status: successType.S02.s200
             }
         } catch (err) {
             next(err);

@@ -4,20 +4,20 @@ import userService from '../service/user.js'
 import { hasReturnValue } from '../validator/valid.js'
 
 const userController = {
-    //회원가입
+    // 1. 회원가입
     postSignUp: async (req, res, next) => {
         try {
             const body = req.body;
-            const resData = await userService.postSignUp(body);//successType
+            const data = await userService.postSignUp(body, next);//successType
 
-            res.status(resData.code).json({
-                resData: resData
+            res.status(data.code).json({
+                data: data
             })
         } catch (err) {
-            throw err;
+            next(err);
         }
     },
-    //회원 로그인
+    // 2. 회원 로그인
     postLogin: async (req, res, next) => {
         try {
             const email = req.body.email;
@@ -25,16 +25,14 @@ const userController = {
             console.log('email: ', email);
             console.log('pwd: ', pwd);
 
-            const resData = await userService.postLogin(email, pwd, next);
+            const data = await userService.postLogin(email, pwd, next);
 
-            if (!resData) {
-                return;
-            }
+            hasReturnValue(data);
 
-            const token = resData.token;
-            const photo = resData.photo;
-            const name = resData.name;
-            const status = resData.status;
+            const token = data.token;
+            const photo = data.photo;
+            const name = data.name;
+            const status = data.status;
 
             res.status(status.code).json({
                 status: status,
@@ -46,12 +44,13 @@ const userController = {
             next(err);
         }
     },
-    // 유저 정보 조회
+    // 3. 유저 정보 조회
     getUserInfo: async (req, res, next) => {
         try {
             const name = req.params.name;
+            const channelId = req.body.channelId;
 
-            const data = await userService.getUserInfo(name, next);
+            const data = await userService.getUserInfo(channelId, name, next);
 
             hasReturnValue(data);
 
@@ -59,7 +58,6 @@ const userController = {
                 status: data.status,
                 user: data.matchedUser
             });
-
         } catch (err) {
             next(err)
         }

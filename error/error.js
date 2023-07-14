@@ -27,6 +27,15 @@ export class ValidationError extends NotFoundError {
     }
 }
 
+export class ValidationExistDataError extends ValidationError {
+    constructor(message) {
+        super(message);
+        this.statusCode = errorType.E04.e422.code;
+        this.status = errorType.E04.e422.status;
+        this.name = 'ValidationExistDataError'
+    }
+}
+
 
 // 토큰에대한 에러
 export class AuthorizationTokenError extends Error {
@@ -62,7 +71,7 @@ export const errorHandler = error => {
         stack: error.stack
     }
     try {
-        if(error instanceof Error) {
+        if (error instanceof Error) {
             errorReport.message = error.message;
             return errorReport;
         }

@@ -193,35 +193,17 @@ const channelController = {
     // 6-1. 해당채널에 유저 초대
     patchInviteUserToChannel: async (req, res, next) => {
         try {
-            const reqUserId = req.userId;
             const channelId = req.params.channelId;
             const invitedUserId = req.body.invitedUserId;
             console.log('invitedUserId: ', invitedUserId);
             console.log('channelId: ', channelId);
 
-            const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
-            // console.log('matchedChannel: ',matchedChannel);
+            const data = await channelService.patchInviteUserToChannel(channelId, invitedUserId, next);
 
-            const findIndex = matchedChannel.members.findIndex(id => id.toString() === invitedUserId.toString());
-
-            if (findIndex != -1) {
-                const error = new Error('해당 유저는 이미 채널에 참여하고 있습니다.');
-                error.statusCode = 401;
-                throw error;
-            }
-
-            matchedChannel.members.push(invitedUserId);
-            await matchedChannel.save();
-
-            const user = await User.findById(invitedUserId).select({ channels: 1 });
-
-            user.channels.push(matchedChannel._id);
-            await user.save();
+            hasReturnValue(data);
 
             res.status(200).json({
-                msg: '유저가 초대되였습니다.',
-                name: user.name,
-                channel: matchedChannel
+                
             })
 
         } catch (err) {

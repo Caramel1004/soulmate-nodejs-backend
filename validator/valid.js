@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import { AuthorizationTokenError, VerificationTokenError, NotFoundDataError, ValidationError } from '../error/error.js'
+import { AuthorizationTokenError, VerificationTokenError, NotFoundDataError, ValidationError, ValidationExistDataError } from '../error/error.js'
 import { errorType } from '../util/status.js';
 
 // jwt 존재 유무
@@ -110,10 +110,19 @@ export const hasReturnValue = data => {
     if(!data) {
         throw new NotFoundDataError('응답받은 데이터가 없습니다.');
     }
+    return;
 }
 
 export const hasCategoryData = data => {
     if(!data) {
         throw new NotFoundDataError('카테고리 데이터가 없습니다.');
     }
+    return;
+}
+
+export const hasExistUserInChannel = data => {
+    if(data) {
+        throw new ValidationExistDataError('해당 유저는 이미 채널에 참여하고 있습니다.');
+    }
+    return;
 }
