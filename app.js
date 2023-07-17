@@ -14,6 +14,7 @@ import { errorHandler } from './error/error.js'
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
 import chatRoutes from './routes/chat.js';
+import workspaceRoutes from './routes/workspace.js';
 import staticDataRoutes from './routes/static-data.js';
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/v1/channel', channelRoutes);
 app.use('/v1/static-data', staticDataRoutes);
 app.use('/v1/user', userRoutes);
 app.use('/v1/chat', chatRoutes);
+app.use('/v1/workspace', workspaceRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {

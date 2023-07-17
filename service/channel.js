@@ -1,9 +1,10 @@
 import Channel from '../models/channel.js';
 import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
+import { WorkSpace } from '../models/workspace.js';
 
 import { successType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel} from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace } from '../validator/valid.js';
 import channel from '../models/channel.js';
 
 /**
@@ -17,7 +18,7 @@ import channel from '../models/channel.js';
 *      2-1. 업무(비공개) 채널 조회
 *      2-2. 초대 받은 채널
 *      2-3. 오픈 채널 조회
-* 3. 채널 생성
+* 3. 채널 생성s
 * 4. 관심 채널 조회 
 * 5. 관심 채널 삭제
 * 
@@ -421,6 +422,33 @@ const channelService = {
                 chatRoom: createdChatRoom
             }
         } catch (err) {
+            next(err);
+        }
+    },
+    // 10. 워크스페이스 생성
+    postCreateWorkSpace: async (channelId, reqUserId, workSpaceName, next) => {
+        try {
+            // 1. 워크스페이스 생성
+            const workSpace = await WorkSpace.create({
+                channelId: channelId,
+                workSpaceName: workSpaceName,
+                users: [reqUserId]
+            })
+
+            hasWorkSpace(workSpace);
+
+            // 2. 요청을 보낸 채널에 워크스페이스 추가
+            const channel = await Channel.findById(channelId).select({ workSpaces: 1 });
+            
+            channel.workSpaces.push(workSpace._id);
+            await channel.save();
+
+            return {
+                status: successType.S02.s201,
+                workSpace: workSpace
+            }
+        } catch (err) {
+            console.log(err);
             next(err);
         }
     }

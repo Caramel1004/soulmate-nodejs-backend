@@ -83,6 +83,12 @@ export const hasChatRoom = channelDetail => {
     }
     return;
 }
+export const hasWorkSpace = workSpace => {
+    if (!workSpace) {
+        throw new NotFoundDataError('워크스페이스가 존재하지 않습니다.');
+    }
+    return;
+}
 
 export const hasUser = user => {
     if (!user) {
@@ -93,7 +99,7 @@ export const hasUser = user => {
 
 export const vaildatePasswordOfUser = (userPassword, reqPassword) => {
     if (userPassword !== reqPassword) {
-        throw new ValidationError('요청하신 비밀번호와 유저의 비밀번호가 일치하지 않습니다.')
+        throw new ValidationError('요청하신 이메일과 비밀번호가 일치하는 회원이 없습니다.');
     }
     console.log('비밀번호 일치');
     return;

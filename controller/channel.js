@@ -31,6 +31,7 @@ import { hasReturnValue } from '../validator/valid.js'
  * 8. 채팅방 목록 조회
  *      8-1. 채팅 방 입장 -> 채팅 히스토리 로딩 -> chat스키마
  * 9. 채팅룸 생성
+ * 10. 워크스페이스 생성
  */
 
 
@@ -203,7 +204,7 @@ const channelController = {
             hasReturnValue(data);
 
             res.status(200).json({
-                
+
             })
 
         } catch (err) {
@@ -278,6 +279,25 @@ const channelController = {
                 status: data.status,
                 chatRoom: data.chatRoom
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 10. 워크스페이스 생성
+    postCreateWorkSpace: async (req, res, next) => {
+        try {
+            const channelId = req.params.channelId;
+            const reqUserId = req.userId;
+            const workSpaceName = req.body.workSpaceName;
+
+            const data = await channelService.postCreateWorkSpace(channelId, reqUserId, workSpaceName, next);
+
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                workSpace: data.workSpace
+            })
         } catch (err) {
             next(err);
         }

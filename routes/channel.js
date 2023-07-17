@@ -64,6 +64,9 @@ router.get('/:channelId/chat', hasJsonWebToken, channelController.getChatRoomLis
 // POST /v1/channel/:channelId/create-chatRoom
 router.post('/:channelId/create-chatRoom', hasJsonWebToken, channelController.postCreateChatRoom);// 9. 채팅방 생성
 
+// POST /v1/channel/:channelId/create-workspace
+router.post('/:channelId/create-workspace', hasJsonWebToken, channelController.postCreateWorkSpace);// 10. 워크스페이스 생성
+
 //PATCH /v1/channel/exit/:channelId
 router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 채널 퇴장
 

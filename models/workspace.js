@@ -4,6 +4,11 @@ const { Schema } = mongoose;
 
 // 워크스페이스 스키마
 const workSpaceSchema = new Schema({
+    channelId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Channel',
+        required: true
+    },
     workSpaceName: {
         type: String,
         required: true
@@ -11,7 +16,7 @@ const workSpaceSchema = new Schema({
     posts: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'post'
+            ref: 'Post'
         }
     ],
     users: [
@@ -22,13 +27,9 @@ const workSpaceSchema = new Schema({
         }
     ],
     createdAt: {
-        type: Date,
-        required: true
+        type: Date
     }
 }, { timestamps: true });
-
-import mongoose from "mongoose";
-
 
 //게시물 스키마
 const postSchema = new Schema({
@@ -40,10 +41,12 @@ const postSchema = new Schema({
     },
     creator: {
         type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     reply: [{
-        type: Schema.Types.ObjectId
+        type: Schema.Types.ObjectId,
+        ref: 'Reply'
     }],
     createdAt: {
         type: Date
@@ -84,12 +87,7 @@ const scrapSchema = new Schema({
     }
 }, { timestamps: true });
 
-const workSpace = mongoose.model('WorkSpace', workSpaceSchema);
-const Post = mongoose.model('Post', postSchema);
-const Reply = mongoose.model('Reply', replySchema);
-const Scrap = mongoose.model('Scrap', scrapSchema);
-
-export default { workSpace, Post, Reply, Scrap };
-// export { Post };
-// export { Reply };
-// export { Scrap };
+export const WorkSpace = mongoose.model('WorkSpace', workSpaceSchema);
+export const Post = mongoose.model('Post', postSchema);
+export const Reply = mongoose.model('Reply', replySchema);
+export const Scrap = mongoose.model('Scrap', scrapSchema);
