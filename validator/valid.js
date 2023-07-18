@@ -90,6 +90,13 @@ export const hasWorkSpace = workSpace => {
     return;
 }
 
+export const hasPost = post => {
+    if(!post) {
+        throw new NotFoundDataError('게시물이 존재하지 않습니다.')
+    }
+    return;
+}
+
 export const hasUser = user => {
     if (!user) {
         throw new NotFoundDataError('일치하는 유저가 존재하지 않습니다.');

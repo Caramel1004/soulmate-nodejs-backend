@@ -67,6 +67,9 @@ router.post('/:channelId/create-chatRoom', hasJsonWebToken, channelController.po
 // POST /v1/channel/:channelId/create-workspace
 router.post('/:channelId/create-workspace', hasJsonWebToken, channelController.postCreateWorkSpace);// 10. 워크스페이스 생성
 
+// POST /v1/channel/:channelId/workspace
+router.get('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSpaceListByChannelIdAndUserId);// 11. 워크스페이스 목록 조회
+
 //PATCH /v1/channel/exit/:channelId
 router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 채널 퇴장
 

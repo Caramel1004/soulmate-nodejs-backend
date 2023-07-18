@@ -439,7 +439,7 @@ const channelService = {
 
             // 2. 요청을 보낸 채널에 워크스페이스 추가
             const channel = await Channel.findById(channelId).select({ workSpaces: 1 });
-            
+
             channel.workSpaces.push(workSpace._id);
             await channel.save();
 
@@ -449,6 +449,33 @@ const channelService = {
             }
         } catch (err) {
             console.log(err);
+            next(err);
+        }
+    },
+    // 11. 워크스페이스 목록 조회
+    getWorkSpaceListByChannelIdAndUserId: async (channelId, userId, next) => {
+        try {
+            const workSpaceList = await WorkSpace.find({
+                channelId: channelId
+            }).
+                select({
+                    _id: 1,
+                    channelId: 1,
+                    workSpaceName: 1,
+                    users: 1
+                });
+                
+            const userWorkSpaces = workSpaceList.filter(workSpace => {
+                const idx = workSpace.users.indexOf(userId);
+                if (idx !== -1) {
+                    return workSpace;
+                }
+            });
+            return {
+                status: successType.S02.s200,
+                workSpaces: userWorkSpaces
+            }
+        } catch (err) {
             next(err);
         }
     }

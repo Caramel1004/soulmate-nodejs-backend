@@ -34,7 +34,8 @@ const workSpaceSchema = new Schema({
 //게시물 스키마
 const postSchema = new Schema({
     content: {
-        type: Schema.Types.ObjectId
+        type: String,
+        required: true
     },
     fileUrl: {
         type: String
@@ -44,7 +45,7 @@ const postSchema = new Schema({
         ref: 'User',
         required: true
     },
-    reply: [{
+    replies: [{
         type: Schema.Types.ObjectId,
         ref: 'Reply'
     }],

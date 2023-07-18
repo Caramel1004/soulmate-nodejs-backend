@@ -301,6 +301,20 @@ const channelController = {
         } catch (err) {
             next(err);
         }
+    },
+    // 11. 워크스페이스 목록 조회
+    getWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
+        try {
+            const data = await channelService.getWorkSpaceListByChannelIdAndUserId(req.params.channelId, req.userId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                workSpaces: data.workSpaces
+            })
+        } catch (error) {
+            
+        }
     }
 };
 
