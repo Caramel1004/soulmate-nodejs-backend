@@ -121,22 +121,35 @@ const workspaceService = {
 
             hasChannelDetail(matchedChannel);
 
+            
             // 2. 해당 워크스페이스 조회
             const matchedWorkSpace = matchedChannel.workSpaces.find(workSpace => workSpace._id.toString() === workSpaceId.toString());
-            hasChatRoom(matchedChatRoom);
+            hasWorkSpace(matchedWorkSpace);
 
-            // 중복되는 유저는 필터링
-            const filterSelectedId = selectedId.filter(selectedUser => {
+            // 필터 목록 1. 채널에 존재하나? 2. 워크스페이스에 중복되는 유저가 있나?
+            // 채널에 멤버가 존재하는지 필터링 => 없으면 삭제 필터링
+            const filterExistUserToChannel = selectedId.filter(selectedUser => {
+                for (const existUser of matchedChannel.members) {
+                    console.log(existUser);
+                    if (selectedUser.toString() === existUser._id.toString()) {
+                        console.log('채널에 존재');
+                        return selectedUser;
+                    }
+                }
+            });
+
+            console.log(filterExistUserToChannel);
+            // 워크스페이스에 중복되는 유저는 필터링
+            const filterSelectedId = filterExistUserToChannel.filter(selectedUser => {
                 for (const existUser of matchedWorkSpace.users) {
                     if (selectedUser.toString() === existUser.toString()) {
-                        console.log('중복');
+                        console.log('중복 => 해당 유저 pop');
                         return;
                     }
                 }
                 return selectedUser;
             })
 
-            console.log(filterSelectedId);
 
             // 3. 워크스페이스 스키마에 선택된 유저 추가
             const updatedWorkSpaceUsers = [...matchedWorkSpace.users, ...filterSelectedId];

@@ -89,7 +89,7 @@ const chatService = {
                 _id: chatRoomId,
                 channelId: channelId
             })
-            .select({ users: 1 });
+                .select({ users: 1 });
 
             // 프로퍼티 추가시 프로퍼티 _doc에 추가
             // 채팅방에 이미 존재하는지 여부 추가
@@ -223,11 +223,19 @@ const chatService = {
 
             // 2. 해당 채팅룸 조회
             const matchedChatRoom = matchedChannel.chatRooms.find(room => room._id.toString() === chatRoomId.toString());
-            console.log('matchedChatRoom: ', matchedChatRoom);
             hasChatRoom(matchedChatRoom);
 
+            // 필터 목록 1. 채널에 존재하나? 2. 워크스페이스에 중복되는 유저가 있나?
+            // 채널에 멤버가 존재하는지 필터링 => 없으면 삭제 필터링
+            const filterExistUserToChannel = selectedId.filter(selectedUser => {
+                for (const existUser of matchedChannel.members) {
+                    if (selectedUser.toString() === existUser._id.toString()) {
+                        return selectedUser;
+                    }
+                }
+            });
             // 중복되는 유저는 필터링
-            const filterSelectedId = selectedId.filter(selectedUser => {
+            const filterSelectedId = filterExistUserToChannel.filter(selectedUser => {
                 for (const existUser of matchedChatRoom.users) {
                     if (selectedUser.toString() === existUser.toString()) {
                         console.log('중복');
@@ -236,7 +244,7 @@ const chatService = {
                 }
                 return selectedUser;
             })
-            
+
             console.log(filterSelectedId);
 
             // 3. 채팅룸 스키마에 선택된 유저 추가

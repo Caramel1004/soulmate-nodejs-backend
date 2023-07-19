@@ -58,6 +58,12 @@ const workspaceController = {
     patchAddMemberToWorkSpace: async (req, res, next) => {
         try {
             const data = await workspaceService.patchAddMemberToWorkSpace(req.body.selectedId, req.params.channelId, req.params.workSpaceId, next);
+            hasReturnValue(data);
+            
+            res.status(data.status.code).json({
+                status: data.status,
+                workSpace: data.workSpace
+            })
         } catch (err) {
             next(err);
         }
