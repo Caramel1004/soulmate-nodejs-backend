@@ -41,7 +41,6 @@ const workspaceService = {
                     }
                 });
 
-            console.log(workSpace);
             hasWorkSpace(workSpace);
 
             // 2) 워크스페이스에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
@@ -79,9 +78,15 @@ const workspaceService = {
             workSpace.posts.push(post._id);
             await workSpace.save();
 
+            const resPost = await Post.findById(post._id)
+            .populate('creator',{
+                name: 1,
+                photo: 1
+            })
+
             return {
                 status: successType.S02.s201,
-                post: post
+                post: resPost
             }
         } catch (err) {
             next(err);

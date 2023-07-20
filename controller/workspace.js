@@ -1,5 +1,6 @@
 import workspaceService from '../service/workspace.js';
 import { hasReturnValue } from '../validator/valid.js';
+import SocketIO from '../socket.js';
 
 /**
  * 1. 워크스페이스 세부정보 조회
@@ -8,6 +9,7 @@ import { hasReturnValue } from '../validator/valid.js';
  * 4. 워크스페이스에 팀원 초대
  * 5. 스크랩 따기
  * 6. 댓글 보기
+ * 7. 워크스페이스 설명 코멘트 편집
  */
 const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
@@ -31,6 +33,13 @@ const workspaceController = {
             const data = await workspaceService.postUploadPost(req.params.channelId, req.params.workSpaceId, req.userId, req.body, next);
 
             hasReturnValue(data);
+
+            // 웹 소켓: 워크스페이스에 속한 모든 유저의 게시물 내용 업로드
+            const serverIO = SocketIO.getSocketIO();
+            serverIO.emit('uploadPost', {
+                status: data.status,
+                post: data.post
+            });
 
             res.status(data.status.code).json({
                 status: data.status,
