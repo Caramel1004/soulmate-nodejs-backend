@@ -7,6 +7,7 @@ import { hasReturnValue } from '../validator/valid.js';
  * 3. 댓글 달기 -> 게시물이 있어야 함
  * 4. 워크스페이스에 팀원 초대
  * 5. 스크랩 따기
+ * 6. 댓글 보기
  */
 const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
