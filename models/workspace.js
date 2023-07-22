@@ -57,7 +57,8 @@ const postSchema = new Schema({
 // 댓글 스키마
 const replySchema = new Schema({
     content: {
-        type: String
+        type: String,
+        required: true
     },
     fileUrl: {
         type: String

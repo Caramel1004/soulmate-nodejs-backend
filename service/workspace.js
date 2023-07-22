@@ -6,10 +6,12 @@ import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, 
 
 /**
  * 1. 워크스페이스 세부정보 조회
- * 2. 자료 및 텍스트 내용 업로드
- * 3. 댓글 달기
+ * 2. 게시물 생성
+ * 3. 댓글 달기 -> 게시물이 있어야 함
  * 4. 워크스페이스에 팀원 초대
  * 5. 스크랩 따기
+ * 6. 댓글 보기
+ * 7. 워크스페이스 설명 코멘트 편집
  */
 const workspaceService = {
     // 1. 워크스페이스 세부정보 조회
@@ -57,7 +59,7 @@ const workspaceService = {
         }
     },
     // 2. 자료 및 텍스트 내용 업로드 == 게시물 생성
-    postUploadPost: async (channelId, workSpaceId, userId, body, next) => {
+    postCreatePost: async (channelId, workSpaceId, userId, body, next) => {
         try {
             const post = await Post.create({
                 content: body.content,
@@ -79,10 +81,10 @@ const workspaceService = {
             await workSpace.save();
 
             const resPost = await Post.findById(post._id)
-            .populate('creator',{
-                name: 1,
-                photo: 1
-            })
+                .populate('creator', {
+                    name: 1,
+                    photo: 1
+                })
 
             return {
                 status: successType.S02.s201,
@@ -126,7 +128,7 @@ const workspaceService = {
 
             hasChannelDetail(matchedChannel);
 
-            
+
             // 2. 해당 워크스페이스 조회
             const matchedWorkSpace = matchedChannel.workSpaces.find(workSpace => workSpace._id.toString() === workSpaceId.toString());
             hasWorkSpace(matchedWorkSpace);
@@ -167,6 +169,37 @@ const workspaceService = {
                 status: status,
                 workSpace: matchedWorkSpace
             }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 5. 스크랩 따기
+    // 6. 댓글 보기
+    postGetPostDetailAndRepliesByPostId: async (postId, next) => {
+        try {
+            /**1) 게시물 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
+             * @params {objectId} postId: 채널 아이디
+             * @return {Object} - 게시물 세부 정보
+             * */
+            const post = await Post.findOne({
+                _id: postId
+            })
+            .populate('creator',{
+                name: 1,
+                photo: 1
+            })
+            .populate({
+                path: 'replies',
+                populate: {
+                    path: 'creator',
+                    select: 'name photo'
+                }
+            });
+            console.log(post)
+            return {
+                status: successType.S02.s200,
+                post: post
+            };
         } catch (err) {
             next(err);
         }

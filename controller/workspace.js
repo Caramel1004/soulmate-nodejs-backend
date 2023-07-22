@@ -4,7 +4,7 @@ import SocketIO from '../socket.js';
 
 /**
  * 1. 워크스페이스 세부정보 조회
- * 2. 자료 및 텍스트 내용 업로드
+ * 2. 게시물 생성
  * 3. 댓글 달기 -> 게시물이 있어야 함
  * 4. 워크스페이스에 팀원 초대
  * 5. 스크랩 따기
@@ -27,10 +27,10 @@ const workspaceController = {
             next(err);
         }
     },
-    // 2. 자료 및 텍스트 내용 업로드
-    postUploadPost: async (req, res, next) => {
+    // 2. 게시물 생성
+    postCreatePost: async (req, res, next) => {
         try {
-            const data = await workspaceService.postUploadPost(req.params.channelId, req.params.workSpaceId, req.userId, req.body, next);
+            const data = await workspaceService.postCreatePost(req.params.channelId, req.params.workSpaceId, req.userId, req.body, next);
 
             hasReturnValue(data);
 
@@ -74,6 +74,21 @@ const workspaceController = {
                 status: data.status,
                 workSpace: data.workSpace
             })
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 5. 스크랩 따기
+    // 6. 댓글 보기
+    postGetPostDetailAndRepliesByPostId: async (req, res, next) => {
+        try {
+            const data = await workspaceService.postGetPostDetailAndRepliesByPostId(req.body.postId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                post: data.post
+            });
         } catch (err) {
             next(err);
         }
