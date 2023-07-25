@@ -22,7 +22,7 @@ router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getL
 router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreatePost);// 2. 자료 및 텍스트 내용 업로드
 
 //POST /v1/workspace/reply/:channelId/:workSpaceId
-router.post('/reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
+router.post('/:channelId/:workSpaceId/post/create-reply', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
 
 //POST /v1/workspace/invite/:channelId/:workSpaceId
 router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchAddMemberToWorkSpace);// 4. 워크스페이스에 팀원 초대

@@ -37,8 +37,8 @@ router.get('/openchannel-list', channelController.getOpenChannelList);//1. 오�
 //GET /v1/channel/openchannel-list/:channelId
 router.get('/openchannel-list/:channelId', channelController.getOpenChannelDetail);// 1-1. 오픈 채널 세부 정보 조회
 
-//PATCH /v1/channel/openchannel-list/:channelId
-router.patch('/openchannel-list/:channelId', hasJsonWebToken, channelController.patchAddOpenChannelToWishChannel);// 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
+//PATCH /v1/channel/add-or-remove-wishchannel
+router.patch('/add-or-remove-wishchannel', hasJsonWebToken, channelController.patchAddOrRemoveWishChannel);// 1-2. 오픈 채널 찜 클릭 -> 함수 수정 -> 1-2. 관심채널 추가 또는 삭제(토글 관계)
 
 // GET /v1/channel/mychannels
 router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUserId);// 2. 해당 유저의 채널 리스트 조회
@@ -50,7 +50,7 @@ router.post('/create', hasJsonWebToken, channelController.postCreateChannel);// 
 router.get('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); // 4. 관심 채널 조회 
 
 //GET /v1/channel/remove-wishchannel
-router.patch('/remove-wishchannel', hasJsonWebToken, channelController.patchRemoveOpenChannelToWishChannel); // 5. 관심 채널 삭제 
+// router.patch('/remove-wishchannel', hasJsonWebToken, channelController.patchRemoveOpenChannelToWishChannel); // 5. 관심 채널 삭제 -> 1-2에 통합
 
 //GET /v1/channel/:channelId
 router.get('/:channelId', hasJsonWebToken, channelController.getChannelDetailByChannelId);// 6. 채널아이디로 해당 채널 조회
@@ -71,7 +71,7 @@ router.post('/:channelId/create-workspace', hasJsonWebToken, channelController.p
 router.get('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSpaceListByChannelIdAndUserId);// 11. 워크스페이스 목록 조회
 
 //PATCH /v1/channel/exit/:channelId
-router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 채널 퇴장
+router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 6-2. 채널 퇴장
 
 
 

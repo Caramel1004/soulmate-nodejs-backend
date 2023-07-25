@@ -32,6 +32,8 @@ import { hasReturnValue } from '../validator/valid.js'
  *      8-1. 채팅 방 입장 -> 채팅 히스토리 로딩 -> chat스키마
  * 9. 채팅룸 생성
  * 10. 워크스페이스 생성
+ * 11. 채팅룸 퇴장
+ * 12. 워크스페이스 퇴장
  */
 
 
@@ -68,13 +70,13 @@ const channelController = {
             next(err);
         }
     },
-    // 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
-    patchAddOpenChannelToWishChannel: async (req, res, next) => {
+    // 1-2. 관심채널 추가 또는 삭제(토글 관계)
+    patchAddOrRemoveWishChannel: async (req, res, next) => {
         try {
             const userId = req.userId;// 토큰에서 파싱한 유저아이디
             const channelId = req.body.channelId;// 채널 아이디
 
-            const data = await channelService.patchAddOpenChannelToWishChannel(channelId, userId, next);
+            const data = await channelService.patchAddOrRemoveWishChannel(channelId, userId, next);
 
             hasReturnValue(data);
 
@@ -203,10 +205,10 @@ const channelController = {
 
             hasReturnValue(data);
 
-            res.status(200).json({
-
-            })
-
+            res.status(data.status.code).json({
+                status: data.status,
+                channelId: data.channel._id
+            });
         } catch (err) {
             next(err);
         }
@@ -220,9 +222,9 @@ const channelController = {
             console.log('channelId: ', channelId);
             const matchedChannel = await Channel.findById(channelId);
 
-            const updatedUsers = matchedChannel.users.filter(id => id.toString() !== userId.toString());
+            const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
 
-            matchedChannel.users = [...updatedUsers];
+            matchedChannel.members = [...updatedUsers];
 
             console.log('updatedUsers: ', updatedUsers);
             await matchedChannel.save();
@@ -312,8 +314,8 @@ const channelController = {
                 status: data.status,
                 workSpaces: data.workSpaces
             })
-        } catch (error) {
-            
+        } catch (err) {
+            next(err);
         }
     }
 };

@@ -4,7 +4,7 @@ import { ChatRoom } from '../models/chat-room.js';
 import { WorkSpace } from '../models/workspace.js';
 
 import { successType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace } from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel } from '../validator/valid.js';
 import channel from '../models/channel.js';
 
 /**
@@ -20,7 +20,7 @@ import channel from '../models/channel.js';
 *      2-3. 오픈 채널 조회
 * 3. 채널 생성s
 * 4. 관심 채널 조회 
-* 5. 관심 채널 삭제
+* 5. 관심 채널 삭제 -> 함수 통합시킴
 * 
 * #채널 입장 후
 * 1. 채널아이디로 해당 채널 조회 -> 채널 세부페이지
@@ -114,7 +114,7 @@ const channelService = {
      * @params {function} next: 다음 미들웨어 실행 함수
      * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
     */
-    patchAddOpenChannelToWishChannel: async (channelId, userId, next) => {
+    patchAddOrRemoveWishChannel: async (channelId, userId, next) => {
         try {
             // 1) 해당 채널이 존재하면서 공개 채널인 채널 조회 -> 데이터가 존재하는지 확인
             const openChannel = await Channel.findOne({
@@ -134,14 +134,21 @@ const channelService = {
              * @return {object} (property)매칭된 유저의 관심채널 배열
              * */
             const matchedUser = await User.findById(userId).select({ wishChannels: 1 });
-
             // 에러: 매칭된 유저가 존재하지 않을때 에러 처리
             hasUser(matchedUser);
 
-            // 3) 관심 채널 배열에 푸쉬
-            matchedUser.wishChannels.push(channelId);
+            // 3) 유저 위시채널리스트에 요청온 위시채널이 있는지 체크 -> 있으면 삭제 없으면 추가(토글)
+            const wishChannel = matchedUser.wishChannels.find(id => id.toString() === openChannel._id.toString());
 
-            // 4) 수정된 데이터 저장 -> DB에서 발생한 에러는 catch문으로 처리
+            if (!wishChannel) {
+                // 4) 관심 채널 배열에 푸쉬
+                matchedUser.wishChannels.push(channelId);
+            } else {
+                // 4) 제거하려는 채널아이디만 제외하고 나머지 요소들만 배열로 반환
+                matchedUser.wishChannels = [...matchedUser.wishChannels.filter(id => id.toString() !== channelId.toString())];
+            }
+
+            // 5) 수정된 데이터 저장 -> DB에서 발생한 에러는 catch문으로 처리
             const savedUser = await matchedUser.save();
 
             // 에러: 저장된 유저가 없을때 에러 처리
@@ -285,36 +292,7 @@ const channelService = {
             next(err);
         }
     },
-    // 5. 관심 채널 삭제
-    patchRemoveOpenChannelToWishChannel: async (userId, channelId, next) => {
-        try {
-            /** 1) 유저의 위시채널 목록 조회
-             * @params {ObjectId} 요청한 유저 아이디 
-             * @return {object} (property)매칭된 유저의 관심채널 배열
-             * */
-            const matchedUser = await User.findOne({ _id: userId }, { wishChannels: 1 });
-            console.log('matchedUser: ', matchedUser);
-
-            // 에러: 매칭된 유저가 존재하지 않을때 에러 처리
-            hasUser(matchedUser);
-
-            // 2) 제거하려는 채널아이디만 제외하고 나머지 요소들만 배열로 반환
-            matchedUser.wishChannels = [...matchedUser.wishChannels.filter(id => id.toString() !== channelId.toString())];
-
-            // 3) 수정된 유저 저장
-            const updatedUser = await matchedUser.save();
-
-            // 에러: 저장된 유저가 없을때 에러 처리
-            hasUser(updatedUser);
-
-            return {
-                status: successType.S02.s200,
-                updatedUser: updatedUser
-            }
-        } catch (err) {
-            next(err);
-        }
-    },
+    // 5. 관심 채널 삭제 -> 함수 통합시킴
     // 6. 채널아이디로 해당 채널 조회
     getChannelDetailByChannelId: async (userId, channelId, next) => {
         try {
@@ -361,7 +339,8 @@ const channelService = {
             await user.save();
 
             return {
-                status: successType.S02.s200
+                status: successType.S02.s200,
+                channel: matchedChannel
             }
         } catch (err) {
             next(err);
@@ -464,7 +443,7 @@ const channelService = {
                     workSpaceName: 1,
                     users: 1
                 });
-                
+
             const userWorkSpaces = workSpaceList.filter(workSpace => {
                 const idx = workSpace.users.indexOf(userId);
                 if (idx !== -1) {

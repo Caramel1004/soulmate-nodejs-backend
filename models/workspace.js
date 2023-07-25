@@ -13,6 +13,9 @@ const workSpaceSchema = new Schema({
         type: String,
         required: true
     },
+    comment : {
+        type: String
+    },
     posts: [
         {
             type: Schema.Types.ObjectId,

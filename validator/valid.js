@@ -139,3 +139,9 @@ export const hasExistUserInChannel = data => {
     }
     return;
 }
+export const hasExistWishChannel = data => {
+    if(data){
+        throw new ValidationExistDataError('해당 오픈 채널은 이미 추가 되어있습니다.')
+    }
+    return;
+}

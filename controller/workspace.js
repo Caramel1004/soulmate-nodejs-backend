@@ -15,7 +15,7 @@ const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
     getLoadWorkspace: async (req, res, next) => {
         try {
-            const data = await workspaceService.getLoadWorkspace(req.params.channelId, req.params.workSpaceId, req.userId, next);
+            const data = await workspaceService.getLoadWorkspace(req.params.channelId, req.params.workSpaceId, req.query.sortNum,req.userId, next);
 
             hasReturnValue(data);
 
@@ -55,6 +55,13 @@ const workspaceController = {
             const data = await workspaceService.postCreateReply(req.body.postId, req.userId, req.body.content, next);
 
             hasReturnValue(data);
+
+            // 웹 소켓: 워크스페이스에 속한 모든 유저의 게시물 내용 업로드
+            const serverIO = SocketIO.getSocketIO();
+            serverIO.emit('createReply', {
+                status: data.status,
+                reply: data.reply
+            });
 
             res.status(data.status.code).json({
                 status: data.status,
