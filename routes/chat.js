@@ -28,5 +28,8 @@ router.post('/upload-file/:channelId/:chatRoomId', hasJsonWebToken, hasFile, cha
 // PATCH /v1/chat/invite/:channelId/:chatRoomId
 router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUserToChatRoom);// 5. 채팅방에 채널 멤버 초대
 
+// PATCH /v1/chat/exit/:channelId/:chatRoomId
+router.patch('/exit/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchExitChatRoom);// 6. 채팅방 퇴장
+
 
 export default router;

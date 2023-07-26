@@ -8,6 +8,7 @@ import { successType, errorType } from '../util/status.js';
 import { hasReturnValue } from '../validator/valid.js'
 
 import SocketIO from '../socket.js';
+import socket from '../socket.js';
 
 /**
  * 1. 채팅방 세부정보 로딩
@@ -138,6 +139,32 @@ const chatController = {
             console.log('selectedId: ', selectedId);
 
             const data = await chatService.patchInviteUserToChatRoom(selectedId, channelId, chatRoomId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 6. 채팅방 퇴장
+    patchExitChatRoom: async (req, res, next) => {
+        try {
+            console.log('채널 퇴장')
+            const userId = req.userId;// 접속한 유저
+
+            const channelId = req.body.channelId
+            const chatRoomId = req.body.chatRoomId;
+
+            const data = await chatService.patchExitChatRoom(userId, channelId, chatRoomId, next);
+            hasReturnValue(data)
+
+            // 웹 소켓: 채팅방에 퇴장 메세지 보내기
+            const serverIO = SocketIO.getSocketIO();
+            serverIO.emit('exitUser',{
+                exitUser: data.exitUser
+            })
 
             res.status(data.status.code).json({
                 status: data.status

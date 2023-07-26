@@ -359,16 +359,24 @@ const channelService = {
                 {
                     channelId: 1,
                     roomName: 1,
-                    users: 1
+                    users: 1,
+                    chats: 1
+                })
+                .populate({
+                    path: 'chats',
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    }
                 });
-
+            
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const idx = chatRoom.users.indexOf(userId);
                 if (idx !== -1) {
                     return chatRoom;
                 }
             });
-
             return {
                 status: successType.S02.s200,
                 chatRooms: userChatRooms

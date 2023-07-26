@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jsonWebToken from '../util/jwt.js'
 
 import { AuthorizationTokenError, VerificationTokenError, NotFoundDataError, ValidationError, ValidationExistDataError } from '../error/error.js'
 import { errorType } from '../util/status.js';
@@ -12,24 +12,16 @@ export function hasJsonWebToken(req, res, next) {
             throw new AuthorizationTokenError('유효한 인증 토큰이 없습니다.\n다시 로그인 해주세요.');
         }
 
-        const token = authHeader.split(' ')[1];
+        const accessToken = authHeader.split(' ')[1];
+        const refreshToken = req.header.refresh;
 
-        // 검증 과정에서 인증만료, 시크릿키값 등 오류 발생처리
-        const decodedToken = jwt.verify(token, 'caramel');
-
-        // 만약에 없는 경우가 발생할수있으니 에러 처리
-        if (!decodedToken) {
-            throw new AuthorizationTokenError('인증 토큰이 유실되었습니다.');
-        }
+        const decodedToken = jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
 
         req.userId = decodedToken.userId;
+
         next();
     } catch (err) {
-        console.error('err: ', err);
-        if (!err.statusCode) {
-            next(new VerificationTokenError(err));
-        }
-        next(err);
+        next(new VerificationTokenError(err))
     }
 }
 

@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken';
-
+import jsonWebToken from '../util/jwt.js'
 import Channel from '../models/channel.js';
 import User from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
@@ -39,12 +38,7 @@ const channelService = {
             vaildatePasswordOfUser(user.password, pwd);
 
             // jwt 발급
-            const token = jwt.sign({
-                userId: user._id
-            },
-                'caramel',
-                { expiresIn: '2h' }
-            );
+            const token = await jsonWebToken.signToken(user);
 
             // 토큰 발급 유무
             hasAuthorizationToken(token);
@@ -52,7 +46,7 @@ const channelService = {
             console.log('token 발급: ', token);
 
             return {
-                token: token,
+                token: token.accessToken,
                 photo: user.photo,
                 name: user.name,
                 status: successType.S02.s200
@@ -71,13 +65,13 @@ const channelService = {
                     name: 1,
                     photo: 1
                 });
-                hasUser(matchedUser);
+            hasUser(matchedUser);
 
-                const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
+            const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
 
-                // 이미 유저가 참여하고 있는지 확인
-                const existUser = matchedChannel.members.find(id => id.toString() === matchedUser._id.toString());
-                hasExistUserInChannel(existUser);
+            // 이미 유저가 참여하고 있는지 확인
+            const existUser = matchedChannel.members.find(id => id.toString() === matchedUser._id.toString());
+            hasExistUserInChannel(existUser);
 
             return {
                 status: successType.S02.s200,

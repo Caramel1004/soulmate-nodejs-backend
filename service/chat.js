@@ -261,6 +261,61 @@ const chatService = {
         } catch (err) {
             next(err);
         }
+    },
+    // 6. 채팅방 퇴장
+    patchExitChatRoom: async (userId, channelId, chatRoomId, next) => {
+        try {
+            /** 1) 현재 퇴장하려는 채팅방 조회
+             * @params {ObjectId} 요청한 채널 아이디 
+             * @params {ObjectId} 요청한 채팅룸 아이디 
+             * @return {object} (property)매칭된 유저의 관심채널 배열
+             * */
+            const matchedChatRoom = await ChatRoom.findOne({
+                _id: chatRoomId,
+                channelId: channelId
+            })
+                .select({
+                    users: 1,
+                    chats: 1
+                })
+                .populate('users',{
+                    name: 1
+                });
+            hasChatRoom(matchedChatRoom);
+            const exitUser = matchedChatRoom.users.find(user => user._id.toString() === userId.toString())
+
+            // 퇴장 멘트를 챗으로 저장
+            const chatObj = await Chat.create({
+                chat: `${exitUser.name}님이 퇴장하셨습니다.`,
+                creator: exitUser._id,
+                isNotice: 'Y'
+            });
+
+            // 2) 채팅방 스키마에 해당 유저 필터링 -> 제거
+            const filteredChatRoomUsers = matchedChatRoom.users.filter(user => user._id.toString() !== userId.toString());
+            console.log(filteredChatRoomUsers);
+
+            if (filteredChatRoomUsers.length <= 0) {
+                // 채널에서 해당 채팅방 제거
+                const channel = await Channel.findById(channelId).select({ chatRooms: 1 });
+                channel.chatRooms = [...channel.chatRooms.filter(chatRoom => chatRoom.toString() !== matchedChatRoom._id.toString())];
+                await channel.save();
+
+                // 채팅룸 스키마에서 해당 채팅방 삭제
+                await ChatRoom.deleteOne({ _id: matchedChatRoom._id });
+            } else {
+                matchedChatRoom.users = [...filteredChatRoomUsers];
+                matchedChatRoom.chats.push(chatObj._id);
+                await matchedChatRoom.save();
+            }
+
+            return {
+                status: successType.S02.s200,
+                exitUser: exitUser
+            }
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

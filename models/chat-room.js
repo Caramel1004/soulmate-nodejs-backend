@@ -45,6 +45,10 @@ const chatSchema = new Schema({
         ref: 'User',
         required: true
     },
+    isNotice: {
+        type: String,
+        default: 'N'
+    },
     createdAt: {
         type: Date
     }
