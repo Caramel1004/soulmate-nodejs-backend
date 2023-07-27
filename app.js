@@ -5,11 +5,13 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { v4 } from 'uuid';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
 
 import SocketIO from './socket.js';
+import redisClient from './util/redis.js';
 import { errorType } from './util/status.js';
 import { errorHandler } from './error/error.js'
-// import { ErrorType } from './util/error.js';
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
@@ -17,7 +19,12 @@ import chatRoutes from './routes/chat.js';
 import workspaceRoutes from './routes/workspace.js';
 import staticDataRoutes from './routes/static-data.js';
 
+dotenv.config();
+
 const app = express();
+
+
+const DATABASE_URL = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@cluster0.vkqqcqz.mongodb.net/${process.env.DATABASE_DEFAULT_NAME}?retryWrites=true&w=majority`;
 
 // 정적 file처리를 위한 변수
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +54,15 @@ const fileFilter = (req, file, callback) => {
     }
 }
 
+
+// 요청 응답 로그 출력
+if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('combined'));
+} else {
+    app.use(morgan('dev'));
+}
+
+
 // 파싱 미들웨어
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -57,9 +73,10 @@ app.use('/images', express.static(path.join(__dirname, 'images')));// 이미지 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization', 'RefreshToken');
     next();
 })
+
 
 // 라우트 접근
 app.use('/v1/channel', channelRoutes);
@@ -71,26 +88,30 @@ app.use('/v1/workspace', workspaceRoutes);
 // 오류 처리
 app.use((error, req, res, next) => {
     console.log('미들웨어 함수 진입.... throw 된 에러: ', error);
-    if(!error.statusCode) {
+    if (!error.statusCode) {
         error = errorHandler(error);
     }
-    
+
     res.status(error.statusCode || 500).json({
         error: error
     });
 });
 
+
 //몽구스와 연결후 서버 실행
-mongoose.connect('mongodb+srv://caramel1004:Ij5jzfN4xESmEvdZ@cluster0.vkqqcqz.mongodb.net/soulmate?retryWrites=true&w=majority')
+mongoose.connect(DATABASE_URL)
     .then(result => {
         // 서버사이드 웹 소켓
-        const server = app.listen(8080, () => console.log(`Node Server 8080 start!!`));
-        const io = SocketIO.init(server);
+        const server = app.listen(process.env.PORT || 8080, () => console.log(`Node BackEnd Server start!!`));
 
+        const io = SocketIO.init(server);
         io.emit('connection', socket => {
-            console.log('서버 socket 가동!!!: ');
+            console.log('서버 socket 가동!!!');
             return socket;
         });
+
     }).catch(err => {
         console.log('몽구스 오류!!! : ', err);
     });
+
+redisClient.connect();

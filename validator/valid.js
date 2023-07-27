@@ -4,7 +4,7 @@ import { AuthorizationTokenError, VerificationTokenError, NotFoundDataError, Val
 import { errorType } from '../util/status.js';
 
 // jwt 존재 유무
-export function hasJsonWebToken(req, res, next) {
+export const hasJsonWebToken = async (req, res, next) => {
     try {
         // req.get () 함수는 대소문자를 구분하지 않는 지정된 HTTP 요청 헤더 필드를 반환하며 Referrer 및 Referrer 필드는 상호 교환 가능합니다. 
         const authHeader = req.get('Authorization');
@@ -13,10 +13,11 @@ export function hasJsonWebToken(req, res, next) {
         }
 
         const accessToken = authHeader.split(' ')[1];
-        const refreshToken = req.header.refresh;
+        const refreshToken = req.headers.refresh;
 
-        const decodedToken = jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
+        const decodedToken = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
 
+        console.log(decodedToken);
         req.userId = decodedToken.userId;
 
         next();
@@ -83,7 +84,7 @@ export const hasWorkSpace = workSpace => {
 }
 
 export const hasPost = post => {
-    if(!post) {
+    if (!post) {
         throw new NotFoundDataError('게시물이 존재하지 않습니다.')
     }
     return;
@@ -100,7 +101,6 @@ export const vaildatePasswordOfUser = (userPassword, reqPassword) => {
     if (userPassword !== reqPassword) {
         throw new ValidationError('요청하신 이메일과 비밀번호가 일치하는 회원이 없습니다.');
     }
-    console.log('비밀번호 일치');
     return;
 }
 
@@ -112,27 +112,27 @@ export const hasAuthorizationToken = token => {
 }
 
 export const hasReturnValue = data => {
-    if(!data) {
+    if (!data) {
         throw new NotFoundDataError('응답받은 데이터가 없습니다.');
     }
     return;
 }
 
 export const hasCategoryData = data => {
-    if(!data) {
+    if (!data) {
         throw new NotFoundDataError('카테고리 데이터가 없습니다.');
     }
     return;
 }
 
 export const hasExistUserInChannel = data => {
-    if(data) {
+    if (data) {
         throw new ValidationExistDataError('해당 유저는 이미 채널에 참여하고 있습니다.');
     }
     return;
 }
 export const hasExistWishChannel = data => {
-    if(data){
+    if (data) {
         throw new ValidationExistDataError('해당 오픈 채널은 이미 추가 되어있습니다.')
     }
     return;

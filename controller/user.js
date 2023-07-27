@@ -22,14 +22,13 @@ const userController = {
         try {
             const email = req.body.email;
             const pwd = req.body.password;
-            console.log('email: ', email);
-            console.log('pwd: ', pwd);
 
             const data = await userService.postLogin(email, pwd, next);
 
             hasReturnValue(data);
 
             const token = data.token;
+            const refreshToken = data.refreshToken;
             const photo = data.photo;
             const name = data.name;
             const status = data.status;
@@ -37,6 +36,7 @@ const userController = {
             res.status(status.code).json({
                 status: status,
                 token: token,
+                refreshToken: refreshToken,
                 name: name,
                 photo: photo
             });
@@ -66,7 +66,7 @@ const userController = {
     getMyProfile: async (req, res, next) => {
         const userId = req.userId;
 
-        const resData = await userService.getMyProfile(userId);
+        const resData = await userService.getMyProfile(userId, next);
 
         res.status(resData.status.code).json({
             status: resData.status,

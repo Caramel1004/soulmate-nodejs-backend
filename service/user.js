@@ -7,7 +7,7 @@ import { successType, errorType } from '../util/status.js';
 import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
 
 
-const channelService = {
+const userService = {
     // 1. 회원 가입
     postSignUp: async (body, next) => {
         try {
@@ -28,8 +28,6 @@ const channelService = {
         try {
             const user = await User.findOne({ email: email });
 
-            console.log(user);
-
             // 사용자 존재유무 체크
             hasUser(user);
 
@@ -43,10 +41,9 @@ const channelService = {
             // 토큰 발급 유무
             hasAuthorizationToken(token);
 
-            console.log('token 발급: ', token);
-
             return {
                 token: token.accessToken,
+                refreshToken: token.refreshToken,
                 photo: user.photo,
                 name: user.name,
                 status: successType.S02.s200
@@ -82,7 +79,7 @@ const channelService = {
         }
     },
     // 나의 프로필 조회(유저 정보)
-    getMyProfile: async userId => {
+    getMyProfile: async (userId, next) => {
         try {
             const matchedUser = await User.findOne(
                 { _id: userId },
@@ -109,4 +106,4 @@ const channelService = {
     }
 }
 
-export default channelService;
+export default userService;
