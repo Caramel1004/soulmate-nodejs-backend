@@ -17,7 +17,6 @@ export const hasJsonWebToken = async (req, res, next) => {
 
         const decodedToken = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
 
-        console.log(decodedToken);
         req.userId = decodedToken.userId;
 
         next();

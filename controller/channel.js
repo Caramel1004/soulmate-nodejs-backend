@@ -79,10 +79,10 @@ const channelController = {
             const data = await channelService.patchAddOrRemoveWishChannel(channelId, userId, next);
 
             hasReturnValue(data);
-
+            console.log(data);
             res.status(data.status.code).json({
                 status: data.status,
-                user: data.user
+                action: data.action
             });
         } catch (err) {
             next(err);

@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import redisClient from './redis.js';
 import { promisify } from 'util';
-import { VerificationTokenError } from '../error/error.js'
+import { VerificationTokenError } from '../error/error.js';
+import SocketIO from '../socket.js';
 
 
 export default {
@@ -48,7 +49,7 @@ export default {
                 console.log('리프레시 토큰 검사 중!!');
                 const decodedToken = jwt.decode(accessToken);
                 try {
-                    const savedToken = await redisClient.v4.get(decodedToken.userId, refreshToken);
+                    const savedToken = await redisClient.v4.get(decodedToken.userId);
                     if (savedToken === refreshToken) {
                         const result = jwt.verify(refreshToken, process.env.JWT_REFRESHTOKEN_SECRETKEY);
                         if (result) {
@@ -57,7 +58,13 @@ export default {
                                 algorithm: 'HS256',
                                 expiresIn: '1h'
                             });
-                            return newAccessToken;
+
+                            const socketIO = SocketIO.getSocketIO()
+                            socketIO.emit('accessToken',{
+                                accessToken: newAccessToken
+                            });
+
+                            return decodedToken;
                         }
                     } else {
                         throw new VerificationTokenError('Redis에 일치하는 리프레시 토큰이 없습니다.');

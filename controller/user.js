@@ -66,11 +66,12 @@ const userController = {
     getMyProfile: async (req, res, next) => {
         const userId = req.userId;
 
-        const resData = await userService.getMyProfile(userId, next);
+        const data = await userService.getMyProfile(userId, next);
+        hasReturnValue(data);
 
-        res.status(resData.status.code).json({
-            status: resData.status,
-            matchedUser: resData.matchedUser
+        res.status(data.status.code).json({
+            status: data.status,
+            matchedUser: data.matchedUser
         });
     }
 }

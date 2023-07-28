@@ -116,6 +116,7 @@ const channelService = {
     */
     patchAddOrRemoveWishChannel: async (channelId, userId, next) => {
         try {
+            let action;
             // 1) 해당 채널이 존재하면서 공개 채널인 채널 조회 -> 데이터가 존재하는지 확인
             const openChannel = await Channel.findOne({
                 _id: channelId,
@@ -143,9 +144,11 @@ const channelService = {
             if (!wishChannel) {
                 // 4) 관심 채널 배열에 푸쉬
                 matchedUser.wishChannels.push(channelId);
+                action = 'add';
             } else {
                 // 4) 제거하려는 채널아이디만 제외하고 나머지 요소들만 배열로 반환
                 matchedUser.wishChannels = [...matchedUser.wishChannels.filter(id => id.toString() !== channelId.toString())];
+                action = 'remove';
             }
 
             // 5) 수정된 데이터 저장 -> DB에서 발생한 에러는 catch문으로 처리
@@ -158,7 +161,7 @@ const channelService = {
 
             return {
                 status: status,
-                user: savedUser
+                action: action
             };
         } catch (err) {
             next(err);

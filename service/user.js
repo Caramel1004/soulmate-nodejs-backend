@@ -86,7 +86,8 @@ const userService = {
                 {
                     email: 1,
                     name: 1,
-                    photo: 1
+                    photo: 1,
+                    wishChannels: 1
                 });
 
             if (!matchedUser) {
