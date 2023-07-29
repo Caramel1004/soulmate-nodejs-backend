@@ -9,6 +9,10 @@ const workSpaceSchema = new Schema({
         ref: 'Channel',
         required: true
     },
+    open: {
+        type: String,
+        default: false
+    },
     workSpaceName: {
         type: String,
         required: true

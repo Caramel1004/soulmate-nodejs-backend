@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import redisClient from './redis.js';
-import { promisify } from 'util';
 import { VerificationTokenError } from '../error/error.js';
 import SocketIO from '../socket.js';
 
@@ -58,10 +57,11 @@ export default {
                                 algorithm: 'HS256',
                                 expiresIn: '1h'
                             });
-
+                            console.log('newAccessToken: ',newAccessToken);
                             const socketIO = SocketIO.getSocketIO()
-                            socketIO.emit('accessToken',{
-                                accessToken: newAccessToken
+                            socketIO.emit('accessToken', newAccessToken => {
+                                console.log('데이터 전달');
+                                return newAccessToken;
                             });
 
                             return decodedToken;
@@ -70,6 +70,7 @@ export default {
                         throw new VerificationTokenError('Redis에 일치하는 리프레시 토큰이 없습니다.');
                     }
                 } catch (err) {
+                    console.log('리프레쉬 토큰 만료!!');
                     // 인증토큰 리프레시토큰 둘다 만료 되었다면 로그인 최종 에러 던짐
                     throw err;
                 }
