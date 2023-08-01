@@ -289,10 +289,10 @@ const channelController = {
     postCreateWorkSpace: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;
+            console.log(channelId);
             const reqUserId = req.userId;
-            const workSpaceName = req.body.workSpaceName;
 
-            const data = await channelService.postCreateWorkSpace(channelId, reqUserId, workSpaceName, next);
+            const data = await channelService.postCreateWorkSpace(channelId, reqUserId, req.body, next);
 
             hasReturnValue(data);
 

@@ -373,7 +373,7 @@ const channelService = {
                         }
                     }
                 });
-            
+
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const idx = chatRoom.users.indexOf(userId);
                 if (idx !== -1) {
@@ -416,14 +416,12 @@ const channelService = {
         }
     },
     // 10. 워크스페이스 생성
-    postCreateWorkSpace: async (channelId, reqUserId, workSpaceName, next) => {
+    postCreateWorkSpace: async (channelId, reqUserId, body, next) => {
         try {
+            body.channelId = channelId;
+            body.users = [reqUserId];
             // 1. 워크스페이스 생성
-            const workSpace = await WorkSpace.create({
-                channelId: channelId,
-                workSpaceName: workSpaceName,
-                users: [reqUserId]
-            })
+            const workSpace = await WorkSpace.create(body)
 
             hasWorkSpace(workSpace);
 
