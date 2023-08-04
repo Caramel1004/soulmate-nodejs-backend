@@ -13,6 +13,7 @@ const router = Router();
  * 5. 스크랩 따기
  * 6. 댓글 보기
  * 7. 워크스페이스 설명 코멘트 편집
+ * 8. 워크스페이스 퇴장
  */
 
 // GET /v1/workspace/:channelId/:workspaceId
@@ -24,7 +25,7 @@ router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceCo
 //POST /v1/workspace/reply/:channelId/:workSpaceId
 router.post('/:channelId/:workSpaceId/post/create-reply', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
 
-//POST /v1/workspace/invite/:channelId/:workSpaceId
+//PATCH /v1/workspace/invite/:channelId/:workSpaceId
 router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchAddMemberToWorkSpace);// 4. 워크스페이스에 팀원 초대
 
 //POST /v1/workspace/invite/:channelId/:workSpaceId
@@ -33,5 +34,7 @@ router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceContro
 //GET /v1/workspace/:channelId/:workSpaceId/post/replies
 router.post('/:channelId/:workSpaceId/post/replies', hasJsonWebToken, workspaceController.postGetPostDetailAndRepliesByPostId);// 6. 댓글 보기
 
+//PATCH /v1/workspace/exit/:channelId/:workSpaceId
+router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchExitWorkSpace);// 4. 워크스페이스에 팀원 초대
 
 export default router;

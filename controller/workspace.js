@@ -10,12 +10,13 @@ import SocketIO from '../socket.js';
  * 5. 스크랩 따기
  * 6. 댓글 보기
  * 7. 워크스페이스 설명 코멘트 편집
+ * 8. 워크스페이스 퇴장
  */
 const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
     getLoadWorkspace: async (req, res, next) => {
         try {
-            const data = await workspaceService.getLoadWorkspace(req.params.channelId, req.params.workSpaceId, req.query.sortNum,req.userId, next);
+            const data = await workspaceService.getLoadWorkspace(req.params.channelId, req.params.workSpaceId, req.query.sortNum, req.userId, next);
 
             hasReturnValue(data);
 
@@ -74,9 +75,10 @@ const workspaceController = {
     // 4. 워크스페이스에 팀원 초대
     patchAddMemberToWorkSpace: async (req, res, next) => {
         try {
+            console.log(req.body);
             const data = await workspaceService.patchAddMemberToWorkSpace(req.body.selectedId, req.params.channelId, req.params.workSpaceId, next);
             hasReturnValue(data);
-            
+
             res.status(data.status.code).json({
                 status: data.status,
                 workSpace: data.workSpace
@@ -99,7 +101,21 @@ const workspaceController = {
         } catch (err) {
             next(err);
         }
-    }
+    },
+    // 8. 워크스페이스 퇴장
+    patchExitWorkSpace: async (req, res, next) => {
+        try {
+            const data = await workspaceService.patchExitWorkSpace(userId, req.body.channelId, req.body.workSpaceId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                workSpace: data.workSpace
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 }
 
 export default workspaceController
