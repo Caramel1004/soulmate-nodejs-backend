@@ -17,7 +17,7 @@ const workSpaceSchema = new Schema({
         type: String,
         required: true
     },
-    comment : {
+    comment: {
         type: String
     },
     posts: [

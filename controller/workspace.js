@@ -102,15 +102,30 @@ const workspaceController = {
             next(err);
         }
     },
+    // 7. 워크스페이스 설명 코멘트 편집
+    patchEditComment: async (req, res, next) => {
+        try {
+            const data = await workspaceService.patchEditComment(req.userId, req.body.channelId, req.body.workSpaceId, req.body.comment, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     // 8. 워크스페이스 퇴장
     patchExitWorkSpace: async (req, res, next) => {
         try {
-            const data = await workspaceService.patchExitWorkSpace(userId, req.body.channelId, req.body.workSpaceId, next);
+            console.log(req.body.channelId)
+            console.log(req.body.workSpaceId)
+            const data = await workspaceService.patchExitWorkSpace(req.userId, req.body.channelId, req.body.workSpaceId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 status: data.status,
-                workSpace: data.workSpace
+                exitUser: data.exitUser
             });
         } catch (err) {
             next(err);

@@ -221,13 +221,44 @@ const workspaceService = {
             next(err);
         }
     },
+    // 7. 워크스페이스 설명 코멘트 편집
+    patchEditComment: async (userId, channelId, workSpaceId, comment,next) => {
+        try {
+            /** 1) 현재 퇴장하려는 워크스페이스 조회
+              * @params {ObjectId} 요청한 채널 아이디 
+              * @params {ObjectId} 요청한 워크스페이스 아이디 
+              * @return {object} (property)워크스페이스에 참여하고있는 유저들
+              * */
+            const matchedWorkSpace = await WorkSpace.findOne({
+                _id: workSpaceId,
+                channelId: channelId
+            })
+                .select({
+                    comment: 1,
+                    admins: 1,
+                    creator: 1
+                });
+
+            hasWorkSpace(matchedWorkSpace);
+            
+            matchedWorkSpace.comment = comment;
+
+            await matchedWorkSpace.save();
+
+            return {
+                status: successType.S02.s200
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
     // 8. 워크스페이스 퇴장
     patchExitWorkSpace: async (userId, channelId, workSpaceId, next) => {
         try {
             /** 1) 현재 퇴장하려는 워크스페이스 조회
               * @params {ObjectId} 요청한 채널 아이디 
               * @params {ObjectId} 요청한 워크스페이스 아이디 
-              * @return {object} (property)매칭된 유저의 관심채널 배열
+              * @return {object} (property)워크스페이스에 참여하고있는 유저들
               * */
             const matchedWorkSpace = await WorkSpace.findOne({
                 _id: workSpaceId,
@@ -243,22 +274,21 @@ const workspaceService = {
             hasWorkSpace(matchedWorkSpace);
             const exitUser = matchedWorkSpace.users.find(user => user._id.toString() === userId.toString())
 
-            // 2) 채팅방 스키마에 해당 유저 필터링 -> 제거
-            const filteredChatRoomUsers = matchedChatRoom.users.filter(user => user._id.toString() !== userId.toString());
-            console.log(filteredChatRoomUsers);
+            // 2) 워크스페이스 스키마에 해당 유저 필터링 -> 제거
+            const filteredWorkSpaceUsers = matchedWorkSpace.users.filter(user => user._id.toString() !== userId.toString());
+            console.log(matchedWorkSpace);
 
-            if (filteredChatRoomUsers.length <= 0) {
-                // 채널에서 해당 채팅방 제거
-                const channel = await Channel.findById(channelId).select({ chatRooms: 1 });
-                channel.chatRooms = [...channel.chatRooms.filter(chatRoom => chatRoom.toString() !== matchedChatRoom._id.toString())];
+            if (filteredWorkSpaceUsers.length <= 0) {
+                // 채널에서 해당 워크스페이스 제거
+                const channel = await Channel.findById(channelId).select({ workSpaces: 1 });
+                channel.workSpaces = [...channel.workSpaces.filter(workSpace => workSpace.toString() !== matchedWorkSpace._id.toString())];
                 await channel.save();
 
-                // 채팅룸 스키마에서 해당 채팅방 삭제
-                await ChatRoom.deleteOne({ _id: matchedChatRoom._id });
+                // 워크스페이스 스키마에서 해당 워크스페이스 삭제
+                await WorkSpace.deleteOne({ _id: matchedWorkSpace._id });
             } else {
-                matchedChatRoom.users = [...filteredChatRoomUsers];
-                matchedChatRoom.chats.push(chatObj._id);
-                await matchedChatRoom.save();
+                matchedWorkSpace.users = [...filteredWorkSpaceUsers];
+                await matchedWorkSpace.save();
             }
 
             return {

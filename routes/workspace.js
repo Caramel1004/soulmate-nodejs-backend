@@ -34,7 +34,10 @@ router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceContro
 //GET /v1/workspace/:channelId/:workSpaceId/post/replies
 router.post('/:channelId/:workSpaceId/post/replies', hasJsonWebToken, workspaceController.postGetPostDetailAndRepliesByPostId);// 6. 댓글 보기
 
+//PATCH /v1/workspace/edit-comment/:channelId/:workSpaceId
+router.patch('/edit-comment/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditComment);// 7. 워크스페이스 설명 코멘트 편집
+
 //PATCH /v1/workspace/exit/:channelId/:workSpaceId
-router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchExitWorkSpace);// 4. 워크스페이스에 팀원 초대
+router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchExitWorkSpace);// 8. 워크스페이스 퇴장
 
 export default router;

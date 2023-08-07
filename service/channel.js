@@ -420,6 +420,8 @@ const channelService = {
         try {
             body.channelId = channelId;
             body.users = [reqUserId];
+            body.admins = [reqUserId];
+            body.creator = reqUserId;
             // 1. 워크스페이스 생성
             const workSpace = await WorkSpace.create(body)
 
