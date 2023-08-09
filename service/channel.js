@@ -451,8 +451,23 @@ const channelService = {
                 select({
                     _id: 1,
                     channelId: 1,
+                    open: 1,
                     workSpaceName: 1,
-                    users: 1
+                    users: 1,
+                    posts: 1
+                })
+                .populate({
+                    path: 'posts',
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        },
+                        limit: 2
+                    },
+                    populate: {
+                        path: 'creator',
+                        select: 'name'
+                    }
                 });
 
             const userWorkSpaces = workSpaceList.filter(workSpace => {
@@ -461,9 +476,13 @@ const channelService = {
                     return workSpace;
                 }
             });
+
+            const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'true');
+
             return {
                 status: successType.S02.s200,
-                workSpaces: userWorkSpaces
+                workSpaces: userWorkSpaces,
+                openWorkSpaces: openWorkSpaces
             }
         } catch (err) {
             next(err);

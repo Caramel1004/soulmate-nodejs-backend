@@ -14,10 +14,10 @@ const postSchema = new Schema({
     imageUrl: {
         type: String
     },
-    content: [{
+    content: {
         type: String,
         required: true
-    }],
+    },
     creator: [{
         type: Schema.Types.ObjectId,
         ref: 'User'

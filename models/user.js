@@ -23,6 +23,20 @@ const userSchema = new Schema({
         type: String,
         default: 'https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/309/59932b0eb046f9fa3e063b8875032edd_crop.jpeg'
     },
+    phone: {
+        type: String
+    },
+    affiliation: {
+        company: {
+            type: String
+        },
+        university: {
+            type: String
+        },
+        team: {
+            type: String
+        }
+    },
     channels: [
         {
             type: Schema.Types.ObjectId,

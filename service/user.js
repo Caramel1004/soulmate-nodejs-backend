@@ -87,6 +87,8 @@ const userService = {
                     email: 1,
                     name: 1,
                     photo: 1,
+                    gender: 1,
+                    phone: 1,
                     wishChannels: 1
                 });
 

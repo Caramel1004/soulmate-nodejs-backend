@@ -312,7 +312,8 @@ const channelController = {
 
             res.status(data.status.code).json({
                 status: data.status,
-                workSpaces: data.workSpaces
+                workSpaces: data.workSpaces,
+                openWorkSpaces: data.openWorkSpaces
             })
         } catch (err) {
             next(err);

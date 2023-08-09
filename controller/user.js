@@ -1,3 +1,4 @@
+import kakaoAPI from '../API/kakaoAPI.js';
 import User from '../models/user.js'
 import userService from '../service/user.js'
 
@@ -39,6 +40,18 @@ const userController = {
                 refreshToken: refreshToken,
                 name: name,
                 photo: photo
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 3. 카카오 동의페이지
+    getKakaoAccountPage: async (req, res, next) => {
+        try {
+            const data = await kakaoAPI.getKakaoAccountPage(next);
+            hasReturnValue(data);
+            res.status(200).json({
+                data: data
             });
         } catch (err) {
             next(err);
