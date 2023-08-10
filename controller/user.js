@@ -45,14 +45,28 @@ const userController = {
             next(err);
         }
     },
-    // 3. 카카오 동의페이지
-    getKakaoAccountPage: async (req, res, next) => {
+    // 3. 카카오 로그인 페이지 URL 
+    getKakaoLoginPageURL: async (req, res, next) => {
         try {
-            const data = await kakaoAPI.getKakaoAccountPage(next);
+            const data = await kakaoAPI.getKakaoLoginPageURL(res, next);
             hasReturnValue(data);
-            res.status(200).json({
-                data: data
+            console.log(data.url);
+            res.status(302).json({
+                url: data.url
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 4. 카카오 토큰 받기
+    postSignUpByKakaoAccount: async (req, res, next) => {
+        try {
+            const data = await kakaoAPI.postSignUpByKakaoAccount(next);
+            // hasReturnValue(data);
+            
+            // res.status(data.status.code).json({
+            //     status: data.status
+            // });
         } catch (err) {
             next(err);
         }
