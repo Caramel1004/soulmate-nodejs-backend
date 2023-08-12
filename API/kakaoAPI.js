@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { successType, temporaryRedirectType} from '../util/status.js';
 
 const kakaoAPI = {
     // 1. 카카오 동의페이지
@@ -11,7 +12,7 @@ const kakaoAPI = {
             console.log(response);
             return {
                 url: response.url,
-                status:
+                status: temporaryRedirectType.T03.t302
             };
         } catch (err) {
             next(err);

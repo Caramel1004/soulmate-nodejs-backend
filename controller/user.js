@@ -48,11 +48,12 @@ const userController = {
     // 3. 카카오 로그인 페이지 URL 
     getKakaoLoginPageURL: async (req, res, next) => {
         try {
-            const data = await kakaoAPI.getKakaoLoginPageURL(res, next);
+            const data = await kakaoAPI.getKakaoLoginPageURL(next);
             hasReturnValue(data);
-            console.log(data.url);
-            res.status(302).json({
-                url: data.url
+        
+            res.status(data.status.code).json({
+                url: data.url,
+                status: data.status
             });
         } catch (err) {
             next(err);

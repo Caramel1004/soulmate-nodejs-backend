@@ -14,6 +14,17 @@ export const successType = {
     }
 }
 
+// 일시적 이동 상태
+export const temporaryRedirectType = {
+    T03: {
+        t302: {
+            code: 302,
+            status: 'Found',
+            msg: '일시적 이동 상태 입니다.'
+        }
+    }
+}
+
 //응답 실패(오류)
 export const errorType = {
     E04: {
