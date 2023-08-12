@@ -8,7 +8,11 @@ const kakaoAPI = {
                 method: 'GET',
             });
 
-            return response;
+            console.log(response);
+            return {
+                url: response.url,
+                status:
+            };
         } catch (err) {
             next(err);
         }
