@@ -50,7 +50,7 @@ const userController = {
         try {
             const data = await kakaoAPI.getKakaoLoginPageURL(next);
             hasReturnValue(data);
-        
+            console.log(data);
             res.status(data.status.code).json({
                 url: data.url,
                 status: data.status
@@ -60,14 +60,17 @@ const userController = {
         }
     },
     // 4. 카카오 토큰 받기
-    postSignUpByKakaoAccount: async (req, res, next) => {
+    postRequestTokenToKakao: async (req, res, next) => {
         try {
-            const data = await kakaoAPI.postSignUpByKakaoAccount(next);
-            // hasReturnValue(data);
-            
-            // res.status(data.status.code).json({
-            //     status: data.status
-            // });
+            const { code } = req.body;
+            console.log(code);
+            const data = await kakaoAPI.postRequestTokenToKakao(code, next);
+            hasReturnValue(data);
+            console.log(data);
+            res.status(data.status.code).json({
+                status: data.status,
+                body: data.body
+            });
         } catch (err) {
             next(err);
         }

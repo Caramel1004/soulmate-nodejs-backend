@@ -19,24 +19,30 @@ const kakaoAPI = {
         }
     },
     // 4. 카카오 토큰 받기
-    postSignUpByKakaoAccount: async next => {
+    postRequestTokenToKakao: async (code, next) => {
         try {
             const response = await fetch(`https://kauth.kakao.com/oauth/token`,{
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    grant_type: '1IKam3MmVT7_N6Ey05KnK5YhXH50gGXtXznLjCRwSkUi10Pb_MKYem0k-YbqDIY-kt7S_QopyV4AAAGJ2tNq5w',
+                body: {
+                    grant_type: code,
                     client_id: process.env.KAKAO_REST_API_KEY,
-                    redirect_uri: 'http://localhost:3000',
-                    code: '1IKam3MmVT7_N6Ey05KnK5YhXH50gGXtXznLjCRwSkUi10Pb_MKYem0k-YbqDIY-kt7S_QopyV4AAAGJ2tNq5w'
-                })
+                    redirect_uri: process.env.REDIRECT_URI,
+                    code: code
+                }
             });
-            console.log(response);
             const data = await response.json();
-            
-            return data;
+
+            return {
+                status: {
+                    code: response.status,
+                    status: response.statusText,
+                    msg: '카카오로부터 인증 실패'
+                },
+                body: data
+            };
         } catch (err) {
             next(err);
         }
