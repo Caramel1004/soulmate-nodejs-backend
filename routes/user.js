@@ -14,7 +14,10 @@ router.post('/login', userController.postLogin);// 2. 로그인 요청한 유저
 router.get('/kakao/oauth/authorize', userController.getKakaoLoginPageURL);// 3. 카카오 로그인 페이지 URL get
 
 //POST /v1/user/kakao/oauth/token
-router.post('/kakao/oauth/token', userController.postRequestTokenToKakao);
+router.post('/kakao/oauth/token', userController.postRequestTokenToKakao);// 4. 카카오에 토큰 요청
+
+//POST /v1/user/kakao/user-info/me
+router.post('/kakao/user-info/me', userController.getRequestUserInfoByAccessToken);// 5. 카카오 유저 정보 조회
 
 //GET /v1/user/userInfo/:name
 router.post('/userInfo/:name', userController.getUserInfo);// 3. 유저 조회
