@@ -1,5 +1,4 @@
 import kakaoAPI from '../API/kakaoAPI.js';
-import User from '../models/user.js'
 import userService from '../service/user.js'
 
 import { hasReturnValue } from '../validator/valid.js'
@@ -77,18 +76,30 @@ const userController = {
             next(err);
         }
     },
-    // 5. 카카오 유저 정보 조회
-    getRequestUserInfoByAccessToken: async (req, res, next) => {
+    // 5. 카카오 계정으로 회원가입 or 로그인 -> 계정 등록 안되있으면 회원가입후 로그인 진행
+    postSignUpOrLoginBySNSAccount: async (req, res, next) => {
         try {
-            const accessToken = req.body.access_token;
-            console.log('accessToken: ',accessToken)
-            const data = await kakaoAPI.getRequestUserInfoByAccessToken(accessToken, next);
-            hasReturnValue(data);
+            const company = req.body.company;
+            let snsResData;
 
-            console.log(data);
+            if (company === 'kakao') {
+                snsResData = await kakaoAPI.getRequestUserInfoByAccessToken(req.body.access_token, next);
+            } else if (company === 'naver') {
+
+            } else if (company === 'google') {
+
+            }
+
+            hasReturnValue(snsResData);
+
+            const data = await userService.postSignUpOrLoginBySNSAccount(snsResData.body, next);
+
             res.status(data.status.code).json({
                 status: data.status,
-                body: data.body
+                token: data.token,
+                refreshToken: data.refreshToken,
+                name: data.name,
+                photo: data.photo
             });
         } catch (err) {
             next(err);

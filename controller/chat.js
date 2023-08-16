@@ -1,7 +1,6 @@
 import chatService from '../service/chat.js'
 
 import Channel from '../models/channel.js';
-import User from '../models/user.js';
 import { ChatRoom, Chat } from '../models/chat-room.js'
 
 import { successType, errorType } from '../util/status.js';

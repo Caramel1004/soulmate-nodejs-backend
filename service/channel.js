@@ -1,5 +1,5 @@
 import Channel from '../models/channel.js';
-import User from '../models/user.js';
+import { User } from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 import { WorkSpace } from '../models/workspace.js';
 

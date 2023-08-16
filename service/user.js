@@ -1,10 +1,9 @@
 import jsonWebToken from '../util/jwt.js'
 import Channel from '../models/channel.js';
-import User from '../models/user.js';
-import { ChatRoom } from '../models/chat-room.js';
 
 import { successType, errorType } from '../util/status.js';
 import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
+import { User, SNS_Account } from '../models/user.js';
 
 
 const userService = {
@@ -106,7 +105,56 @@ const userService = {
         } catch (err) {
             next(err);
         }
-    }
+    },
+    // 5. SNS 계정으로 회원가입 or 로그인
+    postSignUpOrLoginBySNSAccount: async (snsResData, next) => {
+        try {
+            console.log(snsResData)
+            // 1. 카카오계정 스키마에서 해당 계정이 있는지 조회
+            const hasSocialAccount = await SNS_Account.exists({ id: snsResData.id });
+            console.log(hasSocialAccount);
+            // 2. 가입이 안되있으면 회원가입 되어있으면 로그인
+            let user;
+            if (hasSocialAccount) {
+                user = await User.findOne({
+                    snsConnectedAccount: {
+                        account: snsResData.id
+                    }
+                })
+                hasUser(user);
+            } else {
+                account = await new SNS_Account.create({
+                    body: snsResData
+                });
+
+                user = await new User.create({
+                    email: snsResData.kakao_account || null,
+                    name: snsResData.properties.nickname,
+                    password: null,
+                    photo: snsResData.properties.profile_image,
+                    gender: snsResData.kakao_account || null
+                });
+            }
+            
+            hasUser(user);
+
+            // jwt 발급
+            const token = await jsonWebToken.signToken(user);
+
+            // 토큰 발급 유무
+            hasAuthorizationToken(token);
+
+            return {
+                status: successType.S02.s200,
+                token: token.accessToken,
+                refreshToken: token.refreshToken,
+                photo: user.photo,
+                name: user.name
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
 }
 
 export default userService;

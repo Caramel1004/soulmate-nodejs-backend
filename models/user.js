@@ -16,8 +16,7 @@ const userSchema = new Schema({
         required: true
     },
     gender: {
-        type: String,
-        required: true
+        type: String
     },
     photo: {
         type: String,
@@ -26,15 +25,13 @@ const userSchema = new Schema({
     phone: {
         type: String
     },
-    affiliation: {
+    snsConnectedAccount: {
         company: {
             type: String
         },
-        university: {
-            type: String
-        },
-        team: {
-            type: String
+        account: {
+            type: Schema.Types.ObjectId,
+            ref: 'snsAccount'
         }
     },
     channels: [
@@ -54,4 +51,11 @@ const userSchema = new Schema({
     }
 }, { timestamps: true });
 
-export default mongoose.model('User', userSchema);
+const snsAccountSchema = new Schema({
+    body: {
+        type: Object,
+        required: true
+    }
+}, { timestamps: true });
+export const User = mongoose.model('User', userSchema);
+export const SNS_Account = mongoose.model('snsAccount', snsAccountSchema);
