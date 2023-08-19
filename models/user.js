@@ -27,11 +27,13 @@ const userSchema = new Schema({
     },
     snsConnectedAccount: {
         company: {
-            type: String
+            type: String,
+            required: true
         },
         account: {
             type: Schema.Types.ObjectId,
-            ref: 'snsAccount'
+            ref: 'snsAccount',
+            required: true
         }
     },
     channels: [
@@ -52,10 +54,19 @@ const userSchema = new Schema({
 }, { timestamps: true });
 
 const snsAccountSchema = new Schema({
+    id: {
+        type: String,
+        required: true
+    },
+    company: {
+        type: String,
+        required: true
+    },
     body: {
         type: Object,
         required: true
     }
 }, { timestamps: true });
+
 export const User = mongoose.model('User', userSchema);
 export const SNS_Account = mongoose.model('snsAccount', snsAccountSchema);

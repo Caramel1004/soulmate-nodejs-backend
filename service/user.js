@@ -1,10 +1,10 @@
 import jsonWebToken from '../util/jwt.js'
 import Channel from '../models/channel.js';
 
+import db from '../util/transaction.js'
 import { successType, errorType } from '../util/status.js';
 import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
 import { User, SNS_Account } from '../models/user.js';
-
 
 const userService = {
     // 1. 회원 가입
@@ -61,6 +61,7 @@ const userService = {
                     name: 1,
                     photo: 1
                 });
+            console.log(matchedUser)
             hasUser(matchedUser);
 
             const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
@@ -107,35 +108,44 @@ const userService = {
         }
     },
     // 5. SNS 계정으로 회원가입 or 로그인
-    postSignUpOrLoginBySNSAccount: async (snsResData, next) => {
+    postSignUpOrLoginBySNSAccount: async (snsResData, company, next) => {
         try {
             console.log(snsResData)
             // 1. 카카오계정 스키마에서 해당 계정이 있는지 조회
-            const hasSocialAccount = await SNS_Account.exists({ id: snsResData.id });
-            console.log(hasSocialAccount);
+            const snsAccount = await SNS_Account.findOne({ id: snsResData.id });
+            console.log('snsAccount: ', snsAccount);
             // 2. 가입이 안되있으면 회원가입 되어있으면 로그인
             let user;
-            if (hasSocialAccount) {
-                user = await User.findOne({
-                    snsConnectedAccount: {
-                        account: snsResData.id
-                    }
-                })
-                hasUser(user);
+            if (snsAccount) {
+                user = await User.findOne({ password: snsResData.id });
+                if (!user) {
+                    await SNS_Account.deleteOne({ id: snsResData.id })
+                }
             } else {
-                account = await new SNS_Account.create({
+                const session = await db.startSession();
+                session.startTransaction();
+                const account = SNS_Account.create({
+                    id: snsResData.id,
+                    company: company,
                     body: snsResData
-                });
-
-                user = await new User.create({
-                    email: snsResData.kakao_account || null,
+                }, { session: session });
+                // await account.save();
+                user = await User.create({
+                    snsMemberId: snsResData.id,
+                    email: snsResData.kakao_account.email || null,
                     name: snsResData.properties.nickname,
-                    password: null,
                     photo: snsResData.properties.profile_image,
-                    gender: snsResData.kakao_account || null
-                });
+                    gender: snsResData.kakao_account.gender || null,
+                    snsConnectedAccount: {
+                        company: company,
+                        accoun: account._id
+                    }
+                }, { session: session });
+                await session.abortTransaction();
+                // await session.withTransaction(async () => {
+                // })
+                session.endSession();
             }
-            
             hasUser(user);
 
             // jwt 발급
@@ -152,6 +162,7 @@ const userService = {
                 name: user.name
             }
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },

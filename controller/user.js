@@ -79,7 +79,8 @@ const userController = {
     // 5. 카카오 계정으로 회원가입 or 로그인 -> 계정 등록 안되있으면 회원가입후 로그인 진행
     postSignUpOrLoginBySNSAccount: async (req, res, next) => {
         try {
-            const company = req.body.company;
+            console.log('req.body: ', req.body);
+            const { company } = req.body;
             let snsResData;
 
             if (company === 'kakao') {
@@ -92,7 +93,7 @@ const userController = {
 
             hasReturnValue(snsResData);
 
-            const data = await userService.postSignUpOrLoginBySNSAccount(snsResData.body, next);
+            const data = await userService.postSignUpOrLoginBySNSAccount(snsResData.body, company, next);
 
             res.status(data.status.code).json({
                 status: data.status,
@@ -109,6 +110,7 @@ const userController = {
     getUserInfo: async (req, res, next) => {
         try {
             const name = req.params.name;
+            console.log(name)
             const channelId = req.body.channelId;
 
             const data = await userService.getUserInfo(channelId, name, next);
