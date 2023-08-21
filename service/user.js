@@ -25,12 +25,16 @@ const userService = {
     // 2. 회원 로그인
     postLogin: async (email, pwd, next) => {
         try {
-            const user = await User.findOne({ email: email });
+            const user = await User.findOne({ email: email })
+            .populate('channels',{
+                channelName: 1,
+                thumbnail: 1
+            });
 
             // 사용자 존재유무 체크
             hasUser(user);
 
-            // 나중에 bcrypt 추가할 예정
+            // 나중에 bcrypt 추가할 예정s
             // 비밀번호 일치하는지 체크
             vaildatePasswordOfUser(user.password, pwd);
 
@@ -45,6 +49,7 @@ const userService = {
                 refreshToken: token.refreshToken,
                 photo: user.photo,
                 name: user.name,
+                channels: user.channels,
                 status: successType.S02.s200
             }
         } catch (err) {
@@ -122,29 +127,23 @@ const userService = {
                     await SNS_Account.deleteOne({ id: snsResData.id })
                 }
             } else {
-                const session = await db.startSession();
-                session.startTransaction();
-                const account = SNS_Account.create({
+                const account = await SNS_Account.create({
                     id: snsResData.id,
                     company: company,
                     body: snsResData
-                }, { session: session });
-                // await account.save();
+                });
+                console.log('account: ', account)
                 user = await User.create({
-                    snsMemberId: snsResData.id,
                     email: snsResData.kakao_account.email || null,
                     name: snsResData.properties.nickname,
+                    password: snsResData.id,
                     photo: snsResData.properties.profile_image,
                     gender: snsResData.kakao_account.gender || null,
                     snsConnectedAccount: {
                         company: company,
-                        accoun: account._id
+                        account: account._id
                     }
-                }, { session: session });
-                await session.abortTransaction();
-                // await session.withTransaction(async () => {
-                // })
-                session.endSession();
+                });
             }
             hasUser(user);
 

@@ -1,6 +1,3 @@
-import Channel from '../models/channel.js';
-import { ChatRoom } from '../models/chat-room.js';
-
 import channelService from '../service/channel.js'
 
 import { hasReturnValue } from '../validator/valid.js'
@@ -215,35 +212,20 @@ const channelController = {
     // 6-2. 해당 채널에서 퇴장
     patchExitChannel: async (req, res, next) => {
         try {
-            // 1. 채널스키마에서 해당 유저 삭제
             const userId = req.userId;
             const channelId = req.body.channelId;
-            console.log('channelId: ', channelId);
-            const matchedChannel = await Channel.findById(channelId);
 
-            const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
+            const data = await channelService.patchExitChannel(userId, channelId, next);
 
-            matchedChannel.members = [...updatedUsers];
+            hasReturnValue(data);
 
-            console.log('updatedUsers: ', updatedUsers);
-            await matchedChannel.save();
-
-            // 2. 유저스키마에서 해당 채널 삭제
-            const exitedUser = await User.findById(userId);
-            const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
-
-            exitedUser.channels = [...updatedChannels];
-            await exitedUser.save();
-
-            res.status(200).json({
-                msg: '해당 유저가 채널에서 퇴장하였습니다.',
-                exitedUser: exitedUser
-            })
+            console.log(data);
+            res.status(data.status.code).json({
+                status: data.status,
+                exitedUser: data.exitedUser
+            });
         } catch (err) {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+            next(err)
         }
     },
     // 8. 채팅방 목록 조회
@@ -255,12 +237,11 @@ const channelController = {
             const data = await channelService.getChatRoomListByChannelAndUserId(userId, channelId, next);
 
             hasReturnValue(data);
-
+            
             res.status(data.status.code).json({
                 status: data.status,
                 chatRooms: data.chatRooms
             });
-
         } catch (err) {
             next(err);
         }

@@ -27,13 +27,11 @@ const userSchema = new Schema({
     },
     snsConnectedAccount: {
         company: {
-            type: String,
-            required: true
+            type: String
         },
         account: {
             type: Schema.Types.ObjectId,
-            ref: 'snsAccount',
-            required: true
+            ref: 'snsAccount'
         }
     },
     channels: [

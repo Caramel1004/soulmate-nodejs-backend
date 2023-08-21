@@ -26,6 +26,7 @@ import channel from '../models/channel.js';
 * 1. 채널아이디로 해당 채널 조회 -> 채널 세부페이지
 *      1-1. 채널에 팀원 초대
 *      1-2. 채널 세부정보
+*      1-3. 채널 퇴장
 * 2. 워크스페이스 목록 조회
 *      2-1. 워크 스페이스 목록중 하나 클릭 -> 세부정보 로딩
 *      2-2. 게시물 로딩
@@ -163,6 +164,42 @@ const channelService = {
                 status: status,
                 action: action
             };
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** 1-3. 채널 퇴장
+     * @params {ObjectId} channelId: 채널 아이디
+     * @params {ObjectId} userId: 요청한 유저 아이디
+     * @params {function} next: 다음 미들웨어 실행 함수
+     * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
+    */
+    patchExitChannel: async (userId, channelId, next) => {
+        try {
+            const matchedChannel = await Channel.findById(channelId);
+
+            const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
+
+            if (updatedUsers.length <= 0) {
+                await Channel.deleteOne({ _id: channelId });
+            } else {
+                matchedChannel.members = [...updatedUsers];
+
+                console.log('updatedUsers: ', updatedUsers);
+                await matchedChannel.save();
+            }
+
+            // 2. 유저스키마에서 해당 채널 삭제
+            const exitedUser = await User.findById(userId);
+            const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
+
+            exitedUser.channels = [...updatedChannels];
+            await exitedUser.save();
+
+            return {
+                status: successType.S02.s200,
+                exitedUser: exitedUser
+            }
         } catch (err) {
             next(err);
         }

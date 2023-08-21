@@ -31,6 +31,7 @@ const userController = {
             const refreshToken = data.refreshToken;
             const photo = data.photo;
             const name = data.name;
+            const channels = data.channels;
             const status = data.status;
 
             res.status(status.code).json({
@@ -38,7 +39,8 @@ const userController = {
                 token: token,
                 refreshToken: refreshToken,
                 name: name,
-                photo: photo
+                photo: photo,
+                channels: channels
             });
         } catch (err) {
             next(err);
