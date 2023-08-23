@@ -26,7 +26,7 @@ export default {
 
             //set(key,value) 키값을 유저 doc 아이디로 저장
             //refreshToken을 redis에 저장 관리
-            await redisClient.v4.set(user._id.toString(), refreshToken);
+            // await redisClient.v4.set(user._id.toString(), refreshToken);
 
             return {
                 accessToken: accessToken,

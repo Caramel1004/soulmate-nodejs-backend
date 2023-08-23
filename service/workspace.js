@@ -55,6 +55,21 @@ const workspaceService = {
 
             hasWorkSpace(workSpace);
 
+            workSpace.posts.map(post => {
+                const pp = {};
+                if (post.creator._id.toString() === userId.toString()) {
+                    console.log('일치');
+                    post.isCreator = true;
+                } else {
+                    post.isCreator = false;
+                }
+                console.log(post)
+                return post;
+            });
+
+            // console.log(workSpace.posts);
+            workSpace.posts[0].isCreator = true 
+
             // 2) 워크스페이스에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
             const workSpaceUser = workSpace.users.find(user => user._id.toString() === userId.toString());
 
@@ -222,7 +237,7 @@ const workspaceService = {
         }
     },
     // 7. 워크스페이스 설명 코멘트 편집
-    patchEditComment: async (userId, channelId, workSpaceId, comment,next) => {
+    patchEditComment: async (userId, channelId, workSpaceId, comment, next) => {
         try {
             /** 1) 현재 퇴장하려는 워크스페이스 조회
               * @params {ObjectId} 요청한 채널 아이디 
@@ -240,7 +255,7 @@ const workspaceService = {
                 });
 
             hasWorkSpace(matchedWorkSpace);
-            
+
             matchedWorkSpace.comment = comment;
 
             await matchedWorkSpace.save();
