@@ -54,17 +54,17 @@ const workspaceService = {
                 });
 
             hasWorkSpace(workSpace);
-
+            console.log(workSpace.posts);
+            // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
             const postObjList = workSpace.posts.map(post => {
                 const pp = {};
                 if (post.creator._id.toString() === userId.toString()) {
-                    console.log('일치');
-                    post.isCreator = true;
+                    // console.log('일치');
+                    post._doc.isCreator = true;
                 } else {
-                    console.log('일치 않함')
-                    post.isCreator = false;
+                    // console.log('일치 않함')s
+                    post._doc.isCreator = false;
                 }
-                console.log(post)
                 return post;
             });
 
@@ -355,7 +355,7 @@ const workspaceService = {
     // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
     patchEditPostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, body, next) => {
         try {
-            const { postId, content } = req.body;
+            const { postId, content } = body;
             /** 1) 해당 게시물의 생성자와 수정요청한 유저랑 일치하는지 확인
               * @params {ObjectId} 요청한 게시물 아이디 
               * @return {object} (property)워크스페이스에 참여하고있는 유저들

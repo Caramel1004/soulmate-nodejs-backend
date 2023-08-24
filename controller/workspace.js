@@ -148,6 +148,7 @@ const workspaceController = {
     // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
     patchEditPostByCreatorInWorkSpace: async (req, res, next) => {
         try {
+            console.log(req.body)
             const data = await workspaceService.patchEditPostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.body, next);
             hasReturnValue(data);
 
