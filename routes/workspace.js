@@ -14,13 +14,15 @@ const router = Router();
  * 6. 댓글 보기
  * 7. 워크스페이스 설명 코멘트 편집
  * 8. 워크스페이스 퇴장
+ * 9. 워크스페이스에서 해당 유저의 게시물 삭제
+ * 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
  */
 
 // GET /v1/workspace/:channelId/:workspaceId
 router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getLoadWorkspace);// 1. 워크스페이스 세부정보 조회
 
 // POST /v1/workspace/create-post/:channelId/:workSpaceId
-router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreatePost);// 2. 자료 및 텍스트 내용 업로드
+router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreatePost);// 2. 게시물 생성
 
 //POST /v1/workspace/reply/:channelId/:workSpaceId
 router.post('/:channelId/:workSpaceId/post/create-reply', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
@@ -39,5 +41,11 @@ router.patch('/edit-comment/:channelId/:workSpaceId', hasJsonWebToken, workspace
 
 //PATCH /v1/workspace/exit/:channelId/:workSpaceId
 router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchExitWorkSpace);// 8. 워크스페이스 퇴장
+
+// DELETE /v1/workspace/delete-post/:channelId/:workSpaceId/:postId
+router.delete('/delete-post/:channelId/:workSpaceId/:postId', hasJsonWebToken, workspaceController.deletePostByCreatorInWorkSpace);// 9. 워크스페이스에서 해당 유저의 게시물 삭제
+
+// PATCH /v1/workspace/edit-post/:channelId/:workSpaceId
+router.patch('/edit-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditPostByCreatorInWorkSpace);// 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
 
 export default router;

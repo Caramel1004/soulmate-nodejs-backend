@@ -55,20 +55,20 @@ const workspaceService = {
 
             hasWorkSpace(workSpace);
 
-            workSpace.posts.map(post => {
+            const postObjList = workSpace.posts.map(post => {
                 const pp = {};
                 if (post.creator._id.toString() === userId.toString()) {
                     console.log('일치');
                     post.isCreator = true;
                 } else {
+                    console.log('일치 않함')
                     post.isCreator = false;
                 }
                 console.log(post)
                 return post;
             });
 
-            // console.log(workSpace.posts);
-            workSpace.posts[0].isCreator = true 
+            console.log(postObjList);
 
             // 2) 워크스페이스에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
             const workSpaceUser = workSpace.users.find(user => user._id.toString() === userId.toString());
@@ -314,6 +314,76 @@ const workspaceService = {
             next(err);
         }
     },
+    // 9. 워크스페이스에서 해당 유저의 게시물 삭제
+    deletePostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, postId, next) => {
+        try {
+            // 1) 해당 게시물의 생성자와 삭제요청한 유저랑 일치하는지 확인
+            const matchedPost = await Post.findById(postId)
+                .select({
+                    creator: 1
+                })
+                .populate('creator');
+
+            hasPost(matchedPost);
+
+            const user = matchedPost.creator._id.toString() === userId.toString() ? matchedPost.creator : null;
+            hasUser(user);
+
+            /** 2) 해당 게시물 삭제
+              * @params {ObjectId} 요청한 게시물 아이디 
+              * @return {object} (property)워크스페이스에 참여하고있는 유저들
+              * */
+            const removedPost = await Post.deleteOne({ _id: postId });
+
+            // 3) 워크스페이스 스키마에 해당 게시물 필터링 -> 제거
+            const workSpace = await workSpace.findOne({
+                _id: workSpaceId,
+                channelId: channelId
+            })
+                .select({ posts: 1 });
+            workSpace.posts = [...workSpace.posts.filter(post => post.toString() !== removedPost._id.toString())];
+            await workSpace.save();
+
+            return {
+                status: successType.S02.s200,
+                removedPost: removedPost
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
+    patchEditPostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, body, next) => {
+        try {
+            const { postId, content } = req.body;
+            /** 1) 해당 게시물의 생성자와 수정요청한 유저랑 일치하는지 확인
+              * @params {ObjectId} 요청한 게시물 아이디 
+              * @return {object} (property)워크스페이스에 참여하고있는 유저들
+              * */
+            const matchedPost = await Post.findById(postId)
+                .select({
+                    content: 1,
+                    creator: 1
+                })
+                .populate('creator');
+
+            hasPost(matchedPost);
+
+            const user = matchedPost.creator._id.toString() === userId.toString() ? matchedPost.creator : null;
+            hasUser(user);
+
+            // 2) 수정된 게시물 내용 저장
+            matchedPost.content = content;
+            await matchedPost.save();
+
+            return {
+                status: successType.S02.s200,
+                updatedPost: matchedPost
+            }
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default workspaceService

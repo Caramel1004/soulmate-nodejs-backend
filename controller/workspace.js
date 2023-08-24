@@ -11,6 +11,8 @@ import SocketIO from '../socket.js';
  * 6. 댓글 보기
  * 7. 워크스페이스 설명 코멘트 편집
  * 8. 워크스페이스 퇴장
+ * 9. 워크스페이스에서 해당 유저의 게시물 삭제
+ * 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
  */
 const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
@@ -118,8 +120,6 @@ const workspaceController = {
     // 8. 워크스페이스 퇴장
     patchExitWorkSpace: async (req, res, next) => {
         try {
-            console.log(req.body.channelId)
-            console.log(req.body.workSpaceId)
             const data = await workspaceService.patchExitWorkSpace(req.userId, req.body.channelId, req.body.workSpaceId, next);
             hasReturnValue(data);
 
@@ -131,6 +131,33 @@ const workspaceController = {
             next(err);
         }
     },
+    // 9. 워크스페이스에서 해당 유저의 게시물 삭제
+    deletePostByCreatorInWorkSpace: async (req, res, next) => {
+        try {
+            const data = await workspaceService.deletePostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.params.postId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                removedPost: data.removedPost
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
+    patchEditPostByCreatorInWorkSpace: async (req, res, next) => {
+        try {
+            const data = await workspaceService.patchEditPostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.body, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default workspaceController
