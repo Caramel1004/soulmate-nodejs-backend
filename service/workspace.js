@@ -2,7 +2,7 @@ import Channel from '../models/channel.js';
 import { WorkSpace, Post, Reply } from '../models/workspace.js'
 
 import { successType, errorType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, hasPost } from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, hasPost, hasReply } from '../validator/valid.js';
 
 /**
  * 1. 워크스페이스 세부정보 조회
@@ -54,16 +54,13 @@ const workspaceService = {
                 });
 
             hasWorkSpace(workSpace);
-            console.log(workSpace.posts);
+
             // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
             const postObjList = workSpace.posts.map(post => {
-                const pp = {};
                 if (post.creator._id.toString() === userId.toString()) {
-                    // console.log('일치');
-                    post._doc.isCreator = true;
+                    post._doc.isCreator = true;// 일치
                 } else {
-                    // console.log('일치 않함')s
-                    post._doc.isCreator = false;
+                    post._doc.isCreator = false;// 불일치
                 }
                 return post;
             });
@@ -146,6 +143,51 @@ const workspaceService = {
             next(err)
         }
     },
+    deleteReplyByCreatorInPost: async (userId, channelId, workSpaceId, postId, replyId, next) => {
+        try {
+            // 1) 해당 워크스페이스 조회
+            const workSpace = await WorkSpace.findOne({
+                _id: workSpaceId,
+                channelId: channelId
+            })
+                .select({ posts: 1 });
+
+            hasWorkSpace(workSpace);
+            hasPost(workSpace.posts.find(post => post.toString() === postId.toString()));// 워크스페이스 스키마에 posts컬럼에 게시물 존재하는지 판단
+
+            // 2) 해당 게시물 조회
+            const matchedPost = await Post.findById(postId)
+                .select({
+                    replies: 1
+                });
+
+            hasPost(matchedPost);
+
+            hasReply(matchedPost.replies.includes(replyId.toString()));// 게시물에 해당 댓글 존재하는지 조회후 존재여부 판단
+
+            const matchedReply = await Reply.findById(replyId)
+                .select({
+                    creator: 1
+                })
+
+            const matchedCreator = matchedReply.creator.toString() === userId.toString() ? matchedReply.creator : null;
+            hasUser(matchedCreator);
+
+            // 3) 해당 댓글 삭제
+            const removedReply = await Reply.deleteOne({ _id: replyId });
+            console.log(removedReply);
+
+            // 4) 해당 게시물에 댓글 컬럼 필터링 -> 제거
+            matchedPost.replies = [...matchedPost.replies.filter(reply => reply.toString() !== replyId.toString())];
+            await matchedPost.save();
+            return {
+                status: successType.S02.s200,
+                updatedPost: matchedPost
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
     // 4. 워크스페이스에 팀원 초대
     patchAddMemberToWorkSpace: async (selectedId, channelId, workSpaceId, next) => {
         try {
@@ -207,7 +249,7 @@ const workspaceService = {
     },
     // 5. 스크랩 따기
     // 6. 댓글 보기
-    postGetPostDetailAndRepliesByPostId: async (postId, next) => {
+    postGetPostDetailAndRepliesByPostId: async (userId, postId, next) => {
         try {
             /**1) 게시물 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
              * @params {objectId} postId: 채널 아이디
@@ -225,9 +267,24 @@ const workspaceService = {
                     populate: {
                         path: 'creator',
                         select: 'name photo'
+                    },
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
                     }
                 });
-            console.log(post)
+
+            // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
+            const replyObjList = post.replies.map(reply => {
+                if (reply.creator._id.toString() === userId.toString()) {
+                    reply._doc.isCreator = true;// 일치
+                } else {
+                    reply._doc.isCreator = false;// 불일치
+                }
+                return reply;
+            });
+
             return {
                 status: successType.S02.s200,
                 post: post
@@ -322,7 +379,9 @@ const workspaceService = {
                 .select({
                     creator: 1
                 })
-                .populate('creator');
+                .populate('creator', {
+                    _id: 1
+                });
 
             hasPost(matchedPost);
 
@@ -336,7 +395,7 @@ const workspaceService = {
             const removedPost = await Post.deleteOne({ _id: postId });
 
             // 3) 워크스페이스 스키마에 해당 게시물 필터링 -> 제거
-            const workSpace = await workSpace.findOne({
+            const workSpace = await WorkSpace.findOne({
                 _id: workSpaceId,
                 channelId: channelId
             })
@@ -379,6 +438,52 @@ const workspaceService = {
             return {
                 status: successType.S02.s200,
                 updatedPost: matchedPost
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 10. 댓글 수정
+    patchEditReplyByCreatorInPost: async (userId, channelId, workSpaceId, body, next) => {
+        try {
+            const { postId, replyId, content } = body;
+            // 1) 해당 워크스페이스 조회
+            const workSpace = await WorkSpace.findOne({
+                _id: workSpaceId,
+                channelId: channelId
+            })
+                .select({ posts: 1 });
+
+            hasWorkSpace(workSpace);
+            hasPost(workSpace.posts.find(post => post.toString() === postId.toString()));// 워크스페이스 스키마에 posts컬럼에 게시물 존재하는지 판단
+
+            // 2) 해당 게시물 조회
+            const matchedPost = await Post.findById(postId)
+                .select({
+                    replies: 1
+                });
+
+            hasPost(matchedPost);
+
+            hasReply(matchedPost.replies.includes(replyId.toString()));// 게시물에 해당 댓글 존재하는지 조회후 존재여부 판단
+
+            const matchedReply = await Reply.findById(replyId)
+                .select({
+                    creator: 1,
+                    content: 1
+                })
+
+            const matchedCreator = matchedReply.creator.toString() === userId.toString() ? matchedReply.creator : null;
+            hasUser(matchedCreator);
+
+            // 3) 해당 댓글 수정
+            matchedReply.content = content;
+            await matchedReply.save();
+            console.log(matchedReply);
+
+            return {
+                status: successType.S02.s200,
+                updatedReply: matchedReply
             }
         } catch (err) {
             next(err);

@@ -74,6 +74,23 @@ const workspaceController = {
             next(err);
         }
     },
+    deleteReplyByCreatorInPost: async (req, res, next) => {
+        try {
+            const { userId } = req;
+            const { channelId, workSpaceId, postId, replyId } = req.params;
+
+            const data = await workspaceService.deleteReplyByCreatorInPost(userId, channelId, workSpaceId, postId, replyId, next);
+
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                updatedPost: data.updatedPost
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     // 4. 워크스페이스에 팀원 초대
     patchAddMemberToWorkSpace: async (req, res, next) => {
         try {
@@ -93,7 +110,7 @@ const workspaceController = {
     // 6. 댓글 보기
     postGetPostDetailAndRepliesByPostId: async (req, res, next) => {
         try {
-            const data = await workspaceService.postGetPostDetailAndRepliesByPostId(req.body.postId, next);
+            const data = await workspaceService.postGetPostDetailAndRepliesByPostId(req.userId, req.body.postId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
@@ -148,12 +165,33 @@ const workspaceController = {
     // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
     patchEditPostByCreatorInWorkSpace: async (req, res, next) => {
         try {
-            console.log(req.body)
-            const data = await workspaceService.patchEditPostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.body, next);
+            const { userId } = req;
+            const { channelId, workSpaceId } = req.params;
+            const { body } = req;
+            const data = await workspaceService.patchEditPostByCreatorInWorkSpace(userId, channelId, workSpaceId, body, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 status: data.status,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    // 11. 워크스페이스에서 해당 유저의 게시물 내용 수정
+    patchEditReplyByCreatorInPost: async (req, res, next) => {
+        try {
+            const { userId } = req;
+            const { channelId, workSpaceId } = req.params;
+            const { body } = req;
+           
+            const data = await workspaceService.patchEditReplyByCreatorInPost(userId, channelId, workSpaceId, body, next);
+
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                updatedReply: data.updatedReply
             });
         } catch (err) {
             next(err);

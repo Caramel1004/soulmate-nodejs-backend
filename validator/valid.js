@@ -88,6 +88,12 @@ export const hasPost = post => {
     }
     return;
 }
+export const hasReply = hasReply => {
+    if (!hasReply) {
+        throw new NotFoundDataError('댓글이 존재하지 않습니다.')
+    }
+    return;
+}
 
 export const hasUser = user => {
     if (!user) {

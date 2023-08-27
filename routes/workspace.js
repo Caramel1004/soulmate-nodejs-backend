@@ -24,8 +24,14 @@ router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getL
 // POST /v1/workspace/create-post/:channelId/:workSpaceId
 router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreatePost);// 2. 게시물 생성
 
-//POST /v1/workspace/reply/:channelId/:workSpaceId
-router.post('/:channelId/:workSpaceId/post/create-reply', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
+//POST /v1/workspace/post/create-reply/:channelId/:workSpaceId
+router.post('/post/create-reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
+
+//DELETE /v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId
+router.delete('/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId', hasJsonWebToken, workspaceController.deleteReplyByCreatorInPost);// 3. 댓글 삭제
+
+//PATCH /v1/workspace/post/edit-reply/:channelId/:workSpaceId
+router.patch('/post/edit-reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditReplyByCreatorInPost);// 3. 댓글 수정
 
 //PATCH /v1/workspace/invite/:channelId/:workSpaceId
 router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchAddMemberToWorkSpace);// 4. 워크스페이스에 팀원 초대
