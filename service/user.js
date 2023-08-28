@@ -26,10 +26,10 @@ const userService = {
     postLogin: async (email, pwd, next) => {
         try {
             const user = await User.findOne({ email: email })
-            .populate('channels',{
-                channelName: 1,
-                thumbnail: 1
-            });
+                .populate('channels', {
+                    channelName: 1,
+                    thumbnail: 1
+                });
 
             // 사용자 존재유무 체크
             hasUser(user);
@@ -163,6 +163,33 @@ const userService = {
         } catch (err) {
             console.log(err);
             next(err);
+        }
+    },
+    patchEditMyProfileByReqUser: async (userId, body, next) => {
+        try {
+            console.log(body)
+            const { hasNameToBeEdit, hasPhotoToBeEdit, hasPhoneToBeEdit, data } = body;
+            // 1. 유저 존재 여부
+            const user = await User.findById(userId).select({ _id: 1 });
+            hasUser(user);
+
+            // let updatedUser;
+            switch (true) {
+                case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
+                    break;
+                case hasPhotoToBeEdit: await User.updateOne({ _id: userId }, { photo: data });
+                    break;
+                case hasPhoneToBeEdit: await User.updateOne({ _id: userId }, { phone: data });
+                    break;
+            }
+            // hasUser(updatedUser);
+
+            return {
+                status: successType.S02.s200,
+                updatedData: data
+            }
+        } catch (err) {
+            next(err)
         }
     },
 }

@@ -138,7 +138,18 @@ const userController = {
             status: data.status,
             matchedUser: data.matchedUser
         });
-    }
+    },
+    patchEditMyProfileByReqUser: async (req, res, next) => {
+        const { userId, body } = req;
+
+        const data = await userService.patchEditMyProfileByReqUser(userId, body, next);
+        hasReturnValue(data);
+
+        res.status(data.status.code).json({
+            status: data.status,
+            updatedUser: data.updatedUser
+        });
+    },
 }
 
 export default userController;
