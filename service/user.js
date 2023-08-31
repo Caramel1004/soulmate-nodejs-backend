@@ -172,9 +172,10 @@ const userService = {
             // 1. 유저 존재 여부
             const user = await User.findById(userId).select({ _id: 1 });
             hasUser(user);
+   
 
             // let updatedUser;
-            switch (true) {
+            switch ('true') {
                 case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
                     break;
                 case hasPhotoToBeEdit: await User.updateOne({ _id: userId }, { photo: data });
@@ -183,6 +184,7 @@ const userService = {
                     break;
             }
             // hasUser(updatedUser);
+        //    await User.updateOne({ _id: userId }, { name: data });
 
             return {
                 status: successType.S02.s200,

@@ -9,5 +9,11 @@ const redisClient = createClient({
     legacyMode: true
 })
 
+redisClient.on('connect', () => console.log('Redis 연결!!'));
+
+redisClient.on('error', () => {
+    console.log('Redis 연결 실패!!')
+    redisClient.emit('connect',() => console.log('Redis 재연결 시도!!'));
+});
 
 export default redisClient

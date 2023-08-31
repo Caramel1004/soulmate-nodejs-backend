@@ -15,10 +15,15 @@ export const hasJsonWebToken = async (req, res, next) => {
         const accessToken = authHeader.split(' ')[1];
         const refreshToken = req.headers.refresh;
 
-        const decodedToken = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
+        const data = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
+        console.log('data: ', data);
+        req.user = {
+            userId: data.decodedToken.userId,
+            authStatus: data.authStatus
+        }
+        req.userId = data.decodedToken.userId;
 
-        req.userId = decodedToken.userId;
-
+        console.log('req.user: ', req.user);
         next();
     } catch (err) {
         next(new VerificationTokenError(err))

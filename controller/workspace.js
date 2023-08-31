@@ -18,11 +18,15 @@ const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
     getLoadWorkspace: async (req, res, next) => {
         try {
-            const data = await workspaceService.getLoadWorkspace(req.params.channelId, req.params.workSpaceId, req.query.sortNum, req.userId, next);
+            const { userId, authStatus } = req.user
+            const { channelId, workSpaceId } = req.params;
+            const { sortNum } = req.query;
+            const data = await workspaceService.getLoadWorkspace(channelId, workSpaceId, sortNum, userId, next);
 
             hasReturnValue(data);
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status,
                 workSpace: data.workSpace
             });
@@ -33,7 +37,8 @@ const workspaceController = {
     // 2. 게시물 생성
     postCreatePost: async (req, res, next) => {
         try {
-            const data = await workspaceService.postCreatePost(req.params.channelId, req.params.workSpaceId, req.userId, req.body, next);
+            const { userId, authStatus } = req.user
+            const data = await workspaceService.postCreatePost(req.params.channelId, req.params.workSpaceId, userId, req.body, next);
 
             hasReturnValue(data);
 
@@ -45,6 +50,7 @@ const workspaceController = {
             });
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status,
                 post: data.post
             });
@@ -184,7 +190,7 @@ const workspaceController = {
             const { userId } = req;
             const { channelId, workSpaceId } = req.params;
             const { body } = req;
-           
+
             const data = await workspaceService.patchEditReplyByCreatorInPost(userId, channelId, workSpaceId, body, next);
 
             hasReturnValue(data);

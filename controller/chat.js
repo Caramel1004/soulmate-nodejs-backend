@@ -21,15 +21,15 @@ const chatController = {
     // 1. 채팅룸 로딩
     getLoadChatRoom: async (req, res, next) => {
         try {
-            const channelId = req.params.channelId;
-            const chatRoomId = req.params.chatRoomId;
-            const userId = req.userId;
+            const { userId, authStatus } = req.user;
+            const { channelId, chatRoomId } = req.params;
 
             const data = await chatService.getLoadChatRoom(channelId, chatRoomId, userId, next);
 
             hasReturnValue(data);
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status,
                 chatRoom: data.chatRoom
             });
@@ -40,14 +40,16 @@ const chatController = {
     // 2. 팀원 추가 보드에 채널 멤버들 조회
     postLoadUsersInChannel: async (req, res, next) => {
         try {
-            const channelId = req.params.channelId;
-            const chatRoomId = req.body.chatRoomId;
+            const { userId, authStatus } = req.user;
+            const { channelId } = req.params;
+            const { chatRoomId } = req.body;
 
             const data = await chatService.postLoadUsersInChannel(channelId, chatRoomId, next);
 
             hasReturnValue(data);
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status,
                 users: data.users
             });
@@ -58,9 +60,12 @@ const chatController = {
     // 3. 실시간 채팅
     postSendChat: async (req, res, next) => {
         try {
-            const channelId = req.params.channelId;// 해당 채널 doc아이디
-            const userId = req.userId;// 현재 접속한 유저 doc아이디
-            const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
+            const { userId, authStatus } = req.user;
+            /**
+             * 해당 채널 doc아이디
+             * 해당 채팅룸 doc아이디
+             */
+            const { channelId, chatRoomId } = req.params;
             const reqChat = req.body.chat;// 저장할 채팅
 
             console.log('reqChat: ', reqChat);
@@ -87,6 +92,7 @@ const chatController = {
 
             // 응답
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status
             });
         } catch (err) {
@@ -127,7 +133,7 @@ const chatController = {
     // 5. 채팅방에 채널 멤버 초대
     patchInviteUserToChatRoom: async (req, res, next) => {
         try {
-            const userId = req.userId;// 접속한 유저
+            const { authStatus } = req.user;
 
             const channelId = req.params.channelId
             const chatRoomId = req.params.chatRoomId;
@@ -141,6 +147,7 @@ const chatController = {
             hasReturnValue(data);
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status
             });
         } catch (err) {
@@ -150,8 +157,7 @@ const chatController = {
     // 6. 채팅방 퇴장
     patchExitChatRoom: async (req, res, next) => {
         try {
-            console.log('채널 퇴장')
-            const userId = req.userId;// 접속한 유저
+            const { userId, authStatus } = req.user;
 
             const channelId = req.body.channelId
             const chatRoomId = req.body.chatRoomId;
@@ -161,11 +167,12 @@ const chatController = {
 
             // 웹 소켓: 채팅방에 퇴장 메세지 보내기
             const serverIO = SocketIO.getSocketIO();
-            serverIO.emit('exitUser',{
+            serverIO.emit('exitUser', {
                 exitUser: data.exitUser
             })
 
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status
             });
         } catch (err) {

@@ -129,25 +129,28 @@ const userController = {
     },
     // 나의 프로필 조회(유저 정보)
     getMyProfile: async (req, res, next) => {
-        const userId = req.userId;
+        const { userId, authStatus } = req.user
 
         const data = await userService.getMyProfile(userId, next);
         hasReturnValue(data);
 
         res.status(data.status.code).json({
+            authStatus: authStatus,
             status: data.status,
             matchedUser: data.matchedUser
         });
     },
     patchEditMyProfileByReqUser: async (req, res, next) => {
-        const { userId, body } = req;
+        const { body } = req;
+        const { userId, authStatus } = req.user;
 
         const data = await userService.patchEditMyProfileByReqUser(userId, body, next);
         hasReturnValue(data);
 
         res.status(data.status.code).json({
+            authStatus: authStatus,
             status: data.status,
-            updatedUser: data.updatedUser
+            updatedData: data.updatedData
         });
     },
 }
