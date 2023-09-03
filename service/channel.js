@@ -491,7 +491,11 @@ const channelService = {
                     open: 1,
                     workSpaceName: 1,
                     users: 1,
-                    posts: 1
+                    posts: 1,
+                    createdAt: 1
+                })
+                .populate('users', {
+                    photo: 1
                 })
                 .populate({
                     path: 'posts',
@@ -506,13 +510,13 @@ const channelService = {
                         select: 'name'
                     }
                 });
-
             const userWorkSpaces = workSpaceList.filter(workSpace => {
-                const idx = workSpace.users.indexOf(userId);
-                if (idx !== -1) {
+                const hasWorkSpace = workSpace.users.find(user => user._id.toString() === userId.toString());
+                if (hasWorkSpace) {
                     return workSpace;
                 }
             });
+            console.log(userWorkSpaces)
 
             const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'true');
 

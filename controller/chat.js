@@ -40,7 +40,6 @@ const chatController = {
     // 2. 팀원 추가 보드에 채널 멤버들 조회
     postLoadUsersInChannel: async (req, res, next) => {
         try {
-            const { userId, authStatus } = req.user;
             const { channelId } = req.params;
             const { chatRoomId } = req.body;
 
@@ -49,7 +48,6 @@ const chatController = {
             hasReturnValue(data);
 
             res.status(data.status.code).json({
-                authStatus: authStatus,
                 status: data.status,
                 users: data.users
             });

@@ -55,7 +55,7 @@ export default {
                 console.log('리프레시 토큰 검사 중!!');
                 const decodedToken = jwt.decode(accessToken);
                 try {
-                    const savedToken = await redisClient.v4.get(decodedToken.userId);
+                    const savedToken = await redisClient.v4.get(decodedToken.userId);// 레디스에서 해당 키에 대한 값 가져오기
                     console.log('savedToken: ', savedToken);
                     console.log('refreshToken: ', refreshToken);
                     if (savedToken === refreshToken) {
@@ -83,9 +83,11 @@ export default {
                     }
                 } catch (err) {
                     // console.log(err);
+                    const result = await redisClient.v4.del(decodedToken.userId);
+                    console.log('레디스 데이터 삭제: ', result);
                     console.log('리프레쉬 토큰 만료!!');
                     // 인증토큰 리프레시토큰 둘다 만료 되었다면 로그인 최종 에러 던짐
-                    throw err;
+                    throw new VerificationTokenError('RefreshToken이 만료 되었습니다. 다시 로그인 하세요.');
                 }
             }
         }
