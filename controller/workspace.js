@@ -80,6 +80,7 @@ const workspaceController = {
             next(err);
         }
     },
+    // 댓글 삭제
     deleteReplyByCreatorInPost: async (req, res, next) => {
         try {
             const { userId } = req;
