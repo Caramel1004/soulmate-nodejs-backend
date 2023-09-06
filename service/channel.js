@@ -402,6 +402,9 @@ const channelService = {
                     users: 1,
                     chats: 1
                 })
+                .populate('users', {
+                    photo: 1
+                })
                 .populate({
                     path: 'chats',
                     options: {
@@ -410,10 +413,10 @@ const channelService = {
                         }
                     }
                 });
-
+            console.log(chatRoomList)
             const userChatRooms = chatRoomList.filter(chatRoom => {
-                const idx = chatRoom.users.indexOf(userId);
-                if (idx !== -1) {
+                const hasChatRoom = chatRoom.users.find(user => user._id.toString() === userId.toString());
+                if (hasChatRoom) {
                     return chatRoom;
                 }
             });
