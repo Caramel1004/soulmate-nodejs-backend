@@ -413,7 +413,7 @@ const channelService = {
                         }
                     }
                 });
-            console.log(chatRoomList)
+   
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const hasChatRoom = chatRoom.users.find(user => user._id.toString() === userId.toString());
                 if (hasChatRoom) {
@@ -519,7 +519,6 @@ const channelService = {
                     return workSpace;
                 }
             });
-            console.log(userWorkSpaces)
 
             const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'true');
 

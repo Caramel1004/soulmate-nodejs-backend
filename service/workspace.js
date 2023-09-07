@@ -19,9 +19,8 @@ import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, 
  */
 const workspaceService = {
     // 1. 워크스페이스 세부정보 조회
-    getLoadWorkspace: async (channelId, workSpaceId, sortNum, userId, next) => {
+    getLoadWorkspace: async (channelId, workSpaceId, sortType, sortNum, userId, next) => {
         try {
-            console.log(sortNum);
             /**1) 워크스페이스 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
              * @params {objectId} channelId: 채널 아이디
              * @params {objectId} workSpaceId: 워크스페이스 아이디
@@ -56,7 +55,7 @@ const workspaceService = {
             hasWorkSpace(workSpace);
 
             // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
-            const postObjList = workSpace.posts.map(post => {
+            workSpace.posts.map(post => {
                 if (post.creator._id.toString() === userId.toString()) {
                     post._doc.isCreator = true;// 일치
                 } else {
@@ -65,7 +64,15 @@ const workspaceService = {
                 return post;
             });
 
-            console.log(postObjList);
+            // 본인이 쓴 게시물 필터링
+            if(sortType === 'creator'){
+                console.log(sortType);
+                workSpace.posts = workSpace.posts.filter(post => {
+                    if (post._doc.isCreator) {
+                        return post;
+                    }
+                });
+            }
 
             // 2) 워크스페이스에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
             const workSpaceUser = workSpace.users.find(user => user._id.toString() === userId.toString());

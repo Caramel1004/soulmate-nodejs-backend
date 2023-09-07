@@ -18,10 +18,11 @@ const workspaceController = {
     // 1. 워크스페이스 세부정보 로딩
     getLoadWorkspace: async (req, res, next) => {
         try {
+            console.log(req.query)
             const { userId, authStatus } = req.user
             const { channelId, workSpaceId } = req.params;
-            const { sortNum } = req.query;
-            const data = await workspaceService.getLoadWorkspace(channelId, workSpaceId, sortNum, userId, next);
+            const { sortType, sortNum } = req.query;
+            const data = await workspaceService.getLoadWorkspace(channelId, workSpaceId, sortType, sortNum, userId, next);
 
             hasReturnValue(data);
 
