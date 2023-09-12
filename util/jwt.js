@@ -7,6 +7,12 @@ import SocketIO from '../socket.js';
 export default {
     signToken: async user => {
         try {
+            // 해당 유저의 기존 리프레쉬 토큰 삭제
+            if(await redisClient.v4.exists(user._id.toString()) == 1){
+                console.log('레디스에 잉여 데이터 존재!');
+                await redisClient.v4.del(user._id.toString());
+            }
+            
             // 페이로드
             const payload = {
                 userId: user._id
@@ -28,6 +34,7 @@ export default {
             //refreshToken을 redis에 저장 관리
             const result = await redisClient.v4.set(user._id.toString(), refreshToken);
             console.log('Redis에 리프레쉬 토큰 저장 완료: ', result)
+
             return {
                 accessToken: accessToken,
                 refreshToken: refreshToken

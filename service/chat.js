@@ -45,7 +45,15 @@ const chatService = {
 
             hasChatRoom(chatRoom);
 
-            // console.log(chatRoom.users);
+            // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
+            chatRoom.chats.map(chat => {
+                if (chat.creator._id.toString() === userId.toString()) {
+                    chat._doc.isCreator = true;// 일치
+                } else {
+                    chat._doc.isCreator = false;// 불일치
+                }
+                return chat;
+            });
 
             // 2) 채팅룸에 속한 유저 목록중에 요청한 유저가 존재하는지 검사: 다른유저가 url타고 접속할수가 있기때문에 해당 유저가 없으면 접근 못하게 처리
             const chatRoomUser = chatRoom.users.find(user => user._id.toString() === userId.toString());
@@ -159,14 +167,11 @@ const chatService = {
         }
     },
     // 4. 실시간 파일 업로드
-    postUploadFileToChatRoom: async (body, channelId, chatRoomId, userId) => {
+    postUploadFileToChatRoom: async (body, channelId, chatRoomId, userId, next) => {
         try {
             // 1. 채널에  조회 => 조회 실패하면 에러 throw
             const channel = await Channel.findById(channelId).select({ chatRooms: 1 });
-            if (!channel) {
-                const error = new Error(errorType.D04.d404);// 데이터베이스에서 조회 실패
-                throw error;
-            }
+            hasChannelDetail(channel);
 
             // 2. 채팅룸 조회 => 조회 실패하면 에러 throw
             const chatRoom = await ChatRoom.findById(chatRoomId)
@@ -175,24 +180,18 @@ const chatService = {
                     name: 1,
                     photo: 1
                 });// chatRoomId로 조회된 채팅룸
-            if (!chatRoom) {
-                const error = new Error(errorType.D04.d404);// 데이터베이스에서 조회 실패
-                throw error;
-            }
+            hasChatRoom(chatRoom);
 
             // 3. 해당 유저 조회 => 조회 실패하면 에러 throw
             const matchedUser = chatRoom.users.find(user => user._id.toString() === userId.toString());// 채팅룸에 해당 유저가 있는지 조회
-            if (!matchedUser) {
-                const error = new Error(errorType.D04.d404);// 데이터베이스에서 조회 실패
-                throw error;
-            }
+            hasUser(matchedUser);
 
             // 4. 요청 바디(파일 URL) 저장
             const chatObj = new Chat(body);// param: 저장할 요청 바디 return: 채팅내용 chat스키마에 저장 성공 응답
             const savedChat = await chatObj.save();
 
             // 5. 채팅룸 스키마에 chat오브젝트아이디 chatList 배열에 푸쉬
-            chatRoom.chatList.push(savedChat._id);// chat스키마에 저장된 chat오브젝트 아이디 chatList 배열에 푸쉬
+            chatRoom.chats.push(savedChat._id);// chat스키마에 저장된 chat오브젝트 아이디 chats 배열에 푸쉬
             await chatRoom.save();// 채팅룸에 업데이트된 내용 저장
 
             // 6. 응답 상태

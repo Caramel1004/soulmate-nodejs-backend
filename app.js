@@ -22,8 +22,6 @@ import staticDataRoutes from './routes/static-data.js';
 dotenv.config();
 
 const app = express();
-
-
 const DATABASE_URL = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@cluster0.vkqqcqz.mongodb.net/${process.env.DATABASE_DEFAULT_NAME}?retryWrites=true&w=majority`;
 
 // 정적 file처리를 위한 변수
@@ -34,7 +32,7 @@ const __dirname = dirname(__filename);
 // 해결: uuid패키지 사용
 const fileStorage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, 'images');
+        callback(null, 'file');
     },
     filename: (req, file, callback) => {
         callback(null, v4());
@@ -45,6 +43,7 @@ const fileStorage = multer.diskStorage({
 const fileFilter = (req, file, callback) => {
     const fileType = ['image/jpeg', 'image/png', 'image/jpg'];
     const mimeType = fileType.find(fileType => fileType === file.mimetype);
+    console.log('app.js req.body: ', req.body)
     console.log('file : ', file);
     console.log('mimeType : ', mimeType);
     if (mimeType) {
@@ -54,20 +53,20 @@ const fileFilter = (req, file, callback) => {
     }
 }
 
-
 // 요청 응답 로그 출력
 if (process.env.NODE_ENV === 'production') {
+    console.log('배포 환경!!');
     app.use(morgan('combined'));
 } else {
+    console.log('개발 환경!!');
     app.use(morgan('dev'));
 }
-
 
 // 파싱 미들웨어
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/file', express.static(path.join(__dirname, 'file')));// 이미지 폴더를 정적으로 사용
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('file'));
-app.use('/images', express.static(path.join(__dirname, 'images')));// 이미지 폴더를 정적으로 사용
 
 //cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {

@@ -16,14 +16,14 @@ export const hasJsonWebToken = async (req, res, next) => {
         const refreshToken = req.headers.refresh;
 
         const data = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
-        console.log('data: ', data);
+        // console.log('data: ', data);
         req.user = {
             userId: data.decodedToken.userId,
             authStatus: data.authStatus
         }
         req.userId = data.decodedToken.userId;
 
-        console.log('req.user: ', req.user);
+        // console.log('req.user: ', req.user);
         next();
     } catch (err) {
         next(new VerificationTokenError(err))
@@ -45,14 +45,15 @@ export function hasChat(req, res, next) {
 // 파일 유무
 export function hasFile(req, res, next) {
     try {
-        if (!req.file) {
+        console.log('req.body: ',req.body.fileUrl);
+        if (!req.body.fileUrl) {
             throw new ValidationError('요구된 파일이 없습니다.');
         }
-        console.log('req.file');
-        const fileUrl = req.file.path.replace('\\', '/');
+
+        const fileUrl = `file/${req.body.fileUrl}`;
         req.body.fileUrl = fileUrl;
 
-        console.log(fileUrl);
+        // console.log(fileUrl);
 
         next();
     } catch (error) {

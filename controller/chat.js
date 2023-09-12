@@ -99,34 +99,40 @@ const chatController = {
     },
     // 4. 실시간 파일 업로드
     postUploadFileToChatRoom: async (req, res, next) => {
-        const channelId = req.params.channelId;// 해당 채널 doc아이디
-        const userId = req.userId;// 현재 접속한 유저 doc아이디
-        const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
-        const fileUrl = req.body.fileUrl;// 파일
+        try {
+            const channelId = req.params.channelId;// 해당 채널 doc아이디
+            const userId = req.userId;// 현재 접속한 유저 doc아이디
+            const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
+            const fileUrl = req.body.fileUrl;// 파일
+            console.log('req.body: ', req.body)
 
-        console.log('fileUrl: ', fileUrl);
-        //요청 바디
-        const body = {
-            fileUrl: fileUrl,
-            creator: userId
+            console.log('fileUrl: ', fileUrl);
+            //요청 바디
+            const body = {
+                fileUrl: fileUrl,
+                creator: userId
+            }
+
+            const data = await chatService.postUploadFileToChatRoom(body, channelId, chatRoomId, userId, next);// 실시간으로 업데이트할 리턴 값
+            hasReturnValue(data);
+
+            // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
+            const serverIO = SocketIO.getSocketIO();
+            // serverIO.emit('sendChat', {
+            //     status: resData.status,
+            //     chatRoom: resData.chatRoom,
+            //     currentFile: resData.fileUrl,
+            //     photo: resData.matchedUser.photo,
+            //     clientId: resData.matchedUser.clientId
+            // });
+
+            // 응답
+            res.status(data.status.code).json({
+                status: data.status
+            });
+        } catch (err) {
+            next(err);
         }
-
-        const resData = await chatService.postUploadFileToChatRoom(body, channelId, chatRoomId, userId);// 실시간으로 업데이트할 리턴 값
-
-        // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
-        const serverIO = SocketIO.getSocketIO();
-        serverIO.emit('sendChat', {
-            status: resData.status,
-            chatRoom: resData.chatRoom,
-            currentFile: resData.fileUrl,
-            photo: resData.matchedUser.photo,
-            clientId: resData.matchedUser.clientId
-        });
-
-        // 응답
-        res.status(resData.status.code).json({
-            status: resData.status
-        });
     },
     // 5. 채팅방에 채널 멤버 초대
     patchInviteUserToChatRoom: async (req, res, next) => {
