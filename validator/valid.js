@@ -44,16 +44,16 @@ export function hasChat(req, res, next) {
 
 // 파일 유무
 export function hasFile(req, res, next) {
-    try {
-        console.log('req.body: ',req.body.fileUrl);
+    try {   
+        console.log(JSON.parse(req.body.file));
+        // const base64DecodedText = Buffer.from(req.body.file.buffer.data, "base64").toString('utf8');
+        // console.log(base64DecodedText);
         if (!req.body.fileUrl) {
             throw new ValidationError('요구된 파일이 없습니다.');
         }
 
         const fileUrl = `file/${req.body.fileUrl}`;
         req.body.fileUrl = fileUrl;
-
-        // console.log(fileUrl);
 
         next();
     } catch (error) {

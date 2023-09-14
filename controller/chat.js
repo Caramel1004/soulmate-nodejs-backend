@@ -100,16 +100,14 @@ const chatController = {
     // 4. 실시간 파일 업로드
     postUploadFileToChatRoom: async (req, res, next) => {
         try {
-            const channelId = req.params.channelId;// 해당 채널 doc아이디
-            const userId = req.userId;// 현재 접속한 유저 doc아이디
-            const chatRoomId = req.params.chatRoomId;// 해당 채팅룸 doc아이디
-            const fileUrl = req.body.fileUrl;// 파일
-            console.log('req.body: ', req.body)
+            const { userId, authStatus } = req.user;
+            const { channelId, chatRoomId } = req.params;
+            
+            // console.log('req.body.file: ', JSON.parse(req.body.file));
 
-            console.log('fileUrl: ', fileUrl);
             //요청 바디
             const body = {
-                fileUrl: fileUrl,
+                fileUrl: req.body.fileUrl,
                 creator: userId
             }
 
@@ -117,7 +115,7 @@ const chatController = {
             hasReturnValue(data);
 
             // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
-            const serverIO = SocketIO.getSocketIO();
+            // const serverIO = SocketIO.getSocketIO();
             // serverIO.emit('sendChat', {
             //     status: resData.status,
             //     chatRoom: resData.chatRoom,
@@ -128,6 +126,7 @@ const chatController = {
 
             // 응답
             res.status(data.status.code).json({
+                authStatus: authStatus,
                 status: data.status
             });
         } catch (err) {

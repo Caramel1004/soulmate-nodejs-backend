@@ -41,10 +41,10 @@ const fileStorage = multer.diskStorage({
 
 // 파일 확장자 검사
 const fileFilter = (req, file, callback) => {
+    // const fileObj = JSON.parse(req.body.file);
+    // console.log(fileObj);
     const fileType = ['image/jpeg', 'image/png', 'image/jpg'];
     const mimeType = fileType.find(fileType => fileType === file.mimetype);
-    console.log('app.js req.body: ', req.body)
-    console.log('file : ', file);
     console.log('mimeType : ', mimeType);
     if (mimeType) {
         callback(null, true);
@@ -66,7 +66,15 @@ if (process.env.NODE_ENV === 'production') {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/file', express.static(path.join(__dirname, 'file')));// 이미지 폴더를 정적으로 사용
+app.use('/images', express.static(path.join(__dirname, 'images')));// 이미지 폴더를 정적으로 사용
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('file'));
+// app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
+// app.use((req, res, next) => {
+//     if (req.body.file) {
+//         fileFilter(req, req.body.file, fileFilter);
+//     }
+//     next();
+// });
 
 //cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {
@@ -74,8 +82,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type', 'Authorization', 'RefreshToken');
     next();
-})
-
+});
 
 // 라우트 접근
 app.use('/v1/channel', channelRoutes);
