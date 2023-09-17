@@ -1,3 +1,6 @@
+import { Buffer } from 'node:buffer'
+import fs from 'fs';
+
 import jsonWebToken from '../util/jwt.js'
 
 import { AuthorizationTokenError, VerificationTokenError, NotFoundDataError, ValidationError, ValidationExistDataError } from '../error/error.js'
@@ -44,13 +47,32 @@ export function hasChat(req, res, next) {
 
 // 파일 유무
 export function hasFile(req, res, next) {
-    try {   
-        console.log(JSON.parse(req.body.file));
-        // const base64DecodedText = Buffer.from(req.body.file.buffer.data, "base64").toString('utf8');
-        // console.log(base64DecodedText);
+    try {
         if (!req.body.fileUrl) {
             throw new ValidationError('요구된 파일이 없습니다.');
         }
+        console.log('No Copy: ', JSON.parse(req.body.file));
+
+        // JSON형태로 되어있는 file 객체를 파싱하는 과정 -> buffer 프로퍼티의 data프로퍼티(배열 형태)값을 버퍼로 변환
+        const copy = JSON.parse(req.body.file, (key, value) => {
+            const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
+            return parsedJson;
+        });
+
+        console.log('copy: ', copy);
+
+        const combinedBuffer = copy.buffer.toString();
+
+        const nowDate = new Date();
+        const convertedDate = new Date(nowDate).toLocale
+        
+        // 두번째인수에 파일을 버퍼형태로 넣어줘야 파일 볼 수 있음 
+        const result = fs.writeFileSync(`file/soulmate_Photo_${new Date()}.png`, copy.buffer, () => {
+            console.log('파일 생성');
+        });
+
+        // const base64DecodedFile = Buffer.from(req.body.file.buffer.data, "base64").toString('utf8');
+        // console.log(base64DecodedText);
 
         const fileUrl = `file/${req.body.fileUrl}`;
         req.body.fileUrl = fileUrl;
