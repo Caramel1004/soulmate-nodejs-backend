@@ -102,8 +102,6 @@ const chatController = {
         try {
             const { userId, authStatus } = req.user;
             const { channelId, chatRoomId } = req.params;
-            
-            // console.log('req.body.file: ', JSON.parse(req.body.file));
 
             //요청 바디
             const body = {
@@ -115,14 +113,14 @@ const chatController = {
             hasReturnValue(data);
 
             // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
-            // const serverIO = SocketIO.getSocketIO();
-            // serverIO.emit('sendChat', {
-            //     status: resData.status,
-            //     chatRoom: resData.chatRoom,
-            //     currentFile: resData.fileUrl,
-            //     photo: resData.matchedUser.photo,
-            //     clientId: resData.matchedUser.clientId
-            // });
+            const serverIO = SocketIO.getSocketIO();
+            serverIO.emit('sendFile', {
+                status: data.status,
+                chatRoom: data.chatRoom,
+                fileUrl: data.fileUrl,
+                photo: data.matchedUser.photo,
+                name: data.matchedUser.name
+            });
 
             // 응답
             res.status(data.status.code).json({

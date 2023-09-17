@@ -70,11 +70,8 @@ export function hasFile(req, res, next) {
         const result = fs.writeFileSync(`file/soulmate_Photo_${new Date()}.png`, copy.buffer, () => {
             console.log('파일 생성');
         });
-
-        // const base64DecodedFile = Buffer.from(req.body.file.buffer.data, "base64").toString('utf8');
-        // console.log(base64DecodedText);
-
-        const fileUrl = `file/${req.body.fileUrl}`;
+        
+        const fileUrl = `file/soulmate_Photo_${new Date()}.png`;
         req.body.fileUrl = fileUrl;
 
         next();
