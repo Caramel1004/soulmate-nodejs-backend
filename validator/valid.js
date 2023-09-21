@@ -19,17 +19,16 @@ export const hasJsonWebToken = async (req, res, next) => {
         const refreshToken = req.headers.refresh;
 
         const data = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
-        // console.log('data: ', data);
+        
         req.user = {
             userId: data.decodedToken.userId,
             authStatus: data.authStatus
         }
         req.userId = data.decodedToken.userId;
 
-        // console.log('req.user: ', req.user);
         next();
     } catch (err) {
-        next(new VerificationTokenError(err))
+        next(new VerificationTokenError(err));
     }
 }
 
