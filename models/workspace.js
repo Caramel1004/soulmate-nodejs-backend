@@ -41,12 +41,11 @@ const workSpaceSchema = new Schema({
 //게시물 스키마
 const postSchema = new Schema({
     content: {
-        type: String,
-        required: true
-    },
-    fileUrl: {
         type: String
     },
+    fileUrls: [{
+        type: String
+    }],
     creator: {
         type: Schema.Types.ObjectId,
         ref: 'User',

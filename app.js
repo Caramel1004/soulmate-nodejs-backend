@@ -65,16 +65,9 @@ if (process.env.NODE_ENV === 'production') {
 // 파싱 미들웨어
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/file', express.static(path.join(__dirname, 'file')));// 이미지 폴더를 정적으로 사용
-// app.use('/images', express.static(path.join(__dirname, 'images')));// 이미지 폴더를 정적으로 사용
-app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'));
-// app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'));
-// app.use((req, res, next) => {
-//     if (req.body.file) {
-//         fileFilter(req, req.body.file, fileFilter);
-//     }
-//     next();
-// });
+app.use('/files', express.static(path.join(__dirname, 'files')));// 파일 폴더를 정적으로 사용
+// app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'));
+app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12));
 
 //cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {

@@ -92,7 +92,7 @@ const workspaceService = {
         try {
             const post = await Post.create({
                 content: body.content,
-                fileUrl: body.fileUrl,
+                fileUrls: body.fileUrls,
                 creator: userId
             });
             hasPost(post);
