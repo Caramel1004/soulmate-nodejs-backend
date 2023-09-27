@@ -1,6 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 
 import { hasJsonWebToken, hasFile } from '../validator/valid.js';
+import filesHandler from '../util/files-handler.js';
+
 import workspaceController from '../controller/workspace.js';
 
 const router = Router();
@@ -22,7 +25,7 @@ const router = Router();
 router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getLoadWorkspace);// 1. 워크스페이스 세부정보 조회
 
 // POST /v1/workspace/create-post/:channelId/:workSpaceId
-router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, hasFile, workspaceController.postCreatePost);// 2. 게시물 생성
+router.post('/create-post/:channelId/:workSpaceId', hasJsonWebToken, multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12), hasFile, filesHandler.saveUploadedFiles, workspaceController.postCreatePost);// 2. 게시물 생성
 
 //POST /v1/workspace/post/create-reply/:channelId/:workSpaceId
 router.post('/post/create-reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기

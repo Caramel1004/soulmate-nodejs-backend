@@ -105,7 +105,7 @@ const chatController = {
 
             //요청 바디
             const body = {
-                fileUrl: req.body.fileUrl,
+                fileUrls: req.body.fileUrls,
                 creator: userId
             }
 

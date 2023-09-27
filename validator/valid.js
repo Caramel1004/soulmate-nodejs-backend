@@ -50,26 +50,6 @@ export function hasFile(req, res, next) {
         if (!req.body.files) {
             throw new ValidationError('요구된 파일이 없습니다.');
         }
-        console.log('No Copy: ', JSON.parse(req.body.files));
-
-        // JSON형태로 되어있는 file 객체를 파싱하는 과정 -> buffer 프로퍼티의 data프로퍼티(배열 형태)값을 버퍼로 변환
-        const copy = JSON.parse(req.body.files, (key, value) => {
-            const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
-            return parsedJson;
-        });
-
-        console.log('copy: ', copy);
-
-        req.body.fileUrls = [];
-        // 두번째인수에 파일을 버퍼형태로 넣어줘야 파일 볼 수 있음
-        for (const file of copy) {
-            const fileId = new Date().getTime().toString(36);
-            const result = fs.writeFileSync(`files/soulmate_Photo_${fileId}.png`, file.buffer, () => {
-                console.log('파일 생성');
-            });
-            req.body.fileUrls.push(`files/soulmate_Photo_${fileId}.png`);
-        }
-
         next();
     } catch (error) {
         next(error);

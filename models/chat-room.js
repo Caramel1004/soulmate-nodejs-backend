@@ -37,9 +37,9 @@ const chatSchema = new Schema({
     chat: {
         type: String
     },
-    fileUrl: {
+    fileUrls: [{
         type: String
-    },
+    }],
     creator: {
         type: Schema.Types.ObjectId,
         ref: 'User',

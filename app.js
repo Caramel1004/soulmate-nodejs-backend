@@ -28,31 +28,6 @@ const DATABASE_URL = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.e
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 파일 저장할 위치와 저장 형태 정의
-// 해결: uuid패키지 사용
-const fileStorage = multer.diskStorage({
-    destination: (req, file, callback) => {
-        callback(null, 'file');
-    },
-    filename: (req, file, callback) => {
-        callback(null, v4());
-    }
-});
-
-// 파일 확장자 검사
-const fileFilter = (req, file, callback) => {
-    // const fileObj = JSON.parse(req.body.file);
-    // console.log(fileObj);
-    const fileType = ['image/jpeg', 'image/png', 'image/jpg'];
-    const mimeType = fileType.find(fileType => fileType === file.mimetype);
-    console.log('mimeType : ', mimeType);
-    if (mimeType) {
-        callback(null, true);
-    } else {
-        callback(null, false);
-    }
-}
-
 // 요청 응답 로그 출력
 if (process.env.NODE_ENV === 'production') {
     console.log('배포 환경!!');
@@ -66,8 +41,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/files', express.static(path.join(__dirname, 'files')));// 파일 폴더를 정적으로 사용
-// app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'));
-app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12));
 
 //cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {
