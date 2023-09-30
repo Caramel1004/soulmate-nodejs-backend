@@ -167,24 +167,25 @@ const userService = {
     },
     patchEditMyProfileByReqUser: async (userId, body, next) => {
         try {
-            console.log(body)
             const { hasNameToBeEdit, hasPhotoToBeEdit, hasPhoneToBeEdit, data } = body;
+            console.log(body);
             // 1. 유저 존재 여부
             const user = await User.findById(userId).select({ _id: 1 });
             hasUser(user);
-   
 
             // let updatedUser;
             switch ('true') {
                 case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
                     break;
-                case hasPhotoToBeEdit: await User.updateOne({ _id: userId }, { photo: data });
+                case hasPhotoToBeEdit:
+                    await User.updateOne({ _id: userId }, { photo: body.fileUrls[0] });
+                    data.photoUrl = body.fileUrls[0];
                     break;
                 case hasPhoneToBeEdit: await User.updateOne({ _id: userId }, { phone: data });
                     break;
             }
             // hasUser(updatedUser);
-        //    await User.updateOne({ _id: userId }, { name: data });
+            //    await User.updateOne({ _id: userId }, { name: data });
 
             return {
                 status: successType.S02.s200,

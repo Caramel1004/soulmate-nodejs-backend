@@ -1,6 +1,11 @@
 import { Router } from 'express';
+import multer from 'multer';
+
+import filesHandler from '../util/files-handler.js';
+
 import userController from '../controller/user.js';
-import { hasJsonWebToken } from '../validator/valid.js';
+import { hasJsonWebToken, hasFile } from '../validator/valid.js';
+
 
 const router = Router();
 
@@ -26,6 +31,17 @@ router.post('/userInfo/:name', userController.getUserInfo);// 3. 유저 조회
 router.get('/myprofile', hasJsonWebToken, userController.getMyProfile);
 
 // PATCH /v1/user/edit-myprofile
-router.patch('/edit-myprofile', hasJsonWebToken, userController.patchEditMyProfileByReqUser);
+router.patch('/edit-myprofile',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('data', 1),
+    userController.patchEditMyProfileByReqUser);
+
+// PATCH /v1/user/edit-myprofile-photo
+router.patch('/edit-myprofile-photo',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('data', 1),
+    hasFile,
+    filesHandler.saveUploadedUserPhoto,
+    userController.patchEditMyProfileByReqUser);
 
 export default router;

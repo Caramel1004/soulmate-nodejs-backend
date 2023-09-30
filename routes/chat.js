@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import multer from 'multer';
 
+import filesHandler from '../util/files-handler.js';
 import { hasJsonWebToken, hasChat, hasFile } from '../validator/valid.js';
 import chatController from '../controller/chat.js';
 
@@ -20,10 +22,16 @@ router.post('/channel-members/:channelId', chatController.postLoadUsersInChannel
 router.get('/:channelId/:chatRoomId', hasJsonWebToken, chatController.getLoadChatRoom);// 1. 채팅방 세부정보 로딩
 
 // POST /v1/chat/:channelId/:chatRoomId
-router.post('/:channelId/:chatRoomId', hasJsonWebToken, hasChat, chatController.postSendChat);// 3. 실시간 채팅
+router.post('/:channelId/:chatRoomId', hasJsonWebToken, multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('chat'), hasChat, chatController.postSendChat);// 3. 실시간 채팅
 
 // POST /v1/chat/upload-file/:channelId/:chatRoomId
-router.post('/upload-file/:channelId/:chatRoomId', hasJsonWebToken, hasFile, chatController.postUploadFileToChatRoom);// 4. 실시간 파일 업로드
+router.post('/upload-file/:channelId/:chatRoomId',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    hasFile,
+    filesHandler.saveUploadedFiles,
+    chatController.postUploadFileToChatRoom
+);// 4. 실시간 파일 업로드
 
 // PATCH /v1/chat/invite/:channelId/:chatRoomId
 router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUserToChatRoom);// 5. 채팅방에 채널 멤버 초대

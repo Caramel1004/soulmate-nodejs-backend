@@ -201,7 +201,7 @@ const chatService = {
                 status: status,
                 chatRoom: chatRoom,
                 matchedUser: matchedUser,
-                fileUrl: savedChat.fileUrl
+                fileUrls: savedChat.fileUrls
             }
         } catch (err) {
             next(err);

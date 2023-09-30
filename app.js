@@ -41,6 +41,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/files', express.static(path.join(__dirname, 'files')));// 파일 폴더를 정적으로 사용
+app.use('/images/user_profiles', express.static(path.join(__dirname, 'images/user_profiles')));// 파일 폴더를 정적으로 사용
 
 //cors에러 해결을 위한 헤더설정
 app.use((req, res, next) => {

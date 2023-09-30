@@ -117,7 +117,7 @@ const chatController = {
             serverIO.emit('sendFile', {
                 status: data.status,
                 chatRoom: data.chatRoom,
-                fileUrl: data.fileUrl,
+                fileUrls: data.fileUrls,
                 photo: data.matchedUser.photo,
                 name: data.matchedUser.name
             });
