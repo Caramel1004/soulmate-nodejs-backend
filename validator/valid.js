@@ -47,7 +47,7 @@ export function hasChat(req, res, next) {
 // 파일 유무
 export function hasFile(req, res, next) {
     try {
-        if (!req.body.files) {
+        if (!req.body.files && !req.body.photo) {
             throw new ValidationError('요구된 파일이 없습니다.');
         }
         next();

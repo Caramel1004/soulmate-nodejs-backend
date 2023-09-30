@@ -18,7 +18,7 @@ const userSchema = new Schema({
     gender: {
         type: String
     },
-    photoUrl: {
+    photo: {
         type: String,
         default: 'https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/309/59932b0eb046f9fa3e063b8875032edd_crop.jpeg'
     },

@@ -173,23 +173,23 @@ const userService = {
             const user = await User.findById(userId).select({ _id: 1 });
             hasUser(user);
 
-            // let updatedUser;
+            let updatedData = {};
             switch ('true') {
                 case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
+                    updatedData.data = data;
                     break;
                 case hasPhotoToBeEdit:
                     await User.updateOne({ _id: userId }, { photo: body.fileUrls[0] });
-                    data.photoUrl = body.fileUrls[0];
+                    updatedData.photo = body.fileUrls[0];
                     break;
                 case hasPhoneToBeEdit: await User.updateOne({ _id: userId }, { phone: data });
+                    updatedData.data = data;
                     break;
             }
-            // hasUser(updatedUser);
-            //    await User.updateOne({ _id: userId }, { name: data });
-
+            console.log('updatedData: ', updatedData);
             return {
                 status: successType.S02.s200,
-                updatedData: data
+                updatedData: updatedData
             }
         } catch (err) {
             next(err)

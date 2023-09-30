@@ -39,7 +39,7 @@ router.patch('/edit-myprofile',
 // PATCH /v1/user/edit-myprofile-photo
 router.patch('/edit-myprofile-photo',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('data', 1),
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('photo', 1),
     hasFile,
     filesHandler.saveUploadedUserPhoto,
     userController.patchEditMyProfileByReqUser);
