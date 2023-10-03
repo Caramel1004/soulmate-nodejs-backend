@@ -1,6 +1,9 @@
 import { Router } from 'express';
+import multer from 'multer';
 
-import { hasJsonWebToken } from '../validator/valid.js';
+import { hasJsonWebToken, hasFile } from '../validator/valid.js';
+import filesHandler from '../util/files-handler.js';
+
 import channelController from '../controller/channel.js';
 
 const router = Router();
@@ -44,7 +47,11 @@ router.patch('/add-or-remove-wishchannel', hasJsonWebToken, channelController.pa
 router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUserId);// 2. 해당 유저의 채널 리스트 조회
 
 //POST /v1/channel/create
-router.post('/create', hasJsonWebToken, channelController.postCreateChannel);// 3. 채널 생성
+router.post('/create', hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('thumbnail'),
+    hasFile,
+    filesHandler.saveUploadedChannelThumbnail,
+    channelController.postCreateChannel);// 3. 채널 생성
 
 //GET /v1/channel/wishchannels
 router.get('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); // 4. 관심 채널 조회 

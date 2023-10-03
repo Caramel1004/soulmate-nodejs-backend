@@ -10,7 +10,10 @@ import { hasJsonWebToken, hasFile } from '../validator/valid.js';
 const router = Router();
 
 // POST /v1/user/signup
-router.post('/signup', userController.postSignUp);// 1. 회원가입
+router.post('/signup',
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('photo'),
+    filesHandler.saveUploadedUserPhoto,
+    userController.postSignUp);// 1. 회원가입
 
 // POST /v1/user/login
 router.post('/login', userController.postLogin);// 2. 로그인 요청한 유저 조회

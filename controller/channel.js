@@ -112,7 +112,7 @@ const channelController = {
             const { userId, authStatus } = req.user;
             const channelName = req.body.channelName;
             const open = req.body.open;
-            let thumbnail = req.body.thumbnail;
+            let thumbnail = req.body.fileUrl;
             const category = req.body.category;
             const comment = req.body.comment;
 

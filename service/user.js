@@ -10,6 +10,7 @@ const userService = {
     // 1. 회원 가입
     postSignUp: async (body, next) => {
         try {
+            body.photo = body.fileUrls[0];
             const user = new User(body);
 
             const savedUser = await user.save();
@@ -19,7 +20,7 @@ const userService = {
             const status = successType.S02.s201;
             return status;
         } catch (err) {
-            next(err);
+            next(err); 
         }
     },
     // 2. 회원 로그인
@@ -168,12 +169,17 @@ const userService = {
     patchEditMyProfileByReqUser: async (userId, body, next) => {
         try {
             const { hasNameToBeEdit, hasPhotoToBeEdit, hasPhoneToBeEdit, data } = body;
-            console.log(body);
+
             // 1. 유저 존재 여부
             const user = await User.findById(userId).select({ _id: 1 });
             hasUser(user);
 
-            let updatedData = {};
+            const updatedData = {
+                hasNameToBeEdit: hasNameToBeEdit,
+                hasPhotoToBeEdit: hasPhotoToBeEdit,
+                hasPhoneToBeEdit: hasPhoneToBeEdit
+            };
+            
             switch ('true') {
                 case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
                     updatedData.data = data;
