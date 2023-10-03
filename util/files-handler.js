@@ -26,6 +26,7 @@ const fileFilter = (req, file, callback) => {
 const filesHandler = {
     fileStorage: fileStorage,
     fileFilter: fileFilter,
+    // 1. 워크스페이스, 채팅방에 올린 파일 핸들러
     saveUploadedFiles: async (req, res, next) => {
         try {
             const { files } = req.body;
@@ -55,6 +56,7 @@ const filesHandler = {
             next(error);
         }
     },
+    // 2. 유저 프로필 사진 파일 핸들러
     saveUploadedUserPhoto: async (req, res, next) => {
         try {
             console.log(req.body);
@@ -84,6 +86,7 @@ const filesHandler = {
             next(error);
         }
     },
+    // 3. 채널 썸네일 이미지 파일 핸들러
     saveUploadedChannelThumbnail: async (req, res, next) => {
         try {
             const { thumbnail } = req.body;
