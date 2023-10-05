@@ -35,7 +35,7 @@ export const hasJsonWebToken = async (req, res, next) => {
 // 채팅 내용 유무
 export function hasChat(req, res, next) {
     try {
-        if (req.body.chat == undefined || req.body.chat == null || req.body.chat == "") {
+        if ((req.body.chat == undefined || req.body.chat == null || req.body.chat == "") && (!req.body.files)) {
             throw new ValidationError('요구된 채팅 내용이 없습니다.');
         }
         next();
