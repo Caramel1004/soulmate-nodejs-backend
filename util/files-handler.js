@@ -13,7 +13,7 @@ const fileStorage = multer.diskStorage({
 
 // 파일 확장자 검사
 const fileFilter = (req, file, callback) => {
-    const fileType = ['image/jpeg', 'image/png', 'image/jpg'];
+    const fileType = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
     const mimeType = fileType.find(fileType => fileType === file.mimetype);
     if (mimeType) {
         callback(null, true);
