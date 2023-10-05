@@ -520,7 +520,7 @@ const channelService = {
                 }
             });
 
-            const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'true');
+            const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'Y' || workSpace.open == 'true');
 
             return {
                 status: successType.S02.s200,
