@@ -122,8 +122,8 @@ const chatService = {
             next(err);
         }
     },
-    // 3. 실시간 채팅
-    postSendChat: async (body, channelId, chatRoomId, userId, next) => {
+    // 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트
+    postSendChatAndUploadFilesToChatRoom: async (body, channelId, chatRoomId, userId, next) => {
         try {
             // 1. 채널에 조회 => 조회 실패하면 에러 throw
             const channel = await Channel.findById(channelId).select({ chatRooms: 1 });
@@ -160,7 +160,7 @@ const chatService = {
                 status: status,
                 chatRoom: chatRoom,
                 matchedUser: matchedUser,
-                chat: savedChat.chat
+                chatAndFileUrls: savedChat
             }
         } catch (err) {
             next(err);
