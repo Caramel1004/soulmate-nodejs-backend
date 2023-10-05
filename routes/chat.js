@@ -22,7 +22,12 @@ router.post('/channel-members/:channelId', chatController.postLoadUsersInChannel
 router.get('/:channelId/:chatRoomId', hasJsonWebToken, chatController.getLoadChatRoom);// 1. 채팅방 세부정보 로딩
 
 // POST /v1/chat/:channelId/:chatRoomId
-router.post('/:channelId/:chatRoomId', hasJsonWebToken, multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('chat'), hasChat, chatController.postSendChat);// 3. 실시간 채팅
+router.post('/:channelId/:chatRoomId',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    hasChat,
+    filesHandler.saveUploadedFiles,
+    chatController.postSendChatAndUploadFilesToChatRoom);// 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
 
 // POST /v1/chat/upload-file/:channelId/:chatRoomId
 router.post('/upload-file/:channelId/:chatRoomId',
