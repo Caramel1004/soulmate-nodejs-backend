@@ -34,13 +34,13 @@ router.post('/create-post/:channelId/:workSpaceId',
 );// 2. 게시물 생성
 
 //POST /v1/workspace/post/create-reply/:channelId/:workSpaceId
-router.post('/post/create-reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.postCreateReply);// 3. 댓글 달기
+router.post('/post/create-reply/:channelId/:workSpaceId', hasJsonWebToken, multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'), workspaceController.postCreateReply);// 3. 댓글 달기
 
 //DELETE /v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId
 router.delete('/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId', hasJsonWebToken, workspaceController.deleteReplyByCreatorInPost);// 3. 댓글 삭제
 
 //PATCH /v1/workspace/post/edit-reply/:channelId/:workSpaceId
-router.patch('/post/edit-reply/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditReplyByCreatorInPost);// 3. 댓글 수정
+router.patch('/post/edit-reply/:channelId/:workSpaceId', hasJsonWebToken, multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'), workspaceController.patchEditReplyByCreatorInPost);// 3. 댓글 수정
 
 //PATCH /v1/workspace/invite/:channelId/:workSpaceId
 router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchAddMemberToWorkSpace);// 4. 워크스페이스에 팀원 초대
