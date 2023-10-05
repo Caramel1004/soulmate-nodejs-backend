@@ -55,8 +55,8 @@ const chatController = {
             next(err);
         }
     },
-    // 3. 실시간 채팅
-    postSendChat: async (req, res, next) => {
+    // 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+    postSendChatAndUploadFilesToChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
             /**
@@ -64,17 +64,19 @@ const chatController = {
              * 해당 채팅룸 doc아이디
              */
             const { channelId, chatRoomId } = req.params;
-            const reqChat = req.body.chat;// 저장할 채팅
+            const { chat, fileUrls } = req.body;// 저장할 채팅
 
-            console.log('reqChat: ', reqChat);
+            console.log('chat: ', chat);
+            console.log('fileUrls: ', fileUrls);
 
             //요청 바디
             const body = {
-                chat: reqChat,
+                chat: chat,
+                fileUrls: fileUrls,
                 creator: userId
             }
 
-            const data = await chatService.postSendChat(body, channelId, chatRoomId, userId, next);// 실시간으로 업데이트할 리턴 값
+            const data = await chatService.postSendChatAndUploadFilesToChatRoom(body, channelId, chatRoomId, userId, next);// 실시간으로 업데이트할 리턴 값
 
             hasReturnValue(data);
 
@@ -83,7 +85,7 @@ const chatController = {
             serverIO.emit('sendChat', {
                 status: data.status,
                 chatRoom: data.chatRoom,
-                currentChat: data.chat,
+                currentChat: data.chatAndFileUrls,
                 photo: data.matchedUser.photo,
                 name: data.matchedUser.name
             });
