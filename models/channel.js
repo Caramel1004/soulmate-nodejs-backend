@@ -55,13 +55,19 @@ const channelSchema = new Schema({
             ref: 'ChatRoom'
         }
     ],
+    feeds: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Feed'
+        }
+    ],
     createdAt: {
         type: Date
     }
 }, { timestamps: true });
 
 // Hook 함수 정의
-channelSchema.post('save', () => {
+channelSchema.post('post', async () => {
     console.log('몽고디비 데이터베이스에 데이터 저장 성공');
 })
 
