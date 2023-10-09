@@ -311,6 +311,24 @@ const channelController = {
         } catch (err) {
             next(err);
         }
+    },
+    postCreateFeedToChannel: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId } = req.params;
+            const { title, content, fileUrls } = req.body;
+
+            const data = await channelService.postCreateFeedToChannel(userId, channelId, title, content, fileUrls, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                feed: data.feed
+            })
+        } catch (err) {
+            next(err);
+        }
     }
 };
 

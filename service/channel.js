@@ -1,10 +1,11 @@
 import Channel from '../models/channel.js';
+import { Feed } from '../models/feed.js';
 import { User } from '../models/user.js';
 import { ChatRoom } from '../models/chat-room.js';
 import { WorkSpace } from '../models/workspace.js';
 
 import { successType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel } from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel, hasFeed } from '../validator/valid.js';
 import channel from '../models/channel.js';
 
 /**
@@ -348,6 +349,18 @@ const channelService = {
                 .populate('members', {
                     name: 1,
                     photo: 1
+                })
+                .populate({
+                    path: 'feeds',
+                    populate: {
+                        path: 'creator',
+                        select: 'name photo'
+                    },
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    }
                 });
 
             hasChannelDetail(channel);
@@ -413,7 +426,7 @@ const channelService = {
                         }
                     }
                 });
-   
+
             const userChatRooms = chatRoomList.filter(chatRoom => {
                 const hasChatRoom = chatRoom.users.find(user => user._id.toString() === userId.toString());
                 if (hasChatRoom) {
@@ -463,7 +476,7 @@ const channelService = {
             body.admins = [reqUserId];
             body.creator = reqUserId;
             // 1. 워크스페이스 생성
-            const workSpace = await WorkSpace.create(body)
+            const workSpace = await WorkSpace.create(body);
 
             hasWorkSpace(workSpace);
 
@@ -526,6 +539,44 @@ const channelService = {
                 status: successType.S02.s200,
                 workSpaces: userWorkSpaces,
                 openWorkSpaces: openWorkSpaces
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    postCreateFeedToChannel: async (userId, channelId, title, content, imageUrls, next) => {
+        try {
+            // 1. 피드스키마에 피드 저장
+            const feed = await Feed.create({
+                channelId: channelId,
+                title: title,
+                content: content,
+                imageUrls: imageUrls,
+                creator: userId
+            });
+            hasFeed(feed);
+            console.log(feed);
+            // 2. 해당 채널아이디 채널 조회
+            const channel = await Channel.findById(channelId)
+                .select({ feeds: 1, members: 1 })
+                .populate('members', {
+                    name: 1,
+                    photo: 1
+                });
+            hasChannelDetail(channel);
+
+            // 3. 피드 배열에 푸쉬
+            channel.feeds.push(feed._id);
+
+            //4. 채널 저장
+            await channel.save();
+
+            // 5. 채널멤버와 크리에이터 매칭
+            const creatorObj = channel.members.find(member => member._id.toString() === feed.creator.toString());
+            feed._doc.creator = creatorObj;
+            return {
+                status: successType.S02.s200,
+                feed: feed
             }
         } catch (err) {
             next(err);
