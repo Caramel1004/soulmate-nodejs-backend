@@ -80,6 +80,19 @@ router.get('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSp
 //PATCH /v1/channel/exit/:channelId
 router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 6-2. 채널 퇴장
 
+// POST /v1/channel/create-feed/:channelId
+router.post('/create-feed/:channelId',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    filesHandler.saveUploadedFiles,
+    channelController.postCreateFeedToChannel);// 20. 홈채널에 내피드 생성
+
+// PATCH /v1/channel//edit-feed/:channelId
+// router.patch('/channel/edit-feed/:channelId', accessAuthorizedToken, multer({ storage: memoryStorage }).array('data', 1), clientController.patchEditMyProfileByReqUser);// 21. 홈채널에 내피드 수정
+
+// DELETE /v1/channel//delete-feed/:channelId
+// router.patch('/channel/delete-feed/:channelId', accessAuthorizedToken, multer({ storage: memoryStorage }).array('data', 1), clientController.patchEditMyProfileByReqUser);// 22. 홈채널에 내피드 삭제
+
 
 
 export default router;
