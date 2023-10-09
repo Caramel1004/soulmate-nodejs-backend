@@ -59,7 +59,6 @@ const filesHandler = {
     // 2. 유저 프로필 사진 파일 핸들러
     saveUploadedUserPhoto: async (req, res, next) => {
         try {
-            console.log(req.body);
             const { photo } = req.body;
             req.body.fileUrls = [];
 
