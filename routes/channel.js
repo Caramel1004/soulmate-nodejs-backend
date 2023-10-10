@@ -93,6 +93,9 @@ router.post('/create-feed/:channelId',
 // DELETE /v1/channel//delete-feed/:channelId
 // router.patch('/channel/delete-feed/:channelId', accessAuthorizedToken, multer({ storage: memoryStorage }).array('data', 1), clientController.patchEditMyProfileByReqUser);// 22. 홈채널에 내피드 삭제
 
+// PATCH /v1/channel/plus-or-minus-feed-like
+router.patch('/plus-or-minus-feed-like', hasJsonWebToken, channelController.patchPlusOrMinusNumberOfLikeInFeed);// 22. 홈채널에 내피드 삭제
+
 
 
 export default router;

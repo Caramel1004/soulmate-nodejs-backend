@@ -581,6 +581,39 @@ const channelService = {
         } catch (err) {
             next(err);
         }
+    },
+    patchPlusOrMinusNumberOfLikeInFeed: async (userId, channelId, feedId, next) => {
+        try {
+            // 1. 유저 존재 여부
+            const hasUserData = await User.exists({ _id: userId });
+            hasUser(hasUserData);
+    
+            // 2. 채널 조회
+            const channel = await Channel.findOne({
+                _id: channelId
+            })
+            .select({
+                feeds: 1
+            })
+            .populate({
+                path: 'feeds',
+                match: {
+                    _id: feedId
+                },
+                select: 'likes'
+            })
+            hasChannelDetail(channel);
+            console.log(channel);
+            channel.feeds[0].likes.push(userId);
+            const result = await channel.save();
+            console.log(result);
+            return {
+                status: successType.S02.s200,
+                numberOfLikeInFeed: channel.feeds[0].likes.length
+            }
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

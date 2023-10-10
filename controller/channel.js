@@ -329,6 +329,23 @@ const channelController = {
         } catch (err) {
             next(err);
         }
+    },
+    patchPlusOrMinusNumberOfLikeInFeed: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId, feedId } = req.body;
+
+            const data = await channelService.patchPlusOrMinusNumberOfLikeInFeed(userId, channelId, feedId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                numberOfLikeInFeed: data.numberOfLikeInFeed
+            })
+        } catch (err) {
+            next(err);
+        }
     }
 };
 
