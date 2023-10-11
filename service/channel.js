@@ -584,10 +584,12 @@ const channelService = {
     },
     patchPlusOrMinusNumberOfLikeInFeed: async (userId, channelId, feedId, next) => {
         try {
+
             // 1. 유저 존재 여부
             const hasUserData = await User.exists({ _id: userId });
             hasUser(hasUserData);
     
+            // channelSchema -> feedSchema
             // 2. 채널 조회
             const channel = await Channel.findOne({
                 _id: channelId
@@ -603,13 +605,28 @@ const channelService = {
                 select: 'likes'
             })
             hasChannelDetail(channel);
-            console.log(channel);
-            channel.feeds[0].likes.push(userId);
-            const result = await channel.save();
-            console.log(result);
+
+            const hasUserInFeedLikes = channel.feeds[0].likes.includes(userId.toString());
+
+            const feed = await Feed.findOne({
+                channelId: channel._id,
+                _id: channel.feeds[0]._id
+            })
+            .select({
+                likes: 1
+            })
+
+            if(!hasUserInFeedLikes) {// 피드 좋아요 배열에 유저없으면 배열에 푸쉬
+                feed.likes.push(userId);
+            }else {// 피드 좋아요 배열에 유저 있으면 배열에서 삭제(필터링)
+                feed.likes = [...feed.likes.filter(like => like.toString() !== userId.toString())];
+            }
+            
+            await feed.save();
+
             return {
                 status: successType.S02.s200,
-                numberOfLikeInFeed: channel.feeds[0].likes.length
+                numberOfLikeInFeed: feed.likes.length
             }
         } catch (err) {
             next(err);
