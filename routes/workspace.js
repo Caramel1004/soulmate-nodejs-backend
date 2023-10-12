@@ -61,6 +61,10 @@ router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceControll
 router.delete('/delete-post/:channelId/:workSpaceId/:postId', hasJsonWebToken, workspaceController.deletePostByCreatorInWorkSpace);// 9. 워크스페이스에서 해당 유저의 게시물 삭제
 
 // PATCH /v1/workspace/edit-post/:channelId/:workSpaceId
-router.patch('/edit-post/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditPostByCreatorInWorkSpace);// 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
+router.patch('/edit-post/:channelId/:workSpaceId',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    filesHandler.saveUploadedFiles,
+    workspaceController.patchEditPostByCreatorInWorkSpace);// 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
 
 export default router;
