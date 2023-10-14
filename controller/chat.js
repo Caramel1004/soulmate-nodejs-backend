@@ -181,6 +181,24 @@ const chatController = {
         } catch (err) {
             next(err);
         }
+    },
+    // 7. 채팅방 파일함 리스트 조회
+    getLoadFilesInChatRoom: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId, chatRoomId } = req.params;
+
+            const data = await chatService.getLoadFilesInChatRoom(userId, channelId, chatRoomId, next);
+            hasReturnValue(data)
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                chatsWithFileUrlsInChatRoom: data.chatsWithFileUrlsInChatRoom
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

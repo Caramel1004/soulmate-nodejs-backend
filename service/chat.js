@@ -315,6 +315,47 @@ const chatService = {
         } catch (err) {
             next(err);
         }
+    },
+    getLoadFilesInChatRoom: async (userId, channelId, chatRoomId, next) => {
+        try {
+            // channelSchema -> chatRoomSchema -> chatSchema property: fileUrls
+            const channel = await Channel.findById(channelId)
+            .select({
+                chatRooms: 1
+            })
+            .populate({
+                path: 'chatRooms',
+                match: {
+                    _id: chatRoomId,
+                    channelId: channelId
+                },
+                select: 'chats',
+                populate: {
+                    path: 'chats',
+                    select: 'fileUrls createdAt',
+                    match: {
+                        fileUrls: {
+                            $gt: 0
+                        }
+                    },
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        },
+                    }
+                }
+            });
+            hasChannelDetail(channel);
+            const chatsWithFileUrlsInChatRoom = channel.chatRooms[0].chats
+            console.log(channel);
+            console.log(chatsWithFileUrlsInChatRoom);
+            return {
+                status: successType.S02.s200,
+                chatsWithFileUrlsInChatRoom: chatsWithFileUrlsInChatRoom
+            };
+        } catch (err) {
+            next(err);
+        }
     }
 }
 
