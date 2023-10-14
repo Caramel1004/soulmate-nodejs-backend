@@ -358,7 +358,7 @@ const channelService = {
                     },
                     options: {
                         sort: {
-                            createdAt: -1
+                            createdAt: 1
                         }
                     }
                 });
