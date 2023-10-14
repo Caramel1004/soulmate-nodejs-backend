@@ -96,7 +96,7 @@ const filesHandler = {
                 const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
                 return parsedJson;
             });
-            console.log(parsedThumbnail);
+            
             // 두번째인수에 파일을 버퍼형태로 넣어줘야 파일 볼 수 있음
             const fileId = new Date().getTime().toString(36);
             const mimeType = parsedThumbnail.mimetype.split('/')[1];
