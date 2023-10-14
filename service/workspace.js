@@ -65,7 +65,7 @@ const workspaceService = {
             });
 
             // 본인이 쓴 게시물 필터링
-            if(sortType === 'creator'){
+            if (sortType === 'creator') {
                 console.log(sortType);
                 workSpace.posts = workSpace.posts.filter(post => {
                     if (post._doc.isCreator) {
@@ -421,27 +421,37 @@ const workspaceService = {
     // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
     patchEditPostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, body, next) => {
         try {
-            const { postId, content } = body;
+            const { postId, content, fileUrls } = body;
             /** 1) 해당 게시물의 생성자와 수정요청한 유저랑 일치하는지 확인
-              * @params {ObjectId} 요청한 게시물 아이디 
-              * @return {object} (property)워크스페이스에 참여하고있는 유저들
-              * */
+             * @params {ObjectId} 요청한 게시물 아이디 
+             * @return {object} (property)워크스페이스에 참여하고있는 유저들
+             * */
             const matchedPost = await Post.findById(postId)
                 .select({
                     content: 1,
+                    fileUrls: 1,
                     creator: 1
                 })
-                .populate('creator');
+                .populate({
+                    path: 'creator',
+                    select: '_id'
+                });
 
             hasPost(matchedPost);
 
-            const user = matchedPost.creator._id.toString() === userId.toString() ? matchedPost.creator : null;
+            const user = (matchedPost.creator._id.toString() === userId.toString()) ? matchedPost.creator : null;
             hasUser(user);
 
             // 2) 수정된 게시물 내용 저장
             matchedPost.content = content;
-            await matchedPost.save();
 
+            // 3) 파일경로 저장
+            for(const fileUrl of fileUrls) {
+                matchedPost.fileUrls.push(fileUrl);
+            }
+
+            await matchedPost.save();
+            console.log(matchedPost);
             return {
                 status: successType.S02.s200,
                 updatedPost: matchedPost
