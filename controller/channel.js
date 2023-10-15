@@ -200,18 +200,17 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const channelId = req.params.channelId;
-            const invitedUserId = req.body.invitedUserId;
-            console.log('invitedUserId: ', invitedUserId);
-            console.log('channelId: ', channelId);
+            const selectedIds = req.body.selectedIds;
 
-            const data = await channelService.patchInviteUserToChannel(channelId, invitedUserId, next);
+            const data = await channelService.patchInviteUserToChannel(channelId, selectedIds, next);
 
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 authStatus: authStatus,
                 status: data.status,
-                channelId: data.channel._id
+                channel: data.channel,
+                users: data.users
             });
         } catch (err) {
             next(err);
