@@ -374,26 +374,44 @@ const channelService = {
         }
     },
     // 6-1. 해당채널에 유저 초대
-    patchInviteUserToChannel: async (channelId, invitedUserId, next) => {
+    patchInviteUserToChannel: async (channelId, selectedIds, next) => {
         try {
             const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
 
-            // 이미 유저가 참여하고 있는지 확인
-            const existUser = matchedChannel.members.find(id => id.toString() === invitedUserId.toString());
-            hasExistUserInChannel(existUser);
+            // 채널에 멤버가 존재하면 필터링 => 있으면 삭제 필터링 => 없는 사람만 배열에 남기기
+            const notExistUsersToChannel = selectedIds.filter(selectedId => {
+                for (const existUser of matchedChannel.members) {
+                    if (selectedId.toString() === existUser.toString()) {
+                        break;
+                    }
+                    return selectedId;
+                }
+            });
 
-            matchedChannel.members.push(invitedUserId);
+            console.log(notExistUsersToChannel);
+
+            matchedChannel.members = [...notExistUsersToChannel, ...matchedChannel.members];
             await matchedChannel.save();
 
-            const user = await User.findById(invitedUserId).select({ channels: 1 });
-            hasUser(user);
-
-            user.channels.push(matchedChannel._id);
-            await user.save();
+            // 비교연산자 사용 $in -> 첫번쨰 조건인수
+            // 배열인 프로퍼티에 값 넣기 $push -> 두번째 업데이트할 document
+            // user를 조회하지 읺고 바로 조건에 맞는 데이터를 업데이트
+            const users = await User.updateMany({
+                _id: {
+                    $in: notExistUsersToChannel
+                }
+            },
+                {
+                    $push: {
+                        channels: channelId
+                    }
+                }
+            );
 
             return {
                 status: successType.S02.s200,
-                channel: matchedChannel
+                channel: matchedChannel,
+                users: users
             }
         } catch (err) {
             next(err);
@@ -588,22 +606,22 @@ const channelService = {
             // 1. 유저 존재 여부
             const hasUserData = await User.exists({ _id: userId });
             hasUser(hasUserData);
-    
+
             // channelSchema -> feedSchema
             // 2. 채널 조회
             const channel = await Channel.findOne({
                 _id: channelId
             })
-            .select({
-                feeds: 1
-            })
-            .populate({
-                path: 'feeds',
-                match: {
-                    _id: feedId
-                },
-                select: 'likes'
-            })
+                .select({
+                    feeds: 1
+                })
+                .populate({
+                    path: 'feeds',
+                    match: {
+                        _id: feedId
+                    },
+                    select: 'likes'
+                })
             hasChannelDetail(channel);
 
             const hasUserInFeedLikes = channel.feeds[0].likes.includes(userId.toString());
@@ -612,16 +630,16 @@ const channelService = {
                 channelId: channel._id,
                 _id: channel.feeds[0]._id
             })
-            .select({
-                likes: 1
-            })
+                .select({
+                    likes: 1
+                })
 
-            if(!hasUserInFeedLikes) {// 피드 좋아요 배열에 유저없으면 배열에 푸쉬
+            if (!hasUserInFeedLikes) {// 피드 좋아요 배열에 유저없으면 배열에 푸쉬
                 feed.likes.push(userId);
-            }else {// 피드 좋아요 배열에 유저 있으면 배열에서 삭제(필터링)
+            } else {// 피드 좋아요 배열에 유저 있으면 배열에서 삭제(필터링)
                 feed.likes = [...feed.likes.filter(like => like.toString() !== userId.toString())];
             }
-            
+
             await feed.save();
 
             return {
