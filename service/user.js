@@ -3,13 +3,18 @@ import Channel from '../models/channel.js';
 
 import db from '../util/transaction.js'
 import { successType, errorType } from '../util/status.js';
-import { hasUser, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
+import { hasUser, hasUserInDB, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
 import { User, SNS_Account } from '../models/user.js';
 
 const userService = {
     // 1. 회원 가입
     postSignUp: async (body, next) => {
         try {
+            // 중복 이메일 체크
+            const hasUseInDB = await User.exists({ email: body.email });
+
+            hasUserInDB(hasUseInDB);
+
             body.photo = body.fileUrls[0];
             const user = new User(body);
 
@@ -20,7 +25,8 @@ const userService = {
             const status = successType.S02.s201;
             return status;
         } catch (err) {
-            next(err); 
+            err.path = 'email';
+            next(err);
         }
     },
     // 2. 회원 로그인
@@ -179,7 +185,7 @@ const userService = {
                 hasPhotoToBeEdit: hasPhotoToBeEdit,
                 hasPhoneToBeEdit: hasPhoneToBeEdit
             };
-            
+
             switch ('true') {
                 case hasNameToBeEdit: await User.updateOne({ _id: userId }, { name: data });
                     updatedData.data = data;
