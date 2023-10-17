@@ -132,9 +132,10 @@ const channelController = {
 
             hasReturnValue(data);
 
-            res.status(data.code).json({
+            res.status(data.status.code).json({
                 authStatus: authStatus,
-                status: data.status
+                status: data.status,
+                channelId: data.channelId
             });
         } catch (err) {
             next(err);
