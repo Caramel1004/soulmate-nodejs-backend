@@ -505,6 +505,45 @@ const workspaceService = {
         } catch (err) {
             next(err);
         }
+    },
+    getLoadFilesInWorkSpace: async (userId, channelId, workSpaceId, next) => {
+        try {
+            // channelSchema -> chatRoomSchema -> chatSchema property: fileUrls
+            const channel = await Channel.findById(channelId)
+            .select({
+                workSpaces: 1
+            })
+            .populate({
+                path: 'workSpaces',
+                match: {
+                    _id: workSpaceId,
+                    channelId: channelId
+                },
+                select: 'posts',
+                populate: {
+                    path: 'posts',
+                    select: 'fileUrls createdAt',
+                    match: {
+                        fileUrls: {
+                            $gt: 0
+                        }
+                    },
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        },
+                    }
+                }
+            });
+            hasChannelDetail(channel);
+            
+            return {
+                status: successType.S02.s200,
+                channel: channel
+            };
+        } catch (err) {
+            next(err);
+        }
     }
 }
 

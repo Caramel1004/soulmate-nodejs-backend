@@ -204,6 +204,24 @@ const workspaceController = {
         } catch (err) {
             next(err);
         }
+    },
+    // 7. 채팅방 파일함 리스트 조회
+    getLoadFilesInWorkSpace: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId, workSpaceId } = req.params;
+
+            const data = await workspaceService.getLoadFilesInWorkSpace(userId, channelId, workSpaceId, next);
+            hasReturnValue(data)
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                channel: data.channel
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 }
 
