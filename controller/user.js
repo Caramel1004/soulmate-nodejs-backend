@@ -9,6 +9,7 @@ const userController = {
         try {
             const body = req.body;
             const data = await userService.postSignUp(body, next);//successType
+            hasReturnValue(data);
 
             res.status(data.code).json({
                 data: data
@@ -112,7 +113,6 @@ const userController = {
     getUserInfo: async (req, res, next) => {
         try {
             const name = req.params.name;
-            console.log(name)
             const channelId = req.body.channelId;
 
             const data = await userService.getUserInfo(channelId, name, next);
