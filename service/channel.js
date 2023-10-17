@@ -287,10 +287,12 @@ const channelService = {
 
             // 4. 해당 유저의 채널리스트에 채널아이디 추가
             matchedUser.channels.push(createChannel._id);
-
             await matchedUser.save();
 
-            return successType.S02.s201;
+            return {
+                status: successType.S02.s201,
+                channelId: createChannel._id
+            };
         } catch (err) {
             next(err);
         }
