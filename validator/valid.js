@@ -103,6 +103,13 @@ export const hasUser = user => {
     return;
 }
 
+export const hasUserInDB = user => {
+    if (user) {
+        throw new ValidationExistDataError('이미 이메일이 존재 합니다.');
+    }
+    return;
+}
+
 export const vaildatePasswordOfUser = (userPassword, reqPassword) => {
     if (userPassword !== reqPassword) {
         throw new ValidationError('요청하신 이메일과 비밀번호가 일치하는 회원이 없습니다.');
