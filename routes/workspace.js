@@ -67,4 +67,7 @@ router.patch('/edit-post/:channelId/:workSpaceId',
     filesHandler.saveUploadedFiles,
     workspaceController.patchEditPostByCreatorInWorkSpace);// 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
 
+// GET /v1/workspace/file-list/:channelId/:workSpaceId
+router.get('/file-list/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getLoadFilesInWorkSpace);// 7. 채팅방 파일함 리스트 조회
+
 export default router;
