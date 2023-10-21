@@ -189,7 +189,7 @@ const chatController = {
             const { channelId, chatRoomId } = req.params;
 
             const data = await chatService.getLoadFilesInChatRoom(userId, channelId, chatRoomId, next);
-            hasReturnValue(data)
+            hasReturnValue(data);
 
             res.status(data.status.code).json({
                 authStatus: authStatus,

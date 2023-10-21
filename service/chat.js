@@ -347,8 +347,6 @@ const chatService = {
             });
             hasChannelDetail(channel);
             const chatsWithFileUrlsInChatRoom = channel.chatRooms[0].chats
-            console.log(channel);
-            console.log(chatsWithFileUrlsInChatRoom);
             return {
                 status: successType.S02.s200,
                 chatsWithFileUrlsInChatRoom: chatsWithFileUrlsInChatRoom

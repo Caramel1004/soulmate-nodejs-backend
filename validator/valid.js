@@ -70,8 +70,8 @@ export const hasChannelDetail = channelDetail => {
     return;
 }
 
-export const hasChatRoom = channelDetail => {
-    if (!channelDetail) {
+export const hasChatRoom = chatRoomDetail => {
+    if (!chatRoomDetail) {
         throw new NotFoundDataError('대화방이 존재하지 않습니다.');
     }
     return;
