@@ -92,7 +92,6 @@ const channelController = {
             const { userId, authStatus } = req.user;
             const searchWord = req.query.searchWord;//찾을 종류
 
-            console.log('searchWord: ', searchWord);
             const data = await channelService.getChannelListByUserId(userId, searchWord, next);
 
             hasReturnValue(data);
@@ -242,8 +241,10 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const channelId = req.params.channelId;
+            const { searchWord } = req.query;
+            console.log(searchWord);
 
-            const data = await channelService.getChatRoomListByChannelAndUserId(userId, channelId, next);
+            const data = await channelService.getChatRoomListByChannelAndUserId(userId, channelId, searchWord, next);
 
             hasReturnValue(data);
 
