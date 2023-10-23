@@ -420,14 +420,15 @@ const channelService = {
         }
     },
     // 8. 채팅방 목록 조회
-    getChatRoomListByChannelAndUserId: async (userId, channelId, next) => {
+    getChatRoomListByChannelAndUserId: async (userId, channelId, searchWord, next) => {
         try {
             /** 1) 채널아이디와 매칭된 채팅방 목록 조회
              * @params {ObjectId} 요청한 채널 아이디 
              * @return {Array} 매칭된 채널이 보유하고있는 채팅방 목록
              * */
             const chatRoomList = await ChatRoom.find({
-                channelId: channelId
+                channelId: channelId,
+                roomName: { $regex: searchWord, $options: 'i' }
             },
                 {
                     channelId: 1,
