@@ -346,6 +346,21 @@ const channelController = {
         } catch (err) {
             next(err);
         }
+    },
+    getSearchChannelListBySearchKeyWord: async (req, res, next) => {
+        try {
+            const { category, searchWord } = req.query;
+
+            const data = await channelService.getSearchChannelListBySearchKeyWord(category, searchWord, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                status: data.status,
+                channels: data.channels
+            })
+        } catch (err) {
+            next(err);
+        }
     }
 };
 

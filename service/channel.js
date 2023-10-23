@@ -604,7 +604,6 @@ const channelService = {
     },
     patchPlusOrMinusNumberOfLikeInFeed: async (userId, channelId, feedId, next) => {
         try {
-
             // 1. 유저 존재 여부
             const hasUserData = await User.exists({ _id: userId });
             hasUser(hasUserData);
@@ -647,6 +646,50 @@ const channelService = {
             return {
                 status: successType.S02.s200,
                 numberOfLikeInFeed: feed.likes.length
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    getSearchChannelListBySearchKeyWord: async (category, searchWord, next) => {
+        try {
+            const keyword = new RegExp(searchWord);
+            console.log(keyword)
+            // const channels = await Channel.find({
+            //     $or: [{ channelName: new RegExp(searchWord) }]
+            // })
+            //     .select({
+            //         channelName: 1,
+            //         thumbnail: 1,
+            //         category: 1,
+            //         members: 1
+            //     });
+            // const channels = await Channel.find({channelName: new RegExp(searchWord)})
+            //     .select({
+            //         channelName: 1,
+            //         thumbnail: 1,
+            //         category: 1,
+            //         members: 1
+            //     });
+            // const channels = await Channel.find({ $text: { $search: new RegExp(searchWord) } })
+            //     .select({
+            //         channelName: 1,
+            //         thumbnail: 1,
+            //         category: 1,
+            //         members: 1
+            //     });
+            const channels = await Channel.find({ channelName: { $regex: searchWord, $options: 'i' }, open: 'Y' })
+                .select({
+                    channelName: 1,
+                    thumbnail: 1,
+                    category: 1,
+                    members: 1
+                });
+            console.log(channels);
+
+            return {
+                status: successType.S02.s200,
+                channels: channels
             }
         } catch (err) {
             next(err);
