@@ -37,6 +37,9 @@ const router = Router();
 //GET /v1/channel/openchannel-list
 router.get('/openchannel-list', channelController.getOpenChannelList);//1. 오픈 채널 목록 조회
 
+// GET /v1/channel/open-channels-search
+router.get('/open-channels-search', channelController.getSearchChannelListBySearchKeyWord);
+
 //GET /v1/channel/openchannel-list/:channelId
 router.get('/openchannel-list/:channelId', channelController.getOpenChannelDetail);// 1-1. 오픈 채널 세부 정보 조회
 
