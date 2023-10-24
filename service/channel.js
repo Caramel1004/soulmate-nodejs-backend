@@ -298,8 +298,15 @@ const channelService = {
         }
     },
     // 4. 관심 채널 조회 
-    getWishChannelList: async (userId, searchWord, next) => {
+    getWishChannelList: async (userId, category, next) => {
         try {
+
+            const matchPropertyValue = {}
+            if(category != '') {
+                matchPropertyValue.category = {
+                    $in: [category]
+                };
+            }
             const user = await User.findOne()
                 .where('_id').equals(userId)
                 .select({
@@ -315,6 +322,7 @@ const channelService = {
                         comment: 1,
                         members: 1
                     },
+                    match: matchPropertyValue,
                     populate: { path: 'members', select: 'name photo' }
                 });
 
@@ -382,12 +390,14 @@ const channelService = {
 
             // 채널에 멤버가 존재하면 필터링 => 있으면 삭제 필터링 => 없는 사람만 배열에 남기기
             const notExistUsersToChannel = selectedIds.filter(selectedId => {
+                console.log(selectedId);
                 for (const existUser of matchedChannel.members) {
+                    console.log(existUser);
                     if (selectedId.toString() === existUser.toString()) {
-                        break;
+                        return;
                     }
-                    return selectedId;
                 }
+                return selectedId;
             });
 
             console.log(notExistUsersToChannel);
