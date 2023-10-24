@@ -28,7 +28,7 @@ router.post('/kakao/oauth/token', userController.postRequestTokenToKakao);// 4. 
 router.post('/sns-account/signup', userController.postSignUpOrLoginBySNSAccount);// 5. 카카오 유저 정보 조회 -> 1. 회원가입
 
 // POST /v1/user/userInfo/:name
-router.post('/userInfo/:name', userController.getUserInfo);// 3. 유저 조회
+router.post('/userInfo/:name', userController.getSearchUser);// 3. 유저 조회
 
 // GET /v1/user/myprofile
 router.get('/myprofile', hasJsonWebToken, userController.getMyProfile);
