@@ -242,9 +242,14 @@ const channelController = {
             const { userId, authStatus } = req.user;
             const channelId = req.params.channelId;
             const { searchWord } = req.query;
-            console.log(searchWord);
 
-            const data = await channelService.getChatRoomListByChannelAndUserId(userId, channelId, searchWord, next);
+            let keyword = searchWord;
+
+            if(keyword == 'undefined') {
+                keyword = '';
+            }
+
+            const data = await channelService.getChatRoomListByChannelAndUserId(userId, channelId, keyword, next);
 
             hasReturnValue(data);
 
@@ -300,7 +305,15 @@ const channelController = {
     getWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
-            const data = await channelService.getWorkSpaceListByChannelIdAndUserId(req.params.channelId, userId, next);
+            const { searchWord } = req.query;
+            let keyword = searchWord;
+
+            console.log(typeof(searchWord))
+            if(keyword == 'undefined') {
+                keyword = '';
+            }
+
+            const data = await channelService.getWorkSpaceListByChannelIdAndUserId(req.params.channelId, keyword, userId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
