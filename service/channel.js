@@ -422,14 +422,22 @@ const channelService = {
     // 8. 채팅방 목록 조회
     getChatRoomListByChannelAndUserId: async (userId, channelId, searchWord, next) => {
         try {
+            const condition = {
+                channelId: channelId
+            }
+            if (searchWord != '' && searchWord != undefined) {
+                condition.roomName = {
+                    $regex: searchWord,
+                    $options: 'i'
+                }
+            }
+            console.log(condition);
             /** 1) 채널아이디와 매칭된 채팅방 목록 조회
              * @params {ObjectId} 요청한 채널 아이디 
              * @return {Array} 매칭된 채널이 보유하고있는 채팅방 목록
              * */
-            const chatRoomList = await ChatRoom.find({
-                channelId: channelId,
-                roomName: { $regex: searchWord, $options: 'i' }
-            },
+            const chatRoomList = await ChatRoom.find(
+                condition,
                 {
                     channelId: 1,
                     roomName: 1,
@@ -517,12 +525,20 @@ const channelService = {
         }
     },
     // 11. 워크스페이스 목록 조회
-    getWorkSpaceListByChannelIdAndUserId: async (channelId, userId, next) => {
+    getWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, userId, next) => {
         try {
-            const workSpaceList = await WorkSpace.find({
+            const condition = {
                 channelId: channelId
-            }).
-                select({
+            }
+            if (searchWord != '' && searchWord != undefined) {
+                condition.workSpaceName = {
+                    $regex: searchWord,
+                    $options: 'i'
+                }
+            }
+            console.log(condition);
+            const workSpaceList = await WorkSpace.find(condition)
+                .select({
                     _id: 1,
                     channelId: 1,
                     open: 1,
