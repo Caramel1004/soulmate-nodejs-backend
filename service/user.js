@@ -63,28 +63,32 @@ const userService = {
             next(err);
         }
     },
-    // 3. 유저 정보 조회
-    getUserInfo: async (channelId, name, next) => {
+    // 3. 검색 키워드에따른 유저 리스트 조회
+    getSearchUser: async (channelId, name, next) => {
         try {
-            const matchedUser = await User.findOne(
-                { name: name },
+            const matchedUsers = await User.find(
+                { name: { $regex: name, $options: 'i' } },
                 {
-                    email: 1,
                     name: 1,
                     photo: 1
                 });
-            console.log(matchedUser)
-            hasUser(matchedUser);
 
             const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
 
             // 이미 유저가 참여하고 있는지 확인
-            const existUser = matchedChannel.members.find(id => id.toString() === matchedUser._id.toString());
-            hasExistUserInChannel(existUser);
+            matchedUsers.map(user => {
+                const isChannelMember = matchedChannel.members.includes(user._id.toString());
+                if (isChannelMember) {
+                    user._doc.isChannelMember = true;// 채널 멤버에 속함
+                } else {
+                    user._doc.isChannelMember = false;// 채널 멤버 아님
+                }
+                return user;
+            });
 
             return {
                 status: successType.S02.s200,
-                matchedUser: matchedUser
+                matchedUsers: matchedUsers
             }
         } catch (err) {
             next(err);

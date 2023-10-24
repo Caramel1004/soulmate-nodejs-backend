@@ -110,18 +110,18 @@ const userController = {
         }
     },
     // 3. 유저 정보 조회
-    getUserInfo: async (req, res, next) => {
+    getSearchUser: async (req, res, next) => {
         try {
             const name = req.params.name;
             const channelId = req.body.channelId;
-
-            const data = await userService.getUserInfo(channelId, name, next);
+            console.log(name);
+            const data = await userService.getSearchUser(channelId, name, next);
 
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 status: data.status,
-                user: data.matchedUser
+                users: data.matchedUsers
             });
         } catch (err) {
             next(err)
