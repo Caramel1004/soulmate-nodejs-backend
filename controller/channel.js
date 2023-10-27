@@ -144,11 +144,17 @@ const channelController = {
     getWishChannelList: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
+            const { searchWord } = req.body;
+            let category = req.body.category;
 
-            const data = await channelService.getWishChannelList(userId, req.query.searchWord, next);
+            if(category == '전체') {
+                category = undefined;
+            }
+
+            const data = await channelService.getWishChannelList(userId, category, searchWord, next);
 
             hasReturnValue(data);
-            console.log(data);
+
             res.status(data.status.code).json({
                 authStatus: authStatus,
                 status: data.status,
@@ -241,11 +247,10 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const channelId = req.params.channelId;
-            const { searchWord } = req.query;
-
+            const { searchWord } = req.body;
             let keyword = searchWord;
 
-            if(keyword == 'undefined') {
+            if(keyword == undefined) {
                 keyword = '';
             }
 
@@ -305,11 +310,10 @@ const channelController = {
     getWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
-            const { searchWord } = req.query;
+            const { searchWord } = req.body;
             let keyword = searchWord;
 
-            console.log(typeof(searchWord))
-            if(keyword == 'undefined') {
+            if(keyword == undefined) {
                 keyword = '';
             }
 
@@ -361,11 +365,20 @@ const channelController = {
             next(err);
         }
     },
-    getSearchChannelListBySearchKeyWord: async (req, res, next) => {
+    getSearchOpenChannelListBySearchKeyWord: async (req, res, next) => {
         try {
-            const { category, searchWord } = req.query;
+            let searchWord = req.body.searchWord;
+            let category = req.body.category;
 
-            const data = await channelService.getSearchChannelListBySearchKeyWord(category, searchWord, next);
+            if(searchWord == undefined) {
+                searchWord = '';
+            }
+
+            if(category == '전체') {
+                category = undefined;
+            }
+
+            const data = await channelService.getSearchOpenChannelListBySearchKeyWord(category, searchWord, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
