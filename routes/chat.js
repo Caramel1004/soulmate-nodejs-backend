@@ -29,15 +29,6 @@ router.post('/:channelId/:chatRoomId',
     filesHandler.saveUploadedFiles,
     chatController.postSendChatAndUploadFilesToChatRoom);// 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
 
-// POST /v1/chat/upload-file/:channelId/:chatRoomId
-// router.post('/upload-file/:channelId/:chatRoomId',
-//     hasJsonWebToken,
-//     multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
-//     hasFile,
-//     filesHandler.saveUploadedFiles,
-//     chatController.postUploadFileToChatRoom
-// );// 4. 실시간 파일 업로드
-
 // PATCH /v1/chat/invite/:channelId/:chatRoomId
 router.patch('/invite/:channelId/:chatRoomId', hasJsonWebToken, chatController.patchInviteUserToChatRoom);// 5. 채팅방에 채널 멤버 초대
 
