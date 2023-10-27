@@ -298,15 +298,44 @@ const channelService = {
         }
     },
     // 4. 관심 채널 조회 
-    getWishChannelList: async (userId, category, next) => {
+    getWishChannelList: async (userId, category, searchWord, next) => {
         try {
-
-            const matchPropertyValue = {}
-            if(category != '') {
-                matchPropertyValue.category = {
-                    $in: [category]
-                };
+            let condition;
+            console.log(searchWord)
+            console.log(category)
+            // 1. 카테고리 + 서치워드
+            if(category != undefined && searchWord != undefined){
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    },
+                    category: {
+                        $in: [category]
+                    }
+                }
+            }else if(category != undefined && searchWord == undefined) {
+                condition = {
+                    open: 'Y',
+                    category: {
+                        $in: [category]
+                    }
+                }
+            }else if (category == undefined && searchWord != undefined) {
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    }
+                }
+            }else if(category == undefined && searchWord == undefined){
+                condition = {
+                    open: 'Y'
+                }
             }
+            console.log(condition)
             const user = await User.findOne()
                 .where('_id').equals(userId)
                 .select({
@@ -322,14 +351,12 @@ const channelService = {
                         comment: 1,
                         members: 1
                     },
-                    match: matchPropertyValue,
+                    match: condition,
                     populate: { path: 'members', select: 'name photo' }
                 });
 
             // const user = await User.findById(userId).select({wishChannels:1}).populate('wishChannels');
             const wishChannels = user.wishChannels;
-
-            console.log(wishChannels);
 
             if (!wishChannels) {
                 user.wishChannels = [];
@@ -432,22 +459,17 @@ const channelService = {
     // 8. 채팅방 목록 조회
     getChatRoomListByChannelAndUserId: async (userId, channelId, searchWord, next) => {
         try {
-            const condition = {
-                channelId: channelId
-            }
-            if (searchWord != '' && searchWord != undefined) {
-                condition.roomName = {
-                    $regex: searchWord,
-                    $options: 'i'
-                }
-            }
-            console.log(condition);
             /** 1) 채널아이디와 매칭된 채팅방 목록 조회
              * @params {ObjectId} 요청한 채널 아이디 
              * @return {Array} 매칭된 채널이 보유하고있는 채팅방 목록
              * */
-            const chatRoomList = await ChatRoom.find(
-                condition,
+            const chatRoomList = await ChatRoom.find({
+                channelId: channelId,
+                roomName: {
+                    $regex: searchWord,
+                    $options: 'i'
+                }
+            },
                 {
                     channelId: 1,
                     roomName: 1,
@@ -537,17 +559,14 @@ const channelService = {
     // 11. 워크스페이스 목록 조회
     getWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, userId, next) => {
         try {
-            const condition = {
-                channelId: channelId
-            }
-            if (searchWord != '' && searchWord != undefined) {
-                condition.workSpaceName = {
+            console.log(searchWord);
+            const workSpaceList = await WorkSpace.find({
+                channelId: channelId,
+                workSpaceName: {
                     $regex: searchWord,
                     $options: 'i'
                 }
-            }
-            console.log(condition);
-            const workSpaceList = await WorkSpace.find(condition)
+            })
                 .select({
                     _id: 1,
                     channelId: 1,
@@ -680,39 +699,50 @@ const channelService = {
     },
     getSearchChannelListBySearchKeyWord: async (category, searchWord, next) => {
         try {
-            const keyword = new RegExp(searchWord);
-            console.log(keyword)
-            // const channels = await Channel.find({
-            //     $or: [{ channelName: new RegExp(searchWord) }]
-            // })
-            //     .select({
-            //         channelName: 1,
-            //         thumbnail: 1,
-            //         category: 1,
-            //         members: 1
-            //     });
-            // const channels = await Channel.find({channelName: new RegExp(searchWord)})
-            //     .select({
-            //         channelName: 1,
-            //         thumbnail: 1,
-            //         category: 1,
-            //         members: 1
-            //     });
-            // const channels = await Channel.find({ $text: { $search: new RegExp(searchWord) } })
-            //     .select({
-            //         channelName: 1,
-            //         thumbnail: 1,
-            //         category: 1,
-            //         members: 1
-            //     });
-            const channels = await Channel.find({ channelName: { $regex: searchWord, $options: 'i' }, open: 'Y' })
+            let condition;
+            // 1. 카테고리 + 서치워드
+            if(category != undefined && searchWord != ''){
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    },
+                    category: {
+                        $in: [category]
+                    }
+                }
+            }else if(category != undefined && searchWord == '') {
+                condition = {
+                    open: 'Y',
+                    category: {
+                        $in: [category]
+                    }
+                }
+            }else if (category == undefined && searchWord != '') {
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    }
+                }
+            }else if(category == undefined && searchWord == ''){
+                condition = {
+                    open: 'Y'
+                }
+            }
+            // 2. 카테고리
+            const channels = await Channel.find(condition)
                 .select({
                     channelName: 1,
                     thumbnail: 1,
                     category: 1,
                     members: 1
                 });
-            console.log(channels);
+                
+            // 에러: 채널을 담는 배열이 존재하지않으면 에러
+            hasArrayChannel(channels);
 
             return {
                 status: successType.S02.s200,
