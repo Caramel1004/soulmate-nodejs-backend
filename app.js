@@ -81,11 +81,10 @@ mongoose.connect(DATABASE_URL)
         const io = SocketIO.init(server);
         io.emit('connection', socket => {
             console.log('백엔드 서버 webSocket 가동!!!');
-            // return '백엔드 서버 socket 가동!!!';
         });
 
+        // 레디스 연결
+        redisClient.connect();
     }).catch(err => {
         console.log('몽구스 오류!!! : ', err);
     });
-
-redisClient.connect();
