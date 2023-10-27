@@ -35,10 +35,13 @@ const router = Router();
  */
 
 //GET /v1/channel/openchannel-list
-router.get('/openchannel-list', channelController.getOpenChannelList);//1. 오픈 채널 목록 조회
+router.post('/openchannel-list', channelController.getSearchOpenChannelListBySearchKeyWord);//1. 오픈 채널 목록 조회
 
 // GET /v1/channel/open-channels-search
-router.get('/open-channels-search', channelController.getSearchChannelListBySearchKeyWord);
+// router.get('/open-channels-search', channelController.getSearchChannelListBySearchKeyWord);// 오픈 채널 검색
+
+// GET /v1/channel/my-channels-search
+// router.get('/my-channels-search', channelController.getSearchChannelListBySearchKeyWord);// 내 채널 검색
 
 //GET /v1/channel/openchannel-list/:channelId
 router.get('/openchannel-list/:channelId', channelController.getOpenChannelDetail);// 1-1. 오픈 채널 세부 정보 조회
@@ -57,7 +60,7 @@ router.post('/create',
     channelController.postCreateChannel);// 3. 채널 생성
 
 //GET /v1/channel/wishchannels
-router.get('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); // 4. 관심 채널 조회 
+router.post('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); // 4. 관심 채널 조회 
 
 //GET /v1/channel/remove-wishchannel
 // router.patch('/remove-wishchannel', hasJsonWebToken, channelController.patchRemoveOpenChannelToWishChannel); // 5. 관심 채널 삭제 -> 1-2에 통합
@@ -69,7 +72,7 @@ router.get('/:channelId', hasJsonWebToken, channelController.getChannelDetailByC
 router.patch('/invite/:channelId', hasJsonWebToken, channelController.patchInviteUserToChannel);// 6-1. 해당 채널에 유저 초대
 
 // GET /v1/channel/:channelId/chat
-router.get('/:channelId/chat', hasJsonWebToken, channelController.getChatRoomListByChannelAndUserId);// 8. 채팅방 목록 조회
+router.post('/:channelId/chat', hasJsonWebToken, channelController.getChatRoomListByChannelAndUserId);// 8. 채팅방 목록 조회
 
 // POST /v1/channel/:channelId/create-chatRoom
 router.post('/:channelId/create-chatRoom', hasJsonWebToken, channelController.postCreateChatRoom);// 9. 채팅방 생성
@@ -78,7 +81,7 @@ router.post('/:channelId/create-chatRoom', hasJsonWebToken, channelController.po
 router.post('/:channelId/create-workspace', hasJsonWebToken, channelController.postCreateWorkSpace);// 10. 워크스페이스 생성
 
 // POST /v1/channel/:channelId/workspace
-router.get('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSpaceListByChannelIdAndUserId);// 11. 워크스페이스 목록 조회
+router.post('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSpaceListByChannelIdAndUserId);// 11. 워크스페이스 목록 조회
 
 //PATCH /v1/channel/exit/:channelId
 router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitChannel);// 6-2. 채널 퇴장
