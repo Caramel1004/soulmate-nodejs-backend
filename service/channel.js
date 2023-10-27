@@ -697,7 +697,7 @@ const channelService = {
             next(err);
         }
     },
-    getSearchChannelListBySearchKeyWord: async (category, searchWord, next) => {
+    getSearchOpenChannelListBySearchKeyWord: async (category, searchWord, next) => {
         try {
             let condition;
             // 1. 카테고리 + 서치워드
