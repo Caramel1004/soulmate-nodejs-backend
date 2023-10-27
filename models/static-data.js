@@ -46,6 +46,10 @@ const createCategoryData = async () => {
             name: '교육'
         },
         {
+            keyword: 'game',
+            name: '게임'
+        },
+        {
             keyword: 'another',
             name: '기타'
         }
