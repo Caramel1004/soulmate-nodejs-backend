@@ -689,6 +689,33 @@ const channelService = {
             next(err);
         }
     },
+    deleteRemoveFeedByUserId: async (userId, channelId, feedId, next) => {
+        try {
+            // 1. 피드 스키마에서 해당 피드 삭제
+            const deletedFeed = await Feed.deleteOne({
+                _id: feedId,
+                channelId: channelId
+            });
+            hasFeed(deletedFeed);
+
+            // 2. 채널 스키마에 피드 필드에서 배열피드안에 해당 피드 제거 
+            const channel = await Channel.updateOne({
+                _id: channelId
+            },
+                {
+                    $pull: {
+                        feeds: feedId
+                    }
+                }
+            );
+
+            return {
+                status: successType.S02.s200
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
     patchPlusOrMinusNumberOfLikeInFeed: async (userId, channelId, feedId, next) => {
         try {
             // 1. 유저 존재 여부

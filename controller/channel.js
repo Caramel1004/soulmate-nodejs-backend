@@ -352,7 +352,7 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const { channelId, feedId } = req.params;
-            const { title, content, fileUrls } = req.body; 
+            const { title, content, fileUrls } = req.body;
 
             const data = await channelService.patchEditFeedToChannel(userId, channelId, feedId, title, content, fileUrls, next);
             hasReturnValue(data);
@@ -361,6 +361,22 @@ const channelController = {
                 authStatus: authStatus,
                 status: data.status,
                 feed: data.feed
+            })
+        } catch (err) {
+            next(err);
+        }
+    },
+    deleteRemoveFeedByUserId: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId, feedId } = req.params;
+
+            const data = await channelService.deleteRemoveFeedByUserId(userId, channelId, feedId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status
             })
         } catch (err) {
             next(err);
