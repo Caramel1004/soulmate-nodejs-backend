@@ -147,7 +147,7 @@ const channelController = {
             const { searchWord } = req.body;
             let category = req.body.category;
 
-            if(category == '전체') {
+            if (category == '전체') {
                 category = undefined;
             }
 
@@ -250,7 +250,7 @@ const channelController = {
             const { searchWord } = req.body;
             let keyword = searchWord;
 
-            if(keyword == undefined) {
+            if (keyword == undefined) {
                 keyword = '';
             }
 
@@ -313,7 +313,7 @@ const channelController = {
             const { searchWord } = req.body;
             let keyword = searchWord;
 
-            if(keyword == undefined) {
+            if (keyword == undefined) {
                 keyword = '';
             }
 
@@ -348,6 +348,24 @@ const channelController = {
             next(err);
         }
     },
+    patchEditFeedToChannel: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId, feedId } = req.params;
+            const { title, content, fileUrls } = req.body; 
+
+            const data = await channelService.patchEditFeedToChannel(userId, channelId, feedId, title, content, fileUrls, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                feed: data.feed
+            })
+        } catch (err) {
+            next(err);
+        }
+    },
     patchPlusOrMinusNumberOfLikeInFeed: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -370,11 +388,11 @@ const channelController = {
             let searchWord = req.body.searchWord;
             let category = req.body.category;
 
-            if(searchWord == undefined) {
+            if (searchWord == undefined) {
                 searchWord = '';
             }
 
-            if(category == '전체') {
+            if (category == '전체') {
                 category = undefined;
             }
 

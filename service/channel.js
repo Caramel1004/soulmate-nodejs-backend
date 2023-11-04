@@ -304,7 +304,7 @@ const channelService = {
             console.log(searchWord)
             console.log(category)
             // 1. 카테고리 + 서치워드
-            if(category != undefined && searchWord != undefined){
+            if (category != undefined && searchWord != undefined) {
                 condition = {
                     open: 'Y',
                     channelName: {
@@ -315,14 +315,14 @@ const channelService = {
                         $in: [category]
                     }
                 }
-            }else if(category != undefined && searchWord == undefined) {
+            } else if (category != undefined && searchWord == undefined) {
                 condition = {
                     open: 'Y',
                     category: {
                         $in: [category]
                     }
                 }
-            }else if (category == undefined && searchWord != undefined) {
+            } else if (category == undefined && searchWord != undefined) {
                 condition = {
                     open: 'Y',
                     channelName: {
@@ -330,7 +330,7 @@ const channelService = {
                         $options: 'i'
                     }
                 }
-            }else if(category == undefined && searchWord == undefined){
+            } else if (category == undefined && searchWord == undefined) {
                 condition = {
                     open: 'Y'
                 }
@@ -395,12 +395,22 @@ const channelService = {
                     },
                     options: {
                         sort: {
-                            createdAt: 1
+                            createdAt: -1
                         }
                     }
                 });
 
             hasChannelDetail(channel);
+
+            // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
+            channel.feeds.map(feed => {
+                if (feed.creator._id.toString() === userId.toString()) {
+                    feed._doc.isCreator = true;// 일치
+                } else {
+                    feed._doc.isCreator = false;// 불일치
+                }
+                return feed;
+            });
 
             return {
                 status: successType.S02.s200,
@@ -621,7 +631,7 @@ const channelService = {
                 creator: userId
             });
             hasFeed(feed);
-            console.log(feed);
+
             // 2. 해당 채널아이디 채널 조회
             const channel = await Channel.findById(channelId)
                 .select({ feeds: 1, members: 1 })
@@ -643,6 +653,37 @@ const channelService = {
             return {
                 status: successType.S02.s200,
                 feed: feed
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    patchEditFeedToChannel: async (userId, channelId, feedId, title, content, fileUrls, next) => {
+        try {
+            const matchedFeed = await Feed.findOne({
+                _id: feedId,
+                channelId: channelId,
+                creator: userId
+            },
+                {
+                    title: 1,
+                    content: 1,
+                    imageUrls: 1,
+                    creator: 1
+                });
+            hasFeed(matchedFeed);
+
+            matchedFeed.title = title;
+            matchedFeed.content = content;
+            matchedFeed.imageUrls = [...fileUrls];
+
+            console.log(matchedFeed);
+
+            await matchedFeed.save();
+
+            return {
+                status: successType.S02.s200,
+                feed: matchedFeed
             }
         } catch (err) {
             next(err);
@@ -701,7 +742,7 @@ const channelService = {
         try {
             let condition;
             // 1. 카테고리 + 서치워드
-            if(category != undefined && searchWord != ''){
+            if (category != undefined && searchWord != '') {
                 condition = {
                     open: 'Y',
                     channelName: {
@@ -712,14 +753,14 @@ const channelService = {
                         $in: [category]
                     }
                 }
-            }else if(category != undefined && searchWord == '') {
+            } else if (category != undefined && searchWord == '') {
                 condition = {
                     open: 'Y',
                     category: {
                         $in: [category]
                     }
                 }
-            }else if (category == undefined && searchWord != '') {
+            } else if (category == undefined && searchWord != '') {
                 condition = {
                     open: 'Y',
                     channelName: {
@@ -727,7 +768,7 @@ const channelService = {
                         $options: 'i'
                     }
                 }
-            }else if(category == undefined && searchWord == ''){
+            } else if (category == undefined && searchWord == '') {
                 condition = {
                     open: 'Y'
                 }
@@ -740,7 +781,7 @@ const channelService = {
                     category: 1,
                     members: 1
                 });
-                
+
             // 에러: 채널을 담는 배열이 존재하지않으면 에러
             hasArrayChannel(channels);
 
