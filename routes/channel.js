@@ -53,7 +53,7 @@ router.patch('/add-or-remove-wishchannel', hasJsonWebToken, channelController.pa
 router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUserId);// 2. 해당 유저의 채널 리스트 조회
 
 //POST /v1/channel/create
-router.post('/create', 
+router.post('/create',
     hasJsonWebToken,
     multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('thumbnail'),
     filesHandler.saveUploadedChannelThumbnail,
@@ -93,8 +93,12 @@ router.post('/create-feed/:channelId',
     filesHandler.saveUploadedFiles,
     channelController.postCreateFeedToChannel);// 20. 홈채널에 내피드 생성
 
-// PATCH /v1/channel//edit-feed/:channelId
-// router.patch('/channel/edit-feed/:channelId', accessAuthorizedToken, multer({ storage: memoryStorage }).array('data', 1), clientController.patchEditMyProfileByReqUser);// 21. 홈채널에 내피드 수정
+// PATCH /v1/channel/edit-feed/:channelId/:feedId
+router.patch('/edit-feed/:channelId/:feedId',
+    hasJsonWebToken,
+    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 5),
+    filesHandler.saveUploadedFiles,
+    channelController.patchEditFeedToChannel);// 21. 홈채널에 내피드 수정
 
 // DELETE /v1/channel//delete-feed/:channelId
 // router.patch('/channel/delete-feed/:channelId', accessAuthorizedToken, multer({ storage: memoryStorage }).array('data', 1), clientController.patchEditMyProfileByReqUser);// 22. 홈채널에 내피드 삭제
