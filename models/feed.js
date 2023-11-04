@@ -8,8 +8,7 @@ const feedSchema = new Schema({
         required: true
     },
     title: {
-        type: String,
-        required: true
+        type: String
     },
     imageUrls: [{
         type: String
