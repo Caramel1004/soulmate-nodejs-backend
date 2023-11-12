@@ -8,63 +8,88 @@ import { successType } from '../util/status.js';
 import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel, hasFeed } from '../validator/valid.js';
 import channel from '../models/channel.js';
 
-/**
-* 함수 목록
-* # 채널 입장 전
-* 1. 생성된 오픈 채널 목록 조회
-*      1-1. 오픈 채널 박스 클릭 -> 오픈 채널 세부 정보 조회
-*      1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
-* 2. 해당 유저의 채널 리스트 조회
-*      내가만든 채널, 초대 받은 채널, 오픈 채널 -> 필터
-*      2-1. 업무(비공개) 채널 조회
-*      2-2. 초대 받은 채널
-*      2-3. 오픈 채널 조회
-* 3. 채널 생성s
-* 4. 관심 채널 조회 
-* 5. 관심 채널 삭제 -> 함수 통합시킴
-* 
-* #채널 입장 후
-* 1. 채널아이디로 해당 채널 조회 -> 채널 세부페이지
-*      1-1. 채널에 팀원 초대
-*      1-2. 채널 세부정보
-*      1-3. 채널 퇴장
-* 2. 워크스페이스 목록 조회
-*      2-1. 워크 스페이스 목록중 하나 클릭 -> 세부정보 로딩
-*      2-2. 게시물 로딩
-* 3. 채팅방 목록 조회
-*      3-1. 채팅 방 입장 -> 채팅 히스토리 로딩
-* 4. 채팅룸 생성
-* 5. 채널 관리 - 공개로 전환 비공개로 전환
-*/
+/** ##API 기능 정리
+ * 1. POST /v1/channel/openchannel-list: 검색키워드에의한 오픈 채널 검색 및 조회
+ * 2. GET /v1/channel/openchannel-list/:channelId: 오픈 채널 세부정보 조회
+ * 3. PATCH /v1/channel/add-or-remove-wishchannel: 관심채널 추가 또는 삭제
+ * 4. GET /v1/channel/mychannels: 해당유저의 채널 목록 조회
+ * 5. POST /v1/channel/create: 채널 생성
+ * 6. POST /v1/channel/wishchannels: 검색키워드로 해당유저의 관심채널 목록 조회
+ * 7. GET /v1/channel/:channelId: 해당채널의 세부정보 조회
+ * 8. PATCH /v1/channel/invite/:channelId: 해당 채널에 유저 초대
+ * 9. POST /v1/channel/:channelId/chat: 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색
+ * 10.POST /v1/channel/:channelId/create-chatRoom: 해당채널에 채팅룸 생성
+ * 11.POST /v1/channel/:channelId/create-workspace: 해당채널에 워크스페이스 생성
+ * 12.POST /v1/channel/:channelId/workspace: 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색
+ * 13.PATCH /v1/channel/exit/:channelId: 해당채널 퇴장
+ * 14.PATCH /v1/channel/create-feed/:channelId: 해당채널에 내 피드 생성
+ * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
+ * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
+ * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
+ */
 
 const channelService = {
-    // 1. 생성된 오픈 채널 목록 조회
-    getOpenChannelList: async next => {
+    /** 1. 검색키워드에의한 오픈 채널 검색 및 조회 
+     * @params {String} category: 카테고리
+     * @params {String} searchWord: 검색키워드
+     * @params {function} next: 다음 미들웨어 실행 함수
+    */
+    getSearchOpenChannelListBySearchKeyWord: async (category, searchWord, next) => {
         try {
-            // 1) 오픈채널 조회 -> return: 채널아이디를 담은 배열
-            const channels = await Channel.find({
-                open: 'Y'
-            })
+            let condition;
+            // 1. 카테고리 + 서치워드
+            if (category != undefined && searchWord != '') {
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    },
+                    category: {
+                        $in: [category]
+                    }
+                }
+            } else if (category != undefined && searchWord == '') {
+                condition = {
+                    open: 'Y',
+                    category: {
+                        $in: [category]
+                    }
+                }
+            } else if (category == undefined && searchWord != '') {
+                condition = {
+                    open: 'Y',
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    }
+                }
+            } else if (category == undefined && searchWord == '') {
+                condition = {
+                    open: 'Y'
+                }
+            }
+            // 2. 카테고리
+            const channels = await Channel.find(condition)
                 .select({
-                    _id: 1,
                     channelName: 1,
                     thumbnail: 1,
                     category: 1,
+                    members: 1
                 });
 
             // 에러: 채널을 담는 배열이 존재하지않으면 에러
             hasArrayChannel(channels);
 
-            const status = successType.S02.s200;
             return {
-                status: status,
+                status: successType.S02.s200,
                 channels: channels
             }
         } catch (err) {
             next(err);
         }
     },
-    /** 1-1. 오픈 채널 세부 정보 조회
+    /** 2. 오픈 채널 세부정보 조회
      * @params {objectId} channelId: 채널 아이디
      * @params {function} next: 다음 미들웨어 실행 함수
      * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
@@ -110,7 +135,7 @@ const channelService = {
             next(err);
         }
     },
-    /** 1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
+    /** 3. 관심채널 추가 또는 삭제
      * @params {ObjectId} channelId: 채널 아이디
      * @params {ObjectId} userId: 요청한 유저 아이디
      * @params {function} next: 다음 미들웨어 실행 함수
@@ -169,43 +194,7 @@ const channelService = {
             next(err);
         }
     },
-    /** 1-3. 채널 퇴장
-     * @params {ObjectId} channelId: 채널 아이디
-     * @params {ObjectId} userId: 요청한 유저 아이디
-     * @params {function} next: 다음 미들웨어 실행 함수
-     * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
-    */
-    patchExitChannel: async (userId, channelId, next) => {
-        try {
-            const matchedChannel = await Channel.findById(channelId);
-
-            const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
-
-            if (updatedUsers.length <= 0) {
-                await Channel.deleteOne({ _id: channelId });
-            } else {
-                matchedChannel.members = [...updatedUsers];
-
-                console.log('updatedUsers: ', updatedUsers);
-                await matchedChannel.save();
-            }
-
-            // 2. 유저스키마에서 해당 채널 삭제
-            const exitedUser = await User.findById(userId);
-            const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
-
-            exitedUser.channels = [...updatedChannels];
-            await exitedUser.save();
-
-            return {
-                status: successType.S02.s200,
-                exitedUser: exitedUser
-            }
-        } catch (err) {
-            next(err);
-        }
-    },
-    /** 2. 해당 유저의 채널 리스트 조회
+    /** 4. 해당유저의 채널 목록 조회
      * @params {ObjectId} userId: 요청한 유저 아이디
      * @params {string} searchWord: 검색 키워드
      * @params {function} next: 다음 미들웨어 실행 함수
@@ -262,7 +251,7 @@ const channelService = {
             next(err);
         }
     },
-    // 3. 채널 생성
+    /** 5. 채널 생성 */
     postCreateChannel: async (body, next) => {
         try {
             // 1. 채널추가 요청한 유저의 아이디에 의한 데이터 조회
@@ -297,7 +286,7 @@ const channelService = {
             next(err);
         }
     },
-    // 4. 관심 채널 조회 
+    /** 6. 검색키워드로 해당유저의 관심채널 목록 조회 */ 
     getWishChannelList: async (userId, category, searchWord, next) => {
         try {
             let condition;
@@ -370,8 +359,7 @@ const channelService = {
             next(err);
         }
     },
-    // 5. 관심 채널 삭제 -> 함수 통합시킴
-    // 6. 채널아이디로 해당 채널 조회
+    /** 7. 해당채널의 세부정보 조회 */
     getChannelDetailByChannelId: async (userId, channelId, next) => {
         try {
             // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 
@@ -420,7 +408,7 @@ const channelService = {
             next(err);
         }
     },
-    // 6-1. 해당채널에 유저 초대
+    /** 8. 해당 채널에 유저 초대 */
     patchInviteUserToChannel: async (channelId, selectedIds, next) => {
         try {
             const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
@@ -466,7 +454,7 @@ const channelService = {
             next(err);
         }
     },
-    // 8. 채팅방 목록 조회
+    /** 9. 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색 */
     getChatRoomListByChannelAndUserId: async (userId, channelId, searchWord, next) => {
         try {
             /** 1) 채널아이디와 매칭된 채팅방 목록 조회
@@ -512,7 +500,7 @@ const channelService = {
             next(err);
         }
     },
-    // 9. 채팅룸 생성
+    /** 10. 해당채널에 채팅룸 생성 */
     postCreateChatRoom: async (channelId, userId, roomName, next) => {
         try {
             const chatRoom = new ChatRoom({
@@ -539,7 +527,7 @@ const channelService = {
             next(err);
         }
     },
-    // 10. 워크스페이스 생성
+    /** 11. 해당채널에 워크스페이스 생성 */
     postCreateWorkSpace: async (channelId, reqUserId, body, next) => {
         try {
             body.channelId = channelId;
@@ -566,7 +554,7 @@ const channelService = {
             next(err);
         }
     },
-    // 11. 워크스페이스 목록 조회
+    /** 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 */
     getWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, userId, next) => {
         try {
             console.log(searchWord);
@@ -620,6 +608,43 @@ const channelService = {
             next(err);
         }
     },
+    /** 13. 해당채널 퇴장
+     * @params {ObjectId} channelId: 채널 아이디
+     * @params {ObjectId} userId: 요청한 유저 아이디
+     * @params {function} next: 다음 미들웨어 실행 함수
+     * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
+    */
+    patchExitChannel: async (userId, channelId, next) => {
+        try {
+            const matchedChannel = await Channel.findById(channelId);
+
+            const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
+
+            if (updatedUsers.length <= 0) {
+                await Channel.deleteOne({ _id: channelId });
+            } else {
+                matchedChannel.members = [...updatedUsers];
+
+                console.log('updatedUsers: ', updatedUsers);
+                await matchedChannel.save();
+            }
+
+            // 2. 유저스키마에서 해당 채널 삭제
+            const exitedUser = await User.findById(userId);
+            const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
+
+            exitedUser.channels = [...updatedChannels];
+            await exitedUser.save();
+
+            return {
+                status: successType.S02.s200,
+                exitedUser: exitedUser
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** 14. 해당채널에 내 피드 생성 */
     postCreateFeedToChannel: async (userId, channelId, title, content, imageUrls, next) => {
         try {
             // 1. 피드스키마에 피드 저장
@@ -658,6 +683,7 @@ const channelService = {
             next(err);
         }
     },
+    /** 15. 해당채널에 내 피드 수정 */
     patchEditFeedToChannel: async (userId, channelId, feedId, title, content, fileUrls, next) => {
         try {
             const matchedFeed = await Feed.findOne({
@@ -689,6 +715,7 @@ const channelService = {
             next(err);
         }
     },
+    /** 16. 해당채널에 내 피드 삭제 */
     deleteRemoveFeedByUserId: async (userId, channelId, feedId, next) => {
         try {
             // 1. 피드 스키마에서 해당 피드 삭제
@@ -716,6 +743,7 @@ const channelService = {
             next(err);
         }
     },
+    /** 17. 피드 좋아요수 증가 또는 감소 */
     patchPlusOrMinusNumberOfLikeInFeed: async (userId, channelId, feedId, next) => {
         try {
             // 1. 유저 존재 여부
@@ -765,61 +793,6 @@ const channelService = {
             next(err);
         }
     },
-    getSearchOpenChannelListBySearchKeyWord: async (category, searchWord, next) => {
-        try {
-            let condition;
-            // 1. 카테고리 + 서치워드
-            if (category != undefined && searchWord != '') {
-                condition = {
-                    open: 'Y',
-                    channelName: {
-                        $regex: searchWord,
-                        $options: 'i'
-                    },
-                    category: {
-                        $in: [category]
-                    }
-                }
-            } else if (category != undefined && searchWord == '') {
-                condition = {
-                    open: 'Y',
-                    category: {
-                        $in: [category]
-                    }
-                }
-            } else if (category == undefined && searchWord != '') {
-                condition = {
-                    open: 'Y',
-                    channelName: {
-                        $regex: searchWord,
-                        $options: 'i'
-                    }
-                }
-            } else if (category == undefined && searchWord == '') {
-                condition = {
-                    open: 'Y'
-                }
-            }
-            // 2. 카테고리
-            const channels = await Channel.find(condition)
-                .select({
-                    channelName: 1,
-                    thumbnail: 1,
-                    category: 1,
-                    members: 1
-                });
-
-            // 에러: 채널을 담는 배열이 존재하지않으면 에러
-            hasArrayChannel(channels);
-
-            return {
-                status: successType.S02.s200,
-                channels: channels
-            }
-        } catch (err) {
-            next(err);
-        }
-    }
 }
 
 export default channelService;
