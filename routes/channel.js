@@ -14,7 +14,7 @@ const router = Router();
  * 3. PATCH /v1/channel/add-or-remove-wishchannel: 관심채널 추가 또는 삭제
  * 4. GET /v1/channel/mychannels: 해당유저의 채널 목록 조회
  * 5. POST /v1/channel/create: 채널 생성
- * 6. POST /v1/channel/wishchannels: 해당유저의 관심채널 목록 조회
+ * 6. POST /v1/channel/wishchannels: 검색키워드로 해당유저의 관심채널 목록 조회
  * 7. GET /v1/channel/:channelId: 해당채널의 세부정보 조회
  * 8. PATCH /v1/channel/invite/:channelId: 해당 채널에 유저 초대
  * 9. POST /v1/channel/:channelId/chat: 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색
@@ -76,7 +76,7 @@ router.post('/create',
 /** POST /v1/channel/wishchannels
  * @method{POST}
  * @route {/v1/channel/wishchannels} 
- * 6. 해당유저의 관심채널 목록 조회
+ * 6. 검색키워드로 해당유저의 관심채널 목록 조회
  */
 router.post('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); 
 
