@@ -2,54 +2,53 @@ import channelService from '../service/channel.js'
 
 import { hasReturnValue } from '../validator/valid.js'
 
-/**
- * 함수 목록
- * # 채널 입장 전
- * 1. 오픈 채널 목록 조회
- *      1-1. 오픈 채널 박스 클릭 -> 오픈 채널 세부정보 페이지
- *      1-2. 오픈 채널 찜 클릭 -> 관심채널에 추가
- * 2. 해당 유저의 채널 리스트 조회
- *      분류 목록: 내가만든 채널, 초대 받은 채널, 오픈 채널 -> 필터
- *      - 업무(비공개) 채널 조회
- *      - 초대 받은 채널
- *      - 오픈 채널 조회
- * 3. 채널 생성
- * 4. 관심 채널 조회 
- * 5. 관심 채널 삭제
- * 
- * #채널 입장 후
- * 6. 채널아이디로 해당 채널 조회 -> 채널 세부페이지
- *      6-1. 채널에 팀원 초대 -> 초대 메세지 전송
- *      6-2. 해당 채널에서 퇴장
- * 7. 워크스페이스 목록 조회
- *      2-1. 워크 스페이스 목록중 하나 클릭 -> 세부정보 로딩
- *      2-2. 게시물 로딩
- * 8. 채팅방 목록 조회
- *      8-1. 채팅 방 입장 -> 채팅 히스토리 로딩 -> chat스키마
- * 9. 채팅룸 생성
- * 10. 워크스페이스 생성
- * 11. 채팅룸 퇴장
- * 12. 워크스페이스 퇴장
+/** ##API 기능 정리
+ * 1. POST /v1/channel/openchannel-list: 검색키워드에의한 오픈 채널 검색 및 조회
+ * 2. GET /v1/channel/openchannel-list/:channelId: 오픈 채널 세부정보 조회
+ * 3. PATCH /v1/channel/add-or-remove-wishchannel: 관심채널 추가 또는 삭제
+ * 4. GET /v1/channel/mychannels: 해당유저의 채널 목록 조회
+ * 5. POST /v1/channel/create: 채널 생성
+ * 6. POST /v1/channel/wishchannels: 검색키워드로 해당유저의 관심채널 목록 조회
+ * 7. GET /v1/channel/:channelId: 해당채널의 세부정보 조회
+ * 8. PATCH /v1/channel/invite/:channelId: 해당 채널에 유저 초대
+ * 9. POST /v1/channel/:channelId/chat: 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색
+ * 10.POST /v1/channel/:channelId/create-chatRoom: 해당채널에 채팅룸 생성
+ * 11.POST /v1/channel/:channelId/create-workspace: 해당채널에 워크스페이스 생성
+ * 12.POST /v1/channel/:channelId/workspace: 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색
+ * 13.PATCH /v1/channel/exit/:channelId: 해당채널 퇴장
+ * 14.PATCH /v1/channel/create-feed/:channelId: 해당채널에 내 피드 생성
+ * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
+ * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
+ * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
  */
 
-
 const channelController = {
-    // 1. 생성된 오픈 채널 목록 조회
-    getOpenChannelList: async (req, res, next) => {
+    /** 1. 검색키워드에의한 오픈 채널 검색 및 조회 */
+    getSearchOpenChannelListBySearchKeyWord: async (req, res, next) => {
         try {
-            const data = await channelService.getOpenChannelList(next);
+            let searchWord = req.body.searchWord;
+            let category = req.body.category;
 
+            if (searchWord == undefined) {
+                searchWord = '';
+            }
+
+            if (category == '전체') {
+                category = undefined;
+            }
+
+            const data = await channelService.getSearchOpenChannelListBySearchKeyWord(category, searchWord, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 status: data.status,
                 channels: data.channels
-            });
+            })
         } catch (err) {
             next(err);
         }
     },
-    // 1-1. 오픈 채널 세부 정보 조회
+    /** 2. 오픈 채널 세부정보 조회 */
     getOpenChannelDetail: async (req, res, next) => {
         try {
             const channelId = req.params.channelId;// 해당 오픈채널 아이디
@@ -67,7 +66,7 @@ const channelController = {
             next(err);
         }
     },
-    // 1-2. 관심채널 추가 또는 삭제(토글 관계)
+    /** 3. 관심채널 추가 또는 삭제 */
     patchAddOrRemoveWishChannel: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -86,7 +85,7 @@ const channelController = {
             next(err);
         }
     },
-    // 2. 해당 유저의 채널 리스트 조회
+    /** 4. 해당유저의 채널 목록 조회 */
     getChannelListByUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -105,7 +104,7 @@ const channelController = {
             next(err);
         }
     },
-    // 3. 채널 생성
+    /** 5. 채널 생성 */
     postCreateChannel: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -140,7 +139,7 @@ const channelController = {
             next(err);
         }
     },
-    // 4. 관심 채널 조회 
+    /** 6. 검색키워드로 해당유저의 관심채널 목록 조회 */
     getWishChannelList: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -164,25 +163,7 @@ const channelController = {
             next(err);
         }
     },
-    // 5. 관심 채널 삭제
-    patchRemoveOpenChannelToWishChannel: async (req, res, next) => {
-        try {
-            const { userId, authStatus } = req.user;
-            const { channelId } = req.body;
-
-            const data = await channelService.patchRemoveOpenChannelToWishChannel(userId, channelId, next);
-            hasReturnValue(data);
-
-            res.status(data.status.code).json({
-                authStatus: authStatus,
-                status: data.status,
-                user: data.updatedUser
-            });
-        } catch (err) {
-            next(err);
-        }
-    },
-    // 6. 채널아이디로 해당 채널 조회
+    /** 7. 해당채널의 세부정보 조회 */
     getChannelDetailByChannelId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -201,7 +182,7 @@ const channelController = {
             next(err);
         }
     },
-    // 6-1. 해당채널에 유저 초대
+    /** 8. 해당 채널에 유저 초대 */
     patchInviteUserToChannel: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -222,27 +203,7 @@ const channelController = {
             next(err);
         }
     },
-    // 6-2. 해당 채널에서 퇴장
-    patchExitChannel: async (req, res, next) => {
-        try {
-            const { userId, authStatus } = req.user;
-            const channelId = req.body.channelId;
-
-            const data = await channelService.patchExitChannel(userId, channelId, next);
-
-            hasReturnValue(data);
-
-            console.log(data);
-            res.status(data.status.code).json({
-                authStatus: authStatus,
-                status: data.status,
-                exitedUser: data.exitedUser
-            });
-        } catch (err) {
-            next(err)
-        }
-    },
-    // 8. 채팅방 목록 조회
+    /** 9. 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색 */
     getChatRoomListByChannelAndUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -267,7 +228,7 @@ const channelController = {
             next(err);
         }
     },
-    // 9. 채팅룸 생성
+    /** 10. 해당채널에 채팅룸 생성 */
     postCreateChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -287,7 +248,7 @@ const channelController = {
             next(err);
         }
     },
-    // 10. 워크스페이스 생성
+    /** 11. 해당채널에 워크스페이스 생성 */
     postCreateWorkSpace: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -306,7 +267,7 @@ const channelController = {
             next(err);
         }
     },
-    // 11. 워크스페이스 목록 조회
+    /** 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 */
     getWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -330,6 +291,27 @@ const channelController = {
             next(err);
         }
     },
+    /** 13. 해당채널 퇴장 */
+    patchExitChannel: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const channelId = req.body.channelId;
+
+            const data = await channelService.patchExitChannel(userId, channelId, next);
+
+            hasReturnValue(data);
+
+            console.log(data);
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                exitedUser: data.exitedUser
+            });
+        } catch (err) {
+            next(err)
+        }
+    },
+    /** 14. 해당채널에 내 피드 생성 */
     postCreateFeedToChannel: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -348,6 +330,7 @@ const channelController = {
             next(err);
         }
     },
+    /** 15. 해당채널에 내 피드 수정 */
     patchEditFeedToChannel: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -366,6 +349,7 @@ const channelController = {
             next(err);
         }
     },
+    /** 16. 해당채널에 내 피드 삭제 */
     deleteRemoveFeedByUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -382,6 +366,7 @@ const channelController = {
             next(err);
         }
     },
+    /** 17. 피드 좋아요수 증가 또는 감소 */
     patchPlusOrMinusNumberOfLikeInFeed: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -399,30 +384,6 @@ const channelController = {
             next(err);
         }
     },
-    getSearchOpenChannelListBySearchKeyWord: async (req, res, next) => {
-        try {
-            let searchWord = req.body.searchWord;
-            let category = req.body.category;
-
-            if (searchWord == undefined) {
-                searchWord = '';
-            }
-
-            if (category == '전체') {
-                category = undefined;
-            }
-
-            const data = await channelService.getSearchOpenChannelListBySearchKeyWord(category, searchWord, next);
-            hasReturnValue(data);
-
-            res.status(data.status.code).json({
-                status: data.status,
-                channels: data.channels
-            })
-        } catch (err) {
-            next(err);
-        }
-    }
 };
 
 export default channelController;
