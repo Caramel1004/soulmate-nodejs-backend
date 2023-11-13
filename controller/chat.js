@@ -10,7 +10,7 @@ import SocketIO from '../socket.js';
 import socket from '../socket.js';
 
 /**
- * 1. 채팅방 세부정보 로딩
+ * 1. 채팅방 세부정보 조회
  * 2. 팀원 추가 보드에 채널 멤버들 조회
  * 3. 실시간 채팅
  * 4. 실시간 파일 업로드
@@ -18,7 +18,7 @@ import socket from '../socket.js';
  */
 
 const chatController = {
-    // 1. 채팅룸 로딩
+    /** 1. 채팅방 세부정보 조회 */
     getLoadChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -37,7 +37,7 @@ const chatController = {
             next(err);
         }
     },
-    // 2. 팀원 추가 보드에 채널 멤버들 조회
+    /** 2. 팀원 추가 보드에 채널 멤버들 조회 */
     postLoadUsersInChannel: async (req, res, next) => {
         try {
             const { channelId } = req.params;
@@ -55,7 +55,7 @@ const chatController = {
             next(err);
         }
     },
-    // 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+    /** 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청 */
     postSendChatAndUploadFilesToChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -99,41 +99,7 @@ const chatController = {
             next(err);
         }
     },
-    // 4. 실시간 파일 업로드
-    postUploadFileToChatRoom: async (req, res, next) => {
-        try {
-            const { userId, authStatus } = req.user;
-            const { channelId, chatRoomId } = req.params;
-
-            //요청 바디
-            const body = {
-                fileUrls: req.body.fileUrls,
-                creator: userId
-            }
-
-            const data = await chatService.postUploadFileToChatRoom(body, channelId, chatRoomId, userId, next);// 실시간으로 업데이트할 리턴 값
-            hasReturnValue(data);
-
-            // 웹 소켓: 채팅방에 속한 모든 유저의 채팅창 내용 업로드
-            const serverIO = SocketIO.getSocketIO();
-            serverIO.emit('sendFile', {
-                status: data.status,
-                chatRoom: data.chatRoom,
-                fileUrls: data.fileUrls,
-                photo: data.matchedUser.photo,
-                name: data.matchedUser.name
-            });
-
-            // 응답
-            res.status(data.status.code).json({
-                authStatus: authStatus,
-                status: data.status
-            });
-        } catch (err) {
-            next(err);
-        }
-    },
-    // 5. 채팅방에 채널 멤버 초대
+    /** 4. 채팅방에 채널 멤버 초대 */
     patchInviteUserToChatRoom: async (req, res, next) => {
         try {
             const { authStatus } = req.user;
@@ -157,7 +123,7 @@ const chatController = {
             next(err);
         }
     },
-    // 6. 채팅방 퇴장
+    /** 5. 채팅방 퇴장 */
     patchExitChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
@@ -182,7 +148,7 @@ const chatController = {
             next(err);
         }
     },
-    // 7. 채팅방 파일함 리스트 조회
+    /** 6. 채팅방 파일함 리스트 조회 */
     getLoadFilesInChatRoom: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;

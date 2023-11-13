@@ -13,7 +13,7 @@ import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom } from '../vali
  */
 
 const chatService = {
-    // 1. 채팅룸 로딩
+    /** 1. 채팅방 세부정보 조회 */
     getLoadChatRoom: async (channelId, chatRoomId, userId, next) => {
         try {
             /**1) 채팅방 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
@@ -80,7 +80,7 @@ const chatService = {
             next(err);
         }
     },
-    // 2. 팀원 추가 보드에 채널 멤버들 조회
+    /** 2. 팀원 추가 보드에 채널 멤버들 조회 */
     postLoadUsersInChannel: async (channelId, chatRoomId, next) => {
         try {
             console.log('channel:', channelId);
@@ -122,7 +122,7 @@ const chatService = {
             next(err);
         }
     },
-    // 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트
+    /** 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청 */
     postSendChatAndUploadFilesToChatRoom: async (body, channelId, chatRoomId, userId, next) => {
         try {
             // 1. 채널에 조회 => 조회 실패하면 에러 throw
@@ -207,7 +207,7 @@ const chatService = {
             next(err);
         }
     },
-    // 5. 채팅방에 채널 멤버 초대
+    /** 4. 채팅방에 채널 멤버 초대 */
     patchInviteUserToChatRoom: async (selectedId, channelId, chatRoomId, next) => {
         try {
             // 채널아이디로 해당 채팅룸이 있는지 부터 검사
@@ -261,7 +261,7 @@ const chatService = {
             next(err);
         }
     },
-    // 6. 채팅방 퇴장
+    /** 5. 채팅방 퇴장 */
     patchExitChatRoom: async (userId, channelId, chatRoomId, next) => {
         try {
             /** 1) 현재 퇴장하려는 채팅방 조회
@@ -316,6 +316,7 @@ const chatService = {
             next(err);
         }
     },
+    /** 6. 채팅방 파일함 리스트 조회 */
     getLoadFilesInChatRoom: async (userId, channelId, chatRoomId, next) => {
         try {
             // channelSchema -> chatRoomSchema -> chatSchema property: fileUrls
