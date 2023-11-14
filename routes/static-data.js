@@ -4,7 +4,16 @@ import { getCategoryData } from '../controller/static-data.js';
 
 const router = Router();
 
-// /v1/static-data
+/**
+ * 1. 채널 카테고리 조회
+ */
+
+
+/** GET /v1/static-data/category
+ * @method{GET}
+ * @route {/v1/static-data/category}
+ * 1. 채널 카테고리 조회
+*/
 router.get('/category', getCategoryData);
 
 export default router;
