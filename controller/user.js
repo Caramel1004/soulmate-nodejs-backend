@@ -3,8 +3,18 @@ import userService from '../service/user.js'
 
 import { hasReturnValue } from '../validator/valid.js'
 
+/**
+ * 1. 회원가입
+ * 2. 로그인 요청한 유저 조회
+ * ------SNS계정으로 로그인 시 순서도------
+ * 카카오 로그인 페이지 URL 요청 -> 카카오 API에 해당유저에대한 토큰 요청 -> 카카오 유저 정보 조회
+ * 3. 카카오 로그인 페이지 URL 요청
+ * 4. 카카오 API에 해당유저에대한 토큰 요청
+ * 5. 카카오 API에 유저 정보 조회 -> 가입 o 로그인, 가입 x 회원가입
+ */
+
 const userController = {
-    // 1. 회원가입
+    /** 1. 회원가입 */
     postSignUp: async (req, res, next) => {
         try {
             const body = req.body;
@@ -18,7 +28,7 @@ const userController = {
             next(err);
         }
     },
-    // 2. 회원 로그인
+    /** 2. 로그인 요청한 유저 조회 */
     postLogin: async (req, res, next) => {
         try {
             const email = req.body.email;
@@ -47,7 +57,7 @@ const userController = {
             next(err);
         }
     },
-    // 3. 카카오 로그인 페이지 URL 
+    /** 3. 카카오 로그인 페이지 URL 요청 */
     getKakaoLoginPageURL: async (req, res, next) => {
         try {
             const data = await kakaoAPI.getKakaoLoginPageURL(next);
@@ -62,7 +72,7 @@ const userController = {
             next(err);
         }
     },
-    // 4. 카카오에 토큰 요청
+    /** 4. 카카오 API에 해당유저에대한 토큰 요청 */
     postRequestTokenToKakao: async (req, res, next) => {
         try {
             const { code } = req.body;
@@ -79,7 +89,7 @@ const userController = {
             next(err);
         }
     },
-    // 5. 카카오 계정으로 회원가입 or 로그인 -> 계정 등록 안되있으면 회원가입후 로그인 진행
+    /** 5. 카카오 API에 유저 정보 조회 -> 가입 o 로그인, 가입 x 회원가입 -> 계정 등록 안되있으면 회원가입후 로그인 진행 */
     postSignUpOrLoginBySNSAccount: async (req, res, next) => {
         try {
             console.log('req.body: ', req.body);
@@ -109,7 +119,7 @@ const userController = {
             next(err);
         }
     },
-    // 3. 유저 정보 조회
+    /** 6. 검색 키워드로 유저 리스트 조회 */
     getSearchUser: async (req, res, next) => {
         try {
             const name = req.params.name;
@@ -127,7 +137,7 @@ const userController = {
             next(err)
         }
     },
-    // 나의 프로필 조회(유저 정보)
+    /** 7. 내 프로필 조회 */
     getMyProfile: async (req, res, next) => {
         const { userId, authStatus } = req.user
 
@@ -140,6 +150,7 @@ const userController = {
             matchedUser: data.matchedUser
         });
     },
+    /** 8. 내 프로필 수정 */
     patchEditMyProfileByReqUser: async (req, res, next) => {
         const { body } = req;
         const { userId, authStatus } = req.user;
