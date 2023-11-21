@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 
-import filesHandler from '../util/files-handler.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 import { hasJsonWebToken, hasChat, hasFile } from '../validator/valid.js';
 import chatController from '../controller/chat.js';
 
@@ -39,10 +39,10 @@ router.post('/channel-members/:channelId', chatController.postLoadUsersInChannel
 */
 router.post('/:channelId/:chatRoomId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
     hasChat,
-    filesHandler.saveUploadedFiles,
-    chatController.postSendChatAndUploadFilesToChatRoom);// 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+    filesS3Handler.uploadFilesToS3
+    );// 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
 
 
 /** PATCH /v1/chat/invite/:channelId/:chatRoomId
