@@ -3,6 +3,7 @@ import { WorkSpace, Post, Reply } from '../models/workspace.js'
 
 import { successType, errorType } from '../util/status.js';
 import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, hasPost, hasReply } from '../validator/valid.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 /**
  * 1. 워크스페이스 세부정보 조회
@@ -18,7 +19,7 @@ import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasWorkSpace, 
  * 11. 댓글 삭제
  */
 const workspaceService = {
-    // 1. 워크스페이스 세부정보 조회
+    /** 1. 워크스페이스 세부정보 조회 */
     getLoadWorkspace: async (channelId, workSpaceId, sortType, sortNum, userId, next) => {
         try {
             /**1) 워크스페이스 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
@@ -150,6 +151,7 @@ const workspaceService = {
             next(err)
         }
     },
+    /** 4. 댓글 삭제 */
     deleteReplyByCreatorInPost: async (userId, channelId, workSpaceId, postId, replyId, next) => {
         try {
             // 1) 해당 워크스페이스 조회
@@ -348,6 +350,15 @@ const workspaceService = {
                 })
                 .populate('users', {
                     name: 1
+                })
+                .populate({
+                    path: 'posts',
+                    select: 'fileUrls createdAt',
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        },
+                    }
                 });
 
             hasWorkSpace(matchedWorkSpace);
@@ -358,10 +369,26 @@ const workspaceService = {
             console.log(matchedWorkSpace);
 
             if (filteredWorkSpaceUsers.length <= 0) {
+                // s3에 해당 파일들 삭제
+                let fileUrlsOfPosts = [];
+                for (const post of matchedWorkSpace.posts) {
+                    if (post.fileUrls.length > 0) {
+                        fileUrlsOfPosts = [...fileUrlsOfPosts, ...post.fileUrls];
+                    }
+                }
+                if (fileUrlsOfPosts.length > 0) {
+                    await filesS3Handler.deletePhotoList(fileUrlsOfPosts);
+                }
+
                 // 채널에서 해당 워크스페이스 제거
                 const channel = await Channel.findById(channelId).select({ workSpaces: 1 });
                 channel.workSpaces = [...channel.workSpaces.filter(workSpace => workSpace.toString() !== matchedWorkSpace._id.toString())];
                 await channel.save();
+
+                // 해당 워크스페이스에 속한 posts 모두 삭제
+                for (const post of matchedWorkSpace.posts) {
+                    await Post.deleteOne({ _id: post._id })
+                }
 
                 // 워크스페이스 스키마에서 해당 워크스페이스 삭제
                 await WorkSpace.deleteOne({ _id: matchedWorkSpace._id });
@@ -384,7 +411,8 @@ const workspaceService = {
             // 1) 해당 게시물의 생성자와 삭제요청한 유저랑 일치하는지 확인
             const matchedPost = await Post.findById(postId)
                 .select({
-                    creator: 1
+                    creator: 1,
+                    fileUrls: 1
                 })
                 .populate('creator', {
                     _id: 1
@@ -394,6 +422,11 @@ const workspaceService = {
 
             const user = matchedPost.creator._id.toString() === userId.toString() ? matchedPost.creator : null;
             hasUser(user);
+
+            // s3에 해당 파일들 삭제
+            if (matchedPost.fileUrls.length > 0) {
+                await filesS3Handler.deletePhotoList(matchedPost.fileUrls);
+            }
 
             /** 2) 해당 게시물 삭제
               * @params {ObjectId} 요청한 게시물 아이디 
@@ -446,7 +479,7 @@ const workspaceService = {
             matchedPost.content = content;
 
             // 3) 파일경로 저장
-            for(const fileUrl of fileUrls) {
+            for (const fileUrl of fileUrls) {
                 matchedPost.fileUrls.push(fileUrl);
             }
 
@@ -510,33 +543,33 @@ const workspaceService = {
         try {
             // channelSchema -> chatRoomSchema -> chatSchema property: fileUrls
             const channel = await Channel.findById(channelId)
-            .select({
-                workSpaces: 1
-            })
-            .populate({
-                path: 'workSpaces',
-                match: {
-                    _id: workSpaceId,
-                    channelId: channelId
-                },
-                select: 'posts',
-                populate: {
-                    path: 'posts',
-                    select: 'fileUrls createdAt',
+                .select({
+                    workSpaces: 1
+                })
+                .populate({
+                    path: 'workSpaces',
                     match: {
-                        fileUrls: {
-                            $gt: 0
-                        }
+                        _id: workSpaceId,
+                        channelId: channelId
                     },
-                    options: {
-                        sort: {
-                            createdAt: -1
+                    select: 'posts',
+                    populate: {
+                        path: 'posts',
+                        select: 'fileUrls createdAt',
+                        match: {
+                            fileUrls: {
+                                $gt: 0
+                            }
                         },
+                        options: {
+                            sort: {
+                                createdAt: -1
+                            },
+                        }
                     }
-                }
-            });
+                });
             hasChannelDetail(channel);
-            
+
             return {
                 status: successType.S02.s200,
                 channel: channel
