@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 
 import { hasJsonWebToken, hasFile } from '../validator/valid.js';
-import filesHandler from '../util/files-handler.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 import workspaceController from '../controller/workspace.js';
 
@@ -39,9 +39,9 @@ router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getL
 */
 router.post('/create-post/:channelId/:workSpaceId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
     hasFile,
-    filesHandler.saveUploadedFiles,
+    filesS3Handler.uploadFilesToS3,
     workspaceController.postCreatePost
 );
 
@@ -53,7 +53,7 @@ router.post('/create-post/:channelId/:workSpaceId',
 */
 router.post('/post/create-reply/:channelId/:workSpaceId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'),
     workspaceController.postCreateReply
 );
 
@@ -73,7 +73,7 @@ router.delete('/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId', has
 */
 router.patch('/post/edit-reply/:channelId/:workSpaceId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).single('file'),
     workspaceController.patchEditReplyByCreatorInPost
 );
 
@@ -126,8 +126,8 @@ router.delete('/delete-post/:channelId/:workSpaceId/:postId', hasJsonWebToken, w
 */
 router.patch('/edit-post/:channelId/:workSpaceId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
-    filesHandler.saveUploadedFiles,
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    filesS3Handler.uploadFilesToS3,
     workspaceController.patchEditPostByCreatorInWorkSpace
 );
 
