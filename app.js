@@ -7,6 +7,8 @@ import multer from 'multer';
 import { v4 } from 'uuid';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import hpp from 'hpp'
 
 import SocketIO from './socket.js';
 import redisClient from './util/redis.js';
@@ -22,20 +24,34 @@ import staticDataRoutes from './routes/static-data.js';
 dotenv.config();
 
 const app = express();
-const DATABASE_URL = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@cluster0.vkqqcqz.mongodb.net/${process.env.DATABASE_DEFAULT_NAME}?retryWrites=true&w=majority`;
+let DATABASE_NAME;
+
+// 배포 환경 or 개발 환경
+if (process.env.NODE_ENV === 'production') {
+    console.log('배포 환경!!');
+    DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_PORD_VER;
+    app.use(morgan('combined'));
+    app.use(
+        helmet({
+            contentSecurityPolicy: false,
+            crossOriginEmbedderPolicy: false,
+            crossOriginResourcePolicy: false
+        })
+    );
+    app.use(hpp());
+} else {
+    console.log('개발 환경!!');
+    DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_DEV_VER;
+    console.log(DATABASE_NAME)
+    app.use(morgan('dev'));
+}
+
+const DATABASE_URL = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@cluster0.vkqqcqz.mongodb.net/${DATABASE_NAME}?retryWrites=true&w=majority`;
 
 // 정적 file처리를 위한 변수
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 요청 응답 로그 출력
-if (process.env.NODE_ENV === 'production') {
-    console.log('배포 환경!!');
-    app.use(morgan('combined'));
-} else {
-    console.log('개발 환경!!');
-    app.use(morgan('dev'));
-}
 
 // 파싱 미들웨어
 app.use(bodyParser.json());
@@ -61,7 +77,7 @@ app.use('/v1/workspace', workspaceRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    console.log('미들웨어 함수 진입.... throw 된 에러: ', error);
+    // console.log('미들웨어 함수 진입.... throw 된 에러: ', error);
     if (!error.statusCode) {
         error = errorHandler(error);
     }
