@@ -5,17 +5,20 @@ import SocketIO from '../socket.js';
 /**
  * 1. 워크스페이스 세부정보 조회
  * 2. 게시물 생성
- * 3. 댓글 달기 -> 게시물이 있어야 함
- * 4. 워크스페이스에 팀원 초대
- * 5. 스크랩 따기
+ * 3. 댓글 달기
+ * 4. 댓글 삭제
+ * 5. 댓글 수정
  * 6. 댓글 보기
- * 7. 워크스페이스 설명 코멘트 편집
- * 8. 워크스페이스 퇴장
- * 9. 워크스페이스에서 해당 유저의 게시물 삭제
- * 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
+ * 7. 워크스페이스에 팀원 초대
+ * 8. 워크스페이스 설명 코멘트 편집
+ * 9. 워크스페이스 퇴장
+ * 10. 워크스페이스에서 해당 유저의 게시물 삭제
+ * 11. 워크스페이스에서 해당 유저의 게시물 내용 수정
+ * 12. 워크스페이스 파일 리스트 조회
  */
+
 const workspaceController = {
-    // 1. 워크스페이스 세부정보 로딩
+    /** 1. 워크스페이스 세부정보 조회 */
     getLoadWorkspace: async (req, res, next) => {
         try {
             console.log(req.query)
@@ -35,7 +38,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 2. 게시물 생성
+    /** 2. 게시물 생성 */
     postCreatePost: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user
@@ -59,7 +62,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 3. 댓글 생성
+    /** 3. 댓글 달기 */
     postCreateReply: async (req, res, next) => {
         try {
             const data = await workspaceService.postCreateReply(req.body.postId, req.userId, req.body.content, next);
@@ -81,7 +84,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 댓글 삭제
+    /** 4. 댓글 삭제 */
     deleteReplyByCreatorInPost: async (req, res, next) => {
         try {
             const { userId } = req;
@@ -99,7 +102,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 4. 워크스페이스에 팀원 초대
+    /** 7. 워크스페이스에 팀원 초대 */
     patchAddMemberToWorkSpace: async (req, res, next) => {
         try {
             console.log(req.body);
@@ -114,8 +117,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 5. 스크랩 따기
-    // 6. 댓글 보기
+    /** 6. 댓글 보기 */
     postGetPostDetailAndRepliesByPostId: async (req, res, next) => {
         try {
             const data = await workspaceService.postGetPostDetailAndRepliesByPostId(req.userId, req.body.postId, next);
@@ -129,7 +131,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 7. 워크스페이스 설명 코멘트 편집
+    /** 8. 워크스페이스 설명 코멘트 편집 */
     patchEditComment: async (req, res, next) => {
         try {
             const data = await workspaceService.patchEditComment(req.userId, req.body.channelId, req.body.workSpaceId, req.body.comment, next);
@@ -142,7 +144,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 8. 워크스페이스 퇴장
+    /** 9. 워크스페이스 퇴장 */
     patchExitWorkSpace: async (req, res, next) => {
         try {
             const data = await workspaceService.patchExitWorkSpace(req.userId, req.body.channelId, req.body.workSpaceId, next);
@@ -156,7 +158,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 9. 워크스페이스에서 해당 유저의 게시물 삭제
+    /** 10. 워크스페이스에서 해당 유저의 게시물 삭제 */
     deletePostByCreatorInWorkSpace: async (req, res, next) => {
         try {
             const data = await workspaceService.deletePostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.params.postId, next);
@@ -170,7 +172,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
+    /** 11. 워크스페이스에서 해당 유저의 게시물 내용 수정 */
     patchEditPostByCreatorInWorkSpace: async (req, res, next) => {
         try {
             const { userId } = req;
@@ -186,7 +188,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 11. 워크스페이스에서 해당 유저의 게시물 내용 수정
+    /** 5. 댓글 수정 */
     patchEditReplyByCreatorInPost: async (req, res, next) => {
         try {
             const { userId } = req;
@@ -205,7 +207,7 @@ const workspaceController = {
             next(err);
         }
     },
-    // 7. 채팅방 파일함 리스트 조회
+    /** 12. 워크스페이스 파일 리스트 조회 */
     getLoadFilesInWorkSpace: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
