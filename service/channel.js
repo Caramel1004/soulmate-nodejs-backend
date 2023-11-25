@@ -6,7 +6,7 @@ import { WorkSpace } from '../models/workspace.js';
 
 import { successType } from '../util/status.js';
 import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel, hasFeed } from '../validator/valid.js';
-import channel from '../models/channel.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 /** ##API 기능 정리
  * 1. POST /v1/channel/openchannel-list: 검색키워드에의한 오픈 채널 검색 및 조회
@@ -26,6 +26,7 @@ import channel from '../models/channel.js';
  * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
  * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
  * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
+ * 18. 채널 정보 수정
  */
 
 const channelService = {
@@ -107,27 +108,33 @@ const channelService = {
             const channelDetail = await Channel.findOne({
                 _id: channelId,
                 open: 'Y'
-            },
-                {
-                    channelName: 1,
-                    owner: 1,
-                    thumbnail: 1,
-                    category: 1,
-                    comment: 1,
-                    members: 1
+            })
+                .populate('owner', {
+                    name: 1,
+                    photo: 1
                 })
                 .populate('members', {
                     name: 1,
                     photo: 1
                 })
+                .populate({
+                    path: 'feeds',
+                    populate: {
+                        path: 'creator',
+                        select: 'name photo'
+                    },
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    }
+                });
 
             // 에러: 해당아이디 조회 했을때, 채널이 존재하지 않으면 에러처리 -> DB문제
             hasChannelDetail(channelDetail);
 
-            const status = successType.S02.s200;
-
             return {
-                status: status,
+                status: successType.S02.s200,
                 channelDetail: channelDetail
             }
         } catch (err) {
@@ -280,13 +287,17 @@ const channelService = {
 
             return {
                 status: successType.S02.s201,
-                channelId: createChannel._id
+                channel: {
+                    _id: createChannel._id,
+                    channelName: createChannel.channelName,
+                    thumbnail: createChannel.thumbnail
+                }
             };
         } catch (err) {
             next(err);
         }
     },
-    /** 6. 검색키워드로 해당유저의 관심채널 목록 조회 */ 
+    /** 6. 검색키워드로 해당유저의 관심채널 목록 조회 */
     getWishChannelList: async (userId, category, searchWord, next) => {
         try {
             let condition;
@@ -371,6 +382,10 @@ const channelService = {
 
             // 2. 유저가 해당 채널의 아이디를 가지고있으면 다음 채널아이디로 해당채널 조회
             const channel = await Channel.findById(matchedChannel._id)
+                .populate('owner', {
+                    name: 1,
+                    photo: 1
+                })
                 .populate('members', {
                     name: 1,
                     photo: 1
@@ -387,7 +402,6 @@ const channelService = {
                         }
                     }
                 });
-
             hasChannelDetail(channel);
 
             // 왜 인지는 잘모르겠는데 map 안에서 루프 돌때 post객체안에 정보말고도 다른 프로퍼티들이 있음 그중 정보가 저장되있는 프로퍼티는 _doc
@@ -399,6 +413,9 @@ const channelService = {
                 }
                 return feed;
             });
+
+            // 이채널의 크리에이터인지 판별
+            channel._doc.isOwner = (channel.owner._id.toString() === userId.toString()) ? true : false;
 
             return {
                 status: successType.S02.s200,
@@ -448,7 +465,6 @@ const channelService = {
             return {
                 status: successType.S02.s200,
                 channel: matchedChannel,
-                users: users
             }
         } catch (err) {
             next(err);
@@ -621,24 +637,31 @@ const channelService = {
             const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
 
             if (updatedUsers.length <= 0) {
+                await filesS3Handler.deletePhotoList([matchedChannel.thumbnail]);
                 await Channel.deleteOne({ _id: channelId });
             } else {
                 matchedChannel.members = [...updatedUsers];
-
-                console.log('updatedUsers: ', updatedUsers);
                 await matchedChannel.save();
             }
 
             // 2. 유저스키마에서 해당 채널 삭제
-            const exitedUser = await User.findById(userId);
-            const updatedChannels = exitedUser.channels.filter(id => id.toString() !== channelId.toString());
+            const exitedUser = await User.findById(userId)
+                .select({
+                    channels: 1
+                })
+                .populate({
+                    path: 'channels',
+                    select: '_id channelName thumbnail'
+                });
+
+            const updatedChannels = exitedUser.channels.filter(channel => channel._id.toString() !== channelId.toString());
 
             exitedUser.channels = [...updatedChannels];
             await exitedUser.save();
 
             return {
                 status: successType.S02.s200,
-                exitedUser: exitedUser
+                updatedChannels: updatedChannels
             }
         } catch (err) {
             next(err);
@@ -718,6 +741,19 @@ const channelService = {
     /** 16. 해당채널에 내 피드 삭제 */
     deleteRemoveFeedByUserId: async (userId, channelId, feedId, next) => {
         try {
+            // 이미지 파일 제거를 위한 삭제할 피드 조회
+            const feed = await Feed.findOne({
+                channelId: channelId,
+                _id: feedId
+            },{
+                imageUrls: 1
+            });
+    
+            // s3에 해당 파일들 삭제
+            if (feed.imageUrls.length > 0) {
+                await filesS3Handler.deletePhotoList(feed.imageUrls);
+            }
+
             // 1. 피드 스키마에서 해당 피드 삭제
             const deletedFeed = await Feed.deleteOne({
                 _id: feedId,
@@ -793,6 +829,33 @@ const channelService = {
             next(err);
         }
     },
+    /** 18. 채널 정보 수정 */
+    patchEditChannelByCreator: async (userId, channelId, open, channelName, comment, category, next) => {
+        try {
+            // 1. 유저 존재 여부
+            const hasUserData = await User.exists({ _id: userId });
+            hasUser(hasUserData);
+
+            // 2. 채널 업데이트
+            await Channel.updateOne({
+                _id: channelId,
+                owner: userId
+            },
+                {
+                    open: open,
+                    channelName: channelName,
+                    comment: comment,
+                    category: category
+                }
+            );
+
+            return {
+                status: successType.S02.s200
+            }
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default channelService;

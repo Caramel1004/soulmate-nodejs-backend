@@ -20,6 +20,7 @@ import { hasReturnValue } from '../validator/valid.js'
  * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
  * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
  * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
+ * 18. 채널 정보 수정
  */
 
 const channelController = {
@@ -133,7 +134,7 @@ const channelController = {
             res.status(data.status.code).json({
                 authStatus: authStatus,
                 status: data.status,
-                channelId: data.channelId
+                channel: data.channel
             });
         } catch (err) {
             next(err);
@@ -305,7 +306,7 @@ const channelController = {
             res.status(data.status.code).json({
                 authStatus: authStatus,
                 status: data.status,
-                exitedUser: data.exitedUser
+                updatedChannels: data.updatedChannels
             });
         } catch (err) {
             next(err)
@@ -373,6 +374,25 @@ const channelController = {
             const { channelId, feedId } = req.body;
 
             const data = await channelService.patchPlusOrMinusNumberOfLikeInFeed(userId, channelId, feedId, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                numberOfLikeInFeed: data.numberOfLikeInFeed
+            })
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** 18. 채널 정보 수정 */
+    patchEditChannelByCreator: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId } = req.params;
+            const { open, channelName, comment, category } = req.body;
+
+            const data = await channelService.patchEditChannelByCreator(userId, channelId, open, channelName, comment, category, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
