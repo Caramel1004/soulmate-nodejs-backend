@@ -5,6 +5,17 @@ import db from '../util/transaction.js'
 import { successType, errorType } from '../util/status.js';
 import { hasUser, hasUserInDB, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
 import { User, SNS_Account } from '../models/user.js';
+import filesS3Handler from '../util/files-s3-handler.js';
+
+/**
+ * 1. 회원가입
+ * 2. 로그인 요청한 유저 조회
+ * ------SNS계정으로 로그인 시 순서도------
+ * 카카오 로그인 페이지 URL 요청 -> 카카오 API에 해당유저에대한 토큰 요청 -> 카카오 유저 정보 조회
+ * 3. 카카오 로그인 페이지 URL 요청
+ * 4. 카카오 API에 해당유저에대한 토큰 요청
+ * 5. 카카오 API에 유저 정보 조회 -> 가입 o 로그인, 가입 x 회원가입
+ */
 
 const userService = {
     // 1. 회원 가입
@@ -22,8 +33,9 @@ const userService = {
 
             hasUser(savedUser);
 
-            const status = successType.S02.s201;
-            return status;
+            return {
+                status: successType.S02.s201
+            };
         } catch (err) {
             err.path = 'email';
             next(err);
@@ -64,7 +76,7 @@ const userService = {
         }
     },
     // 3. 검색 키워드에따른 유저 리스트 조회
-    getSearchUser: async (channelId, name, next) => {
+    getSearchUserByKeyWord: async (channelId, name, next) => {
         try {
             const matchedUsers = await User.find(
                 { name: { $regex: name, $options: 'i' } },
@@ -74,7 +86,7 @@ const userService = {
                 });
 
             const matchedChannel = await Channel.findById(channelId).select({ members: 1 });
-
+            console.log(matchedChannel)
             // 이미 유저가 참여하고 있는지 확인
             matchedUsers.map(user => {
                 const isChannelMember = matchedChannel.members.includes(user._id.toString());
@@ -85,7 +97,7 @@ const userService = {
                 }
                 return user;
             });
-
+            
             return {
                 status: successType.S02.s200,
                 matchedUsers: matchedUsers
@@ -181,7 +193,7 @@ const userService = {
             const { hasNameToBeEdit, hasPhotoToBeEdit, hasPhoneToBeEdit, data } = body;
 
             // 1. 유저 존재 여부
-            const user = await User.findById(userId).select({ _id: 1 });
+            const user = await User.findById(userId).select({ _id: 1, photo: 1 });
             hasUser(user);
 
             const updatedData = {
@@ -195,6 +207,7 @@ const userService = {
                     updatedData.data = data;
                     break;
                 case hasPhotoToBeEdit:
+                    await filesS3Handler.deletePhotoList([user.photo]);
                     await User.updateOne({ _id: userId }, { photo: body.fileUrls[0] });
                     updatedData.photo = body.fileUrls[0];
                     break;
