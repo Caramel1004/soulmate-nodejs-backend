@@ -10,9 +10,10 @@ const router = Router();
 /**
  * 1. 채팅방 세부정보 조회
  * 2. 팀원 추가 보드에 채널 멤버들 조회
- * 3. 실시간 채팅
- * 4. 실시간 파일 업로드
- * 5. 채팅방에 채널 멤버 초대
+ * 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+ * 4. 채팅방에 채널 멤버 초대
+ * 5. 채팅방 퇴장
+ * 6. 채팅방 파일함 리스트 조회
  */
 
 
@@ -41,8 +42,8 @@ router.post('/:channelId/:chatRoomId',
     hasJsonWebToken,
     multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
     hasChat,
-    filesS3Handler.uploadFilesToS3
-    );// 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+    filesS3Handler.uploadFilesToS3,
+    chatController.postSendChatAndUploadFilesToChatRoom);
 
 
 /** PATCH /v1/chat/invite/:channelId/:chatRoomId
