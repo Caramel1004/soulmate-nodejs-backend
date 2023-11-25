@@ -21,8 +21,8 @@ const userController = {
             const data = await userService.postSignUp(body, next);//successType
             hasReturnValue(data);
 
-            res.status(data.code).json({
-                data: data
+            res.status(data.status.code).json({
+                status: data.status
             })
         } catch (err) {
             next(err);
@@ -120,12 +120,12 @@ const userController = {
         }
     },
     /** 6. 검색 키워드로 유저 리스트 조회 */
-    getSearchUser: async (req, res, next) => {
+    getSearchUserByKeyWord: async (req, res, next) => {
         try {
             const name = req.params.name;
-            const channelId = req.body.channelId;
+            const { channelId } = req.body;
             console.log(name);
-            const data = await userService.getSearchUser(channelId, name, next);
+            const data = await userService.getSearchUserByKeyWord(channelId, name, next);
 
             hasReturnValue(data);
 
