@@ -5,6 +5,7 @@ import { hasJsonWebToken, hasFile } from '../validator/valid.js';
 import filesHandler from '../util/files-handler.js';
 
 import channelController from '../controller/channel.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 const router = Router();
 
@@ -26,6 +27,7 @@ const router = Router();
  * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
  * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
  * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
+ * 18. 채널 정보 수정
  */
 
 
@@ -78,7 +80,7 @@ router.post('/create',
  * @route {/v1/channel/wishchannels} 
  * 6. 검색키워드로 해당유저의 관심채널 목록 조회
  */
-router.post('/wishchannels', hasJsonWebToken, channelController.getWishChannelList); 
+router.post('/wishchannels', hasJsonWebToken, channelController.getWishChannelList);
 
 
 /** GET /v1/channel/:channelId
@@ -144,11 +146,11 @@ router.patch('/exit/:channelId', hasJsonWebToken, channelController.patchExitCha
  */
 router.post('/create-feed/:channelId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
-    filesHandler.saveUploadedFiles,
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
+    filesS3Handler.uploadFilesToS3,
     channelController.postCreateFeedToChannel);
 
- 
+
 /** PATCH /v1/channel/edit-feed/:channelId/:feedId
  * @method{PATCH}
  * @route {/v1/channel/edit-feed/:channelId/:feedId} 
@@ -156,8 +158,8 @@ router.post('/create-feed/:channelId',
  */
 router.patch('/edit-feed/:channelId/:feedId',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 5),
-    filesHandler.saveUploadedFiles,
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 5),
+    filesS3Handler.uploadFilesToS3,
     channelController.patchEditFeedToChannel);// 21. 홈채널에 내피드 수정
 
 
@@ -176,5 +178,12 @@ router.delete('/delete-feed/:channelId/:feedId', hasJsonWebToken, channelControl
  * 17. 피드 좋아요수 증가 또는 감소
  */
 router.patch('/plus-or-minus-feed-like', hasJsonWebToken, channelController.patchPlusOrMinusNumberOfLikeInFeed);
+
+/** PATCH /v1/channel/edit-channel/:channelId
+ * @method{PATCH}
+ * @route {/v1/channel/edit-channel/:channelId} 
+ * 18. 채널 정보 수정
+ */
+router.patch('/edit-channel/:channelId', hasJsonWebToken, channelController.patchEditChannelByCreator);
 
 export default router;
