@@ -2,6 +2,10 @@ import { Category } from "../models/static-data.js";
 import { hasCategoryData } from '../validator/valid.js'
 import { successType } from '../util/status.js';
 
+/**
+ * 1. 채널 카테고리 조회
+ */
+
 const staticDataService = {
     getCategoryData: async next => {
         try {
