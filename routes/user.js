@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 
-import filesHandler from '../util/files-handler.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 import userController from '../controller/user.js';
 import { hasJsonWebToken, hasFile } from '../validator/valid.js';
@@ -27,8 +27,8 @@ const router = Router();
  * 1. 회원가입
 */
 router.post('/signup',
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('photo'),
-    filesHandler.saveUploadedUserPhoto,
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('photo', 1),
+    filesS3Handler.uploadUserPhotoToS3,
     userController.postSignUp
 );
 
@@ -72,13 +72,13 @@ router.post('/sns-account/signup', userController.postSignUpOrLoginBySNSAccount)
 
 /** ----------------------------------------------------------------------------- */
 
-/** POST /v1/user/userInfo/:name
+/** POST /v1/user/search/:name
  * @method{POST}
  * @route {/v1/user/userInfo/:name}
  * 6. 검색 키워드로 유저 리스트 조회
 */
-// POST /v1/user/userInfo/:name
-router.post('/userInfo/:name', userController.getSearchUser);
+// POST /v1/user/search/:name
+router.post('/search/:name', userController.getSearchUserByKeyWord);
 
 
 /** GET /v1/user/myprofile
@@ -98,7 +98,7 @@ router.get('/myprofile', hasJsonWebToken, userController.getMyProfile);
 // PATCH /v1/user/edit-myprofile
 router.patch('/edit-myprofile',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('data', 1),
+    multer().array('data', 1),
     userController.patchEditMyProfileByReqUser
 );
 
@@ -110,9 +110,9 @@ router.patch('/edit-myprofile',
 */
 router.patch('/edit-myprofile-photo',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).array('photo', 1),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).single('photo'),
     hasFile,
-    filesHandler.saveUploadedUserPhoto,
+    filesS3Handler.uploadUserPhotoToS3,
     userController.patchEditMyProfileByReqUser
 );
 
