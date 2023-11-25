@@ -3,13 +3,15 @@ import { ChatRoom, Chat } from '../models/chat-room.js'
 
 import { successType, errorType } from '../util/status.js';
 import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom } from '../validator/valid.js';
+import filesS3Handler from '../util/files-s3-handler.js';
 
 /**
- * 1. 채팅방 세부정보 로딩
+ * 1. 채팅방 세부정보 조회
  * 2. 팀원 추가 보드에 채널 멤버들 조회
- * 3. 실시간 채팅
- * 4. 실시간 파일 업로드
- * 5. 채팅방에 채널 멤버 초대
+ * 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
+ * 4. 채팅방에 채널 멤버 초대
+ * 5. 채팅방 퇴장
+ * 6. 채팅방 파일함 리스트 조회
  */
 
 const chatService = {
@@ -277,28 +279,45 @@ const chatService = {
                     users: 1,
                     chats: 1
                 })
-                .populate('users',{
+                .populate('users', {
                     name: 1
-                });
+                })
+                .populate({
+                    path: 'chats',
+                    select: 'fileUrls createdAt',
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        },
+                    }
+                })
             hasChatRoom(matchedChatRoom);
-            const exitUser = matchedChatRoom.users.find(user => user._id.toString() === userId.toString())
-
-            // 퇴장 멘트를 챗으로 저장
-            const chatObj = await Chat.create({
-                chat: `${exitUser.name}님이 퇴장하셨습니다.`,
-                creator: exitUser._id,
-                isNotice: 'Y'
-            });
+            const exitUser = matchedChatRoom.users.find(user => user._id.toString() === userId.toString());
 
             // 2) 채팅방 스키마에 해당 유저 필터링 -> 제거
             const filteredChatRoomUsers = matchedChatRoom.users.filter(user => user._id.toString() !== userId.toString());
-            console.log(filteredChatRoomUsers);
 
             if (filteredChatRoomUsers.length <= 0) {
+                // s3에 해당 파일들 삭제
+                let fileUrlsOfChats = [];
+                for (const chat of matchedChatRoom.chats) {
+                    if (chat.fileUrls.length > 0) {
+                        fileUrlsOfChats = [...fileUrlsOfChats, ...chat.fileUrls];
+                    }
+                }
+                if (fileUrlsOfChats.length > 0) {
+                    await filesS3Handler.deletePhotoList(fileUrlsOfChats);
+                }
+
                 // 채널에서 해당 채팅방 제거
                 const channel = await Channel.findById(channelId).select({ chatRooms: 1 });
                 channel.chatRooms = [...channel.chatRooms.filter(chatRoom => chatRoom.toString() !== matchedChatRoom._id.toString())];
                 await channel.save();
+
+                // 해당 채팅방에 속한 chats 모두 삭제
+                for (const chat of matchedChatRoom.chats) {
+                    await Chat.deleteOne({ _id: chat._id })
+                }
 
                 // 채팅룸 스키마에서 해당 채팅방 삭제
                 await ChatRoom.deleteOne({ _id: matchedChatRoom._id });
@@ -306,6 +325,13 @@ const chatService = {
                 matchedChatRoom.users = [...filteredChatRoomUsers];
                 matchedChatRoom.chats.push(chatObj._id);
                 await matchedChatRoom.save();
+
+                // 퇴장 멘트를 챗으로 저장
+                const chatObj = await Chat.create({
+                    chat: `${exitUser.name}님이 퇴장하셨습니다.`,
+                    creator: exitUser._id,
+                    isNotice: 'Y'
+                });
             }
 
             return {
@@ -321,32 +347,33 @@ const chatService = {
         try {
             // channelSchema -> chatRoomSchema -> chatSchema property: fileUrls
             const channel = await Channel.findById(channelId)
-            .select({
-                chatRooms: 1
-            })
-            .populate({
-                path: 'chatRooms',
-                match: {
-                    _id: chatRoomId,
-                    channelId: channelId
-                },
-                select: 'chats',
-                populate: {
-                    path: 'chats',
-                    select: 'fileUrls createdAt',
+                .select({
+                    chatRooms: 1
+                })
+                .populate({
+                    path: 'chatRooms',
                     match: {
-                        fileUrls: {
-                            $gt: 0
-                        }
+                        _id: chatRoomId,
+                        channelId: channelId
                     },
-                    options: {
-                        sort: {
-                            createdAt: -1
+                    select: 'chats',
+                    populate: {
+                        path: 'chats',
+                        select: 'fileUrls createdAt',
+                        match: {
+                            fileUrls: {
+                                $gt: 0
+                            }
                         },
+                        options: {
+                            sort: {
+                                createdAt: -1
+                            },
+                        }
                     }
-                }
-            });
+                });
             hasChannelDetail(channel);
+            console.log(channel)
             const chatsWithFileUrlsInChatRoom = channel.chatRooms[0].chats
             return {
                 status: successType.S02.s200,
