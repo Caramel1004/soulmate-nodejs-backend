@@ -83,7 +83,7 @@ const chatService = {
         }
     },
     /** 2. 팀원 추가 보드에 채널 멤버들 조회 */
-    postLoadUsersInChannel: async (channelId, chatRoomId, next) => {
+    getLoadUsersInChannel: async (channelId, chatRoomId, next) => {
         try {
             console.log('channel:', channelId);
             const channel = await Channel.findById(channelId)
