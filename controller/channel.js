@@ -3,23 +3,23 @@ import channelService from '../service/channel.js'
 import { hasReturnValue } from '../validator/valid.js'
 
 /** ##API 기능 정리
- * 1. POST /v1/channel/openchannel-list: 검색키워드에의한 오픈 채널 검색 및 조회
- * 2. GET /v1/channel/openchannel-list/:channelId: 오픈 채널 세부정보 조회
- * 3. PATCH /v1/channel/add-or-remove-wishchannel: 관심채널 추가 또는 삭제
- * 4. GET /v1/channel/mychannels: 해당유저의 채널 목록 조회
- * 5. POST /v1/channel/create: 채널 생성
- * 6. POST /v1/channel/wishchannels: 검색키워드로 해당유저의 관심채널 목록 조회
- * 7. GET /v1/channel/:channelId: 해당채널의 세부정보 조회
- * 8. PATCH /v1/channel/invite/:channelId: 해당 채널에 유저 초대
- * 9. POST /v1/channel/:channelId/chat: 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색
- * 10.POST /v1/channel/:channelId/create-chatRoom: 해당채널에 채팅룸 생성
- * 11.POST /v1/channel/:channelId/create-workspace: 해당채널에 워크스페이스 생성
- * 12.POST /v1/channel/:channelId/workspace: 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색
- * 13.PATCH /v1/channel/exit/:channelId: 해당채널 퇴장
- * 14.PATCH /v1/channel/create-feed/:channelId: 해당채널에 내 피드 생성
- * 15.PATCH /v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
- * 16.DELETE /v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
- * 17.PATCH /v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
+ * 1. POST /api/v1/channel/openchannel-list: 검색키워드에의한 오픈 채널 검색 및 조회
+ * 2. GET /api/v1/channel/openchannel-list/:channelId: 오픈 채널 세부정보 조회
+ * 3. PATCH /api/v1/channel/add-or-remove-wishchannel: 관심채널 추가 또는 삭제
+ * 4. GET /api/v1/channel/mychannels: 해당유저의 채널 목록 조회
+ * 5. POST /api/v1/channel/create: 채널 생성
+ * 6. POST /api/v1/channel/wishchannels: 검색키워드로 해당유저의 관심채널 목록 조회
+ * 7. GET /api/v1/channel/:channelId: 해당채널의 세부정보 조회
+ * 8. PATCH /api/v1/channel/invite/:channelId: 해당 채널에 유저 초대
+ * 9. POST /api/v1/channel/:channelId/chat: 해당채널에서 유저가 속한 채팅룸 검색키워드로 목록 검색
+ * 10.POST /api/v1/channel/:channelId/create-chatRoom: 해당채널에 채팅룸 생성
+ * 11.POST /api/v1/channel/:channelId/create-workspace: 해당채널에 워크스페이스 생성
+ * 12.POST /api/v1/channel/:channelId/workspace: 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색
+ * 13.PATCH /api/v1/channel/exit/:channelId: 해당채널 퇴장
+ * 14.PATCH /api/v1/channel/create-feed/:channelId: 해당채널에 내 피드 생성
+ * 15.PATCH /api/v1/channel/edit-feed/:channelId/:feedId: 해당채널에 내 피드 수정
+ * 16.DELETE /api/v1/channel/delete-feed/:channelId/:feedId: 해당채널에 내 피드 삭제
+ * 17.PATCH /api/v1/channel/plus-or-minus-feed-like: 피드 좋아요수 증가 또는 감소
  * 18. 채널 정보 수정
  */
 
