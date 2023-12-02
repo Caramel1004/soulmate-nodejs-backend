@@ -22,13 +22,10 @@ const kakaoAPI = {
         }
     },
     // 2. 카카오에 토큰 요청
-    postRequestTokenToKakao: async (code, next) => {
+    getRequestTokenToKakao: async (code, next) => {
         try {
             const response = await fetch(`https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${process.env.KAKAO_REST_API_KEY}&redirect_uri=${process.env.REDIRECT_URI}&code=${code}`, {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                }
+                method: 'GET',
             });
             const data = await response.json();
 
