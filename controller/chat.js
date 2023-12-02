@@ -11,7 +11,7 @@ import socket from '../socket.js';
 
 /**
  * 1. 채팅방 세부정보 조회
- * 2. 팀원 추가 보드에 채널 멤버들 조회
+ * 2. 채팅방에서 채널 멤버들 조회
  * 3. 실시간 채팅과 파일 업로드 및 채팅창 실시간 업데이트 요청
  * 4. 채팅방에 채널 멤버 초대
  * 5. 채팅방 퇴장
@@ -39,12 +39,11 @@ const chatController = {
         }
     },
     /** 2. 팀원 추가 보드에 채널 멤버들 조회 */
-    postLoadUsersInChannel: async (req, res, next) => {
+    getLoadUsersInChannel: async (req, res, next) => {
         try {
-            const { channelId } = req.params;
-            const { chatRoomId } = req.body;
+            const { channelId, chatRoomId } = req.params;
 
-            const data = await chatService.postLoadUsersInChannel(channelId, chatRoomId, next);
+            const data = await chatService.getLoadUsersInChannel(channelId, chatRoomId, next);
 
             hasReturnValue(data);
 
