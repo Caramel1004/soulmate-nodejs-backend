@@ -183,22 +183,21 @@ const workspaceService = {
             hasUser(matchedCreator);
 
             // 3) 해당 댓글 삭제
-            const removedReply = await Reply.deleteOne({ _id: replyId });
-            console.log(removedReply);
+            const deletionResult = await Reply.deleteOne({ _id: replyId });
 
             // 4) 해당 게시물에 댓글 컬럼 필터링 -> 제거
             matchedPost.replies = [...matchedPost.replies.filter(reply => reply.toString() !== replyId.toString())];
             await matchedPost.save();
             return {
                 status: successType.S02.s200,
-                updatedPost: matchedPost
+                deletionResult: deletionResult
             }
         } catch (err) {
             next(err);
         }
     },
     // 4. 워크스페이스에 팀원 초대
-    patchAddMemberToWorkSpace: async (selectedId, channelId, workSpaceId, next) => {
+    patchAddMemberToWorkSpace: async (selectedIds, channelId, workSpaceId, next) => {
         try {
             // 채널아이디로 해당 채팅룸이 있는지 부터 검사
             // 1. 채널 정보 가져오기
@@ -218,7 +217,7 @@ const workspaceService = {
 
             // 필터 목록 1. 채널에 존재하나? 2. 워크스페이스에 중복되는 유저가 있나?
             // 채널에 멤버가 존재하는지 필터링 => 없으면 삭제 필터링
-            const filterExistUserToChannel = selectedId.filter(selectedUser => {
+            const filterExistUserToChannel = selectedIds.filter(selectedUser => {
                 for (const existUser of matchedChannel.members) {
                     console.log(existUser);
                     if (selectedUser.toString() === existUser._id.toString()) {
@@ -258,7 +257,7 @@ const workspaceService = {
     },
     // 5. 스크랩 따기
     // 6. 댓글 보기
-    postGetPostDetailAndRepliesByPostId: async (userId, postId, next) => {
+    getPostDetailAndRepliesByPostId: async (userId, postId, next) => {
         try {
             /**1) 게시물 세부 정보 조회 -> DB에서 발생한 에러는 catch문으로 처리
              * @params {objectId} postId: 채널 아이디
@@ -396,10 +395,9 @@ const workspaceService = {
                 matchedWorkSpace.users = [...filteredWorkSpaceUsers];
                 await matchedWorkSpace.save();
             }
-
+            console.log(exitUser);
             return {
-                status: successType.S02.s200,
-                exitUser: exitUser
+                status: successType.S02.s200
             }
         } catch (err) {
             next(err);
@@ -414,25 +412,22 @@ const workspaceService = {
                     creator: 1,
                     fileUrls: 1
                 })
-                .populate('creator', {
-                    _id: 1
-                });
 
             hasPost(matchedPost);
 
-            const user = matchedPost.creator._id.toString() === userId.toString() ? matchedPost.creator : null;
+            const user = (matchedPost.creator.toString() === userId.toString()) ? matchedPost.creator : null;
             hasUser(user);
 
             // s3에 해당 파일들 삭제
             if (matchedPost.fileUrls.length > 0) {
                 await filesS3Handler.deletePhotoList(matchedPost.fileUrls);
             }
-
+            
             /** 2) 해당 게시물 삭제
               * @params {ObjectId} 요청한 게시물 아이디 
               * @return {object} (property)워크스페이스에 참여하고있는 유저들
               * */
-            const removedPost = await Post.deleteOne({ _id: postId });
+            const deletionResult = await Post.deleteOne({ _id: postId });
 
             // 3) 워크스페이스 스키마에 해당 게시물 필터링 -> 제거
             const workSpace = await WorkSpace.findOne({
@@ -440,19 +435,19 @@ const workspaceService = {
                 channelId: channelId
             })
                 .select({ posts: 1 });
-            workSpace.posts = [...workSpace.posts.filter(post => post.toString() !== removedPost._id.toString())];
+            workSpace.posts = [...workSpace.posts.filter(post => post.toString() !== postId.toString())];
             await workSpace.save();
-
             return {
                 status: successType.S02.s200,
-                removedPost: removedPost
+                deletionResult: deletionResult
             }
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },
     // 10. 워크스페이스에서 해당 유저의 게시물 내용 수정
-    patchEditPostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, body, next) => {
+    putEditPostByCreatorInWorkSpace: async (userId, channelId, workSpaceId, body, next) => {
         try {
             const { postId, content, fileUrls } = body;
             /** 1) 해당 게시물의 생성자와 수정요청한 유저랑 일치하는지 확인
@@ -484,7 +479,7 @@ const workspaceService = {
             }
 
             await matchedPost.save();
-            console.log(matchedPost);
+
             return {
                 status: successType.S02.s200,
                 updatedPost: matchedPost
