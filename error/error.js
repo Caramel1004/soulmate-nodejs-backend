@@ -7,7 +7,7 @@ export class NotFoundError extends Error {
         this.status = errorType.D04.d404.status;
         this.message = message;
         this.name = 'NotFoundError'
-        this.cause = this.stack;
+        // this.cause = this.stack;
     }
 }
 
@@ -45,13 +45,13 @@ export class AuthorizationTokenError extends Error {
         this.status = errorType.E04.e401.status;
         this.message = message;
         this.name = 'AuthorizationTokenError';
-        this.cause = this.stack;
+        // this.cause = this.stack;
     }
 }
 
 export class VerificationTokenError extends AuthorizationTokenError {
     constructor(error) {
-        let message;
+        let message = '유효하지 않은 인증토큰입니다.';
         if (error.name === 'TokenExpiredError') {
             message = '인증 토큰 기간이 만료 되었습니다.'
         } else if (error.name === 'JsonWebTokenError') {
@@ -59,7 +59,7 @@ export class VerificationTokenError extends AuthorizationTokenError {
         }
         super(message);
         this.name = 'VerificationTokenError';
-        this.cause = error.stack;
+        // this.cause = error.stack;
     }
 }
 
@@ -68,7 +68,7 @@ export const errorHandler = error => {
         statusCode: errorType.E05.e500.code,
         status: errorType.E05.e500.status,
         name: error.name,
-        stack: error.stack
+        // stack: error.stack
     }
     try {
         if (error instanceof Error) {
