@@ -27,11 +27,11 @@ const oauthController = {
         }
     },
     /** 2. 카카오 API에 해당유저에대한 토큰 요청 */
-    postRequestTokenToKakao: async (req, res, next) => {
+    getRequestTokenToKakao: async (req, res, next) => {
         try {
-            const { code } = req.body;
+            const { code } = req.query;
 
-            const data = await kakaoAPI.postRequestTokenToKakao(code, next);
+            const data = await kakaoAPI.getRequestTokenToKakao(code, next);
             hasReturnValue(data);
 
             console.log(data);
