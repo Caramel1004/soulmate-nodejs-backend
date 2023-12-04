@@ -65,7 +65,7 @@ const filesS3Handler = {
         try {
             const { files } = req.body;
             req.body.fileUrls = [];
-         
+            
             if (req.body.existFileUrls) {
                 const parsedExistFileUrls = JSON.parse(req.body.existFileUrls)
                 for (const fileUrl of parsedExistFileUrls.existFileUrls) {
@@ -78,7 +78,7 @@ const filesS3Handler = {
                 const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
                 return parsedJson;
             });
-
+            
             if (parsedFiles.length > 0) {
                 for (const parsedFile of parsedFiles) {
                     const fileId = new Date().getTime().toString(36);
