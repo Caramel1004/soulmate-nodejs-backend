@@ -14,7 +14,7 @@ export default {
     getSocketIO: () => {
         if (!socketIO) {
             const error = new Error('소켓이 선언되지 않았습니다.');
-            error.stausCode = 404;
+            error.stausCode = 400;
         }
         return socketIO;
     }
