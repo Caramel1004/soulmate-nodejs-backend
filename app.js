@@ -8,7 +8,11 @@ import { v4 } from 'uuid';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-import hpp from 'hpp'
+import hpp from 'hpp';
+
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import swaggerOptions from './swagger/config.js';
 
 import SocketIO from './socket.js';
 import redisClient from './util/redis.js';
@@ -17,6 +21,7 @@ import { errorHandler } from './error/error.js'
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
+import oauthRoutes from './routes/oauth.js';
 import chatRoutes from './routes/chat.js';
 import workspaceRoutes from './routes/workspace.js';
 import staticDataRoutes from './routes/static-data.js';
@@ -24,9 +29,12 @@ import staticDataRoutes from './routes/static-data.js';
 dotenv.config();
 
 const app = express();
-let DATABASE_NAME;
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+console.log(swaggerSpec)
+app.use('/soulmate/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // 배포 환경 or 개발 환경
+let DATABASE_NAME;
 if (process.env.NODE_ENV === 'production') {
     console.log('배포 환경!!');
     DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_PORD_VER;
@@ -69,11 +77,12 @@ app.use((req, res, next) => {
 });
 
 // 라우트 접근
-app.use('/v1/channel', channelRoutes);
-app.use('/v1/static-data', staticDataRoutes);
-app.use('/v1/user', userRoutes);
-app.use('/v1/chat', chatRoutes);
-app.use('/v1/workspace', workspaceRoutes);
+app.use('/api/v1/channel', channelRoutes);
+app.use('/api/v1/static-data', staticDataRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/oauth', oauthRoutes);
+app.use('/api/v1/chat', chatRoutes);
+app.use('/api/v1/workspace', workspaceRoutes);
 
 // 오류 처리
 app.use((error, req, res, next) => {
