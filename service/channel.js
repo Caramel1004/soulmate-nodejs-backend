@@ -113,10 +113,6 @@ const channelService = {
                     name: 1,
                     photo: 1
                 })
-                .populate('members', {
-                    name: 1,
-                    photo: 1
-                })
                 .populate({
                     path: 'feeds',
                     populate: {
