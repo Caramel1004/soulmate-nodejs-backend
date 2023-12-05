@@ -96,7 +96,7 @@ const workspaceController = {
 
             res.status(data.status.code).json({
                 status: data.status,
-                updatedPost: data.updatedPost
+                deletionResult: data.deletionResult
             });
         } catch (err) {
             next(err);
@@ -106,7 +106,7 @@ const workspaceController = {
     patchAddMemberToWorkSpace: async (req, res, next) => {
         try {
             console.log(req.body);
-            const data = await workspaceService.patchAddMemberToWorkSpace(req.body.selectedId, req.params.channelId, req.params.workSpaceId, next);
+            const data = await workspaceService.patchAddMemberToWorkSpace(req.body.selectedIds, req.params.channelId, req.params.workSpaceId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
@@ -118,9 +118,11 @@ const workspaceController = {
         }
     },
     /** 6. 댓글 보기 */
-    postGetPostDetailAndRepliesByPostId: async (req, res, next) => {
+    getPostDetailAndRepliesByPostId: async (req, res, next) => {
         try {
-            const data = await workspaceService.postGetPostDetailAndRepliesByPostId(req.userId, req.body.postId, next);
+            const { userId } = req;
+            const { channelId, workSpaceId, postId } = req.params;
+            const data = await workspaceService.getPostDetailAndRepliesByPostId(userId, postId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
@@ -151,8 +153,7 @@ const workspaceController = {
             hasReturnValue(data);
 
             res.status(data.status.code).json({
-                status: data.status,
-                exitUser: data.exitUser
+                status: data.status
             });
         } catch (err) {
             next(err);
@@ -163,22 +164,22 @@ const workspaceController = {
         try {
             const data = await workspaceService.deletePostByCreatorInWorkSpace(req.userId, req.params.channelId, req.params.workSpaceId, req.params.postId, next);
             hasReturnValue(data);
-
+            console.log(data);
             res.status(data.status.code).json({
                 status: data.status,
-                removedPost: data.removedPost
+                deletionResult: data.deletionResult
             });
         } catch (err) {
             next(err);
         }
     },
     /** 11. 워크스페이스에서 해당 유저의 게시물 내용 수정 */
-    patchEditPostByCreatorInWorkSpace: async (req, res, next) => {
+    putEditPostByCreatorInWorkSpace: async (req, res, next) => {
         try {
             const { userId } = req;
             const { channelId, workSpaceId } = req.params;
             const { body } = req;
-            const data = await workspaceService.patchEditPostByCreatorInWorkSpace(userId, channelId, workSpaceId, body, next);
+            const data = await workspaceService.putEditPostByCreatorInWorkSpace(userId, channelId, workSpaceId, body, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
