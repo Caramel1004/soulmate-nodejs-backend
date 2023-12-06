@@ -2,10 +2,31 @@
 앱 이름: Soulmate, 언제든지 소통할 수 있는 메신저 애플리케이션
 
 # 사용한 기술 스택
-Back-End:  Nodejs, Expressjs,   SpringBoot,  SpringFramework,  Java<br>
-DB:  MongoDB,  MySQL<br>
-DevOps:  Github,  Swagger,  Postman,  AWS<br>
-Front-End:  JavaScript,  HTML,  CSS,  EJS<br>
+<div align="left">
+
+#### BackEnd
+![Nodejs](https://img.shields.io/badge/-Nodejs-339933?style=for-the-badge&logo=Node.js&logoColor=white)<br>
+![Expressjs](https://img.shields.io/badge/expressjs-000000?style=for-the-badge&logo=express&logoColor=white)
+![Mongoose](https://img.shields.io/badge/mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white)
+
+#### DB
+![MongoDB](https://img.shields.io/badge/mongoDB-47A248?style=for-the-badge&logo=MongoDB&logoColor=white)<br>
+![Redis](https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+#### DevOps
+![swagger](https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white)
+![Github](https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white)
+![Postman](https://img.shields.io/badge/postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)<br>
+![Amazons3](https://img.shields.io/badge/amazons3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
+![Amazonec2](https://img.shields.io/badge/amazonec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
+#### FrontEnd
+![JavaScript](https://img.shields.io/badge/-JavaScript-%23F7DF1C?style=for-the-badge&logo=javascript&logoColor=000000&labelColor=%23F7DF1C&color=%23FFCE5A)<br>
+![HTML5](https://img.shields.io/badge/-HTML5-F05032?style=for-the-badge&logo=html5&logoColor=ffffff)
+![CSS3](https://img.shields.io/badge/-CSS3-007ACC?style=for-the-badge&logo=css3)
+<!-- ![Docker](https://img.shields.io/badge/-Docker-46a2f1?style=for-the-badge&logo=Docker&logoColor=white) -->
+#### OS
+![MacOs](https://img.shields.io/badge/macos-000000?style=for-the-badge&logo=macos&logoColor=white)
+</div>
 
 # 개발 히스토리
 - RESTful 아키텍처 채택, Nodejs, MongoDB, Swagger를 사용하여 백엔드 API 개발 및 관리<br>
