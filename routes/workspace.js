@@ -11,10 +11,10 @@ const router = Router();
 /**
  * 1. 워크스페이스 세부정보 조회
  * 2. 게시물 생성
- * 3. 댓글 달기
+ * 3. 댓글 생성
  * 4. 댓글 삭제
  * 5. 댓글 수정
- * 6. 댓글 보기
+ * 6. 댓글 조회
  * 7. 워크스페이스에 팀원 초대
  * 8. 워크스페이스 설명 코멘트 편집
  * 9. 워크스페이스 퇴장
@@ -24,17 +24,17 @@ const router = Router();
  */
 
 
-/** GET /v1/workspace/:channelId/:workspaceId
+/** GET /api/v1/workspace/:channelId/:workspaceId
  * @method{GET}
- * @route {/v1/workspace/:channelId/:workspaceId}
+ * @route {/api/v1/workspace/:channelId/:workspaceId}
  * 1. 워크스페이스 세부정보 조회
 */
 router.get('/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getLoadWorkspace);
 
 
-/** POST /v1/workspace/create-post/:channelId/:workSpaceId
+/** POST /api/v1/workspace/create-post/:channelId/:workSpaceId
  * @method{POST}
- * @route {/v1/workspace/create-post/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/create-post/:channelId/:workSpaceId}
  * 2. 게시물 생성
 */
 router.post('/create-post/:channelId/:workSpaceId',
@@ -46,10 +46,10 @@ router.post('/create-post/:channelId/:workSpaceId',
 );
 
 
-/** POST /v1/workspace/post/create-reply/:channelId/:workSpaceId
+/** POST /api/v1/workspace/post/create-reply/:channelId/:workSpaceId
  * @method{POST}
- * @route {/v1/workspace/post/create-reply/:channelId/:workSpaceId}
- * 3. 댓글 달기
+ * @route {/api/v1/workspace/post/create-reply/:channelId/:workSpaceId}
+ * 3. 댓글 생성
 */
 router.post('/post/create-reply/:channelId/:workSpaceId',
     hasJsonWebToken,
@@ -58,17 +58,17 @@ router.post('/post/create-reply/:channelId/:workSpaceId',
 );
 
 
-/** DELETE /v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId
+/** DELETE /api/v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId
  * @method{DELETE}
- * @route {/v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId}
+ * @route {/api/v1/workspace/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId}
  * 4. 댓글 삭제
 */
 router.delete('/post/delete-reply/:channelId/:workSpaceId/:postId/:replyId', hasJsonWebToken, workspaceController.deleteReplyByCreatorInPost);
 
 
-/** PATCH /v1/workspace/post/edit-reply/:channelId/:workSpaceId
+/** PATCH /api/v1/workspace/post/edit-reply/:channelId/:workSpaceId
  * @method{PATCH}
- * @route {/v1/workspace/post/edit-reply/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/post/edit-reply/:channelId/:workSpaceId}
  * 5. 댓글 수정
 */
 router.patch('/post/edit-reply/:channelId/:workSpaceId',
@@ -78,63 +78,63 @@ router.patch('/post/edit-reply/:channelId/:workSpaceId',
 );
 
 
-/** GET /v1/workspace/:channelId/:workSpaceId/post/replies
+/** GET /api/v1/workspace/post/replies/:channelId/:workSpaceId/:postId
  * @method{GET}
- * @route {/v1/workspace/:channelId/:workSpaceId/post/replies}
- * 6. 댓글 보기
+ * @route {/api/v1/workspace/post/replies/:channelId/:workSpaceId/:postId}
+ * 6. 댓글 조회
 */
-router.post('/:channelId/:workSpaceId/post/replies', hasJsonWebToken, workspaceController.postGetPostDetailAndRepliesByPostId);
+router.get('/post/replies/:channelId/:workSpaceId/:postId', hasJsonWebToken, workspaceController.getPostDetailAndRepliesByPostId);
 
 
-/** PATCH /v1/workspace/invite/:channelId/:workSpaceId
+/** PATCH /api/v1/workspace/invite/:channelId/:workSpaceId
  * @method{PATCH}
- * @route {/v1/workspace/invite/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/invite/:channelId/:workSpaceId}
  * 7. 워크스페이스에 팀원 초대
 */
 router.patch('/invite/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchAddMemberToWorkSpace);
 
 
 
-/** PATCH /v1/workspace/edit-comment/:channelId/:workSpaceId
+/** PATCH /api/v1/workspace/edit-comment/:channelId/:workSpaceId
  * @method{PATCH}
- * @route {/v1/workspace/edit-comment/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/edit-comment/:channelId/:workSpaceId}
  * 8. 워크스페이스 설명 코멘트 편집
 */
 router.patch('/edit-comment/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchEditComment);
 
 
-/** PATCH /v1/workspace/exit/:channelId/:workSpaceId
+/** PATCH /api/v1/workspace/exit
  * @method{PATCH}
- * @route {/v1/workspace/exit/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/exit}
  * 9. 워크스페이스 퇴장
 */
-router.patch('/exit/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.patchExitWorkSpace);
+router.patch('/exit', hasJsonWebToken, workspaceController.patchExitWorkSpace);
 
 
-/** DELETE /v1/workspace/delete-post/:channelId/:workSpaceId/:postId
+/** DELETE /api/v1/workspace/delete-post/:channelId/:workSpaceId/:postId
  * @method{DELETE}
- * @route {/v1/workspace/delete-post/:channelId/:workSpaceId/:postId}
+ * @route {/api/v1/workspace/delete-post/:channelId/:workSpaceId/:postId}
  * 10. 워크스페이스에서 해당 유저의 게시물 삭제
 */
 router.delete('/delete-post/:channelId/:workSpaceId/:postId', hasJsonWebToken, workspaceController.deletePostByCreatorInWorkSpace);
 
 
-/** PATCH /v1/workspace/edit-post/:channelId/:workSpaceId
- * @method{PATCH}
- * @route {/v1/workspace/edit-post/:channelId/:workSpaceId}
+/** PUT /api/v1/workspace/edit-post/:channelId/:workSpaceId
+ * @method{PUT}
+ * @route {/api/v1/workspace/edit-post/:channelId/:workSpaceId}
  * 11. 워크스페이스에서 해당 유저의 게시물 내용 수정
 */
-router.patch('/edit-post/:channelId/:workSpaceId',
+router.put('/edit-post/:channelId/:workSpaceId',
     hasJsonWebToken,
     multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('files', 12),
     filesS3Handler.uploadFilesToS3,
-    workspaceController.patchEditPostByCreatorInWorkSpace
+    workspaceController.putEditPostByCreatorInWorkSpace
 );
 
 
-/** GET /v1/workspace/file-list/:channelId/:workSpaceId
+/** GET /api/v1/workspace/file-list/:channelId/:workSpaceId
  * @method{GET}
- * @route {/v1/workspace/file-list/:channelId/:workSpaceId}
+ * @route {/api/v1/workspace/file-list/:channelId/:workSpaceId}
  * 12. 워크스페이스 파일 리스트 조회
 */
 router.get('/file-list/:channelId/:workSpaceId', hasJsonWebToken, workspaceController.getLoadFilesInWorkSpace);
