@@ -3,8 +3,6 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import multer from 'multer';
-import { v4 } from 'uuid';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -16,8 +14,7 @@ import swaggerOptions from './swagger/config.js';
 
 import SocketIO from './socket.js';
 import redisClient from './util/redis.js';
-import { errorType } from './util/status.js';
-import { errorHandler } from './error/error.js'
+import { NotFoundError, errorHandler } from './error/error.js'
 
 import channelRoutes from './routes/channel.js';
 import userRoutes from './routes/user.js';
@@ -50,7 +47,6 @@ if (process.env.NODE_ENV === 'production') {
 } else {
     console.log('개발 환경!!');
     DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_DEV_VER;
-    console.log(DATABASE_NAME)
     app.use(morgan('dev'));
 }
 
@@ -64,6 +60,8 @@ const __dirname = dirname(__filename);
 // 파싱 미들웨어
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// 정적 파일
 app.use('/files', express.static(path.join(__dirname, 'files')));// 파일 폴더를 정적으로 사용
 app.use('/images/user_profiles', express.static(path.join(__dirname, 'images/user_profiles')));// 파일 폴더를 정적으로 사용
 app.use('/images/channel_thumbnail', express.static(path.join(__dirname, 'images/channel_thumbnail')));// 파일 폴더를 정적으로 사용
@@ -83,10 +81,12 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/oauth', oauthRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/workspace', workspaceRoutes);
+app.all('*', () => {
+    throw new NotFoundError('요청한 페이지를 찾지 못했습니다.'); 
+});
 
 // 오류 처리
 app.use((error, req, res, next) => {
-    // console.log('미들웨어 함수 진입.... throw 된 에러: ', error);
     if (!error.statusCode) {
         error = errorHandler(error);
     }
