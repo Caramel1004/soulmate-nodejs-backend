@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import redisClient from './redis.js';
 import { VerificationTokenError } from '../error/error.js';
-import SocketIO from '../socket.js';
 
 
 export default {
