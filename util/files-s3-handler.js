@@ -65,7 +65,7 @@ const filesS3Handler = {
         try {
             const { files } = req.body;
             req.body.fileUrls = [];
-            
+
             if (req.body.existFileUrls) {
                 const parsedExistFileUrls = JSON.parse(req.body.existFileUrls)
                 for (const fileUrl of parsedExistFileUrls.existFileUrls) {
@@ -78,7 +78,7 @@ const filesS3Handler = {
                 const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
                 return parsedJson;
             });
-            
+
             if (parsedFiles.length > 0) {
                 for (const parsedFile of parsedFiles) {
                     const fileId = new Date().getTime().toString(36);
@@ -94,8 +94,8 @@ const filesS3Handler = {
                     const s3Response = await s3.send(new PutObjectCommand(putObjectCommandOpts));
 
                     if (s3Response.$metadata.httpStatusCode != 200) {
-                            new Error('파일 업로드 실패, 서버에 문제가 생겼습니다.')
-                        }
+                        new Error('파일 업로드 실패, 서버에 문제가 생겼습니다.')
+                    }
                     req.body.fileUrls.push(fileUrl);
                 }
                 // console.log(req.body.fileUrls)
@@ -147,9 +147,8 @@ const filesS3Handler = {
     // 3. 채널 썸네일 이미지 파일 핸들러
     uploadChannelThumbnailToS3: async (req, res, next) => {
         try {
-            console.log(req.body);
             const { thumbnail } = req.body;
-            req.body.fileUrls = [];
+
             if (thumbnail != 'undefined' && thumbnail != 'null') {
                 console.log('진입');
                 // JSON형태로 되어있는 file 객체를 파싱하는 과정 -> buffer 프로퍼티의 data프로퍼티(배열 형태)값을 버퍼로 변환
@@ -157,21 +156,25 @@ const filesS3Handler = {
                     const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
                     return parsedJson;
                 });
-
+                console.log(parsedThumbnail);
                 // s3에 업로드
                 const fileId = new Date().getTime().toString(36);
-                const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/images/channels_thumbnail/soulmate_Photo_${fileId}.${parsedThumbnail[0].mimetype}`;
+                const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/images/channels_thumbnail/soulmate_Photo_${fileId}.${parsedThumbnail.mimetype}`;
 
                 const putObjectCommandOpts = {
                     Bucket: process.env.S3_BUCKET,
-                    Key: `images/channels_thumbnail/soulmate_Photo_${fileId}.${parsedThumbnail[0].mimetype}`,
-                    Body: parsedThumbnail[0].buffer,
-                    ContentType: parsedThumbnail[0].mimetype,
+                    Key: `images/channels_thumbnail/soulmate_Photo_${fileId}.${parsedThumbnail.mimetype}`,
+                    Body: parsedThumbnail.buffer,
+                    ContentType: parsedThumbnail.mimetype,
                 };
 
                 const s3Response = await s3.send(new PutObjectCommand(putObjectCommandOpts));
 
-                req.body.fileUrls.push(fileUrl);
+                if (s3Response.$metadata.httpStatusCode != 200) {
+                    new Error('파일 업로드 실패, 서버에 문제가 생겼습니다.')
+                }
+
+                req.body.fileUrl = fileUrl;
             }
             next();
         } catch (error) {
