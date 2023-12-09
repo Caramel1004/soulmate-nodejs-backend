@@ -71,7 +71,7 @@ router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUse
 router.post('/create',
     hasJsonWebToken,
     multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('thumbnail'),
-    filesHandler.saveUploadedChannelThumbnail,
+    filesS3Handler.uploadChannelThumbnailToS3,
     channelController.postCreateChannel);
 
 
