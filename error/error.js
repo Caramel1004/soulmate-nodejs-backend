@@ -70,6 +70,7 @@ export const errorHandler = error => {
         name: error.name,
         // stack: error.stack
     }
+    console.log('errorHandler 진입', )
     try {
         if (error instanceof Error) {
             errorReport.message = error.message;
@@ -93,6 +94,11 @@ export const errorHandler = error => {
 
         if (error instanceof RangeError) {
             errorReport.message = '어떤 값이 집합에 없거나 허용되는 범위가 아닐 때 오류를 나타냅니다.';
+            return errorReport;
+        }
+
+        if (error instanceof CastError) {
+            errorReport.message = '잘못된 도큐먼트아이디 입니다.';
             return errorReport;
         }
 
