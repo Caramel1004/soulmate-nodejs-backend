@@ -89,7 +89,6 @@ export default {
                         throw new VerificationTokenError('Redis에 일치하는 리프레시 토큰이 없습니다.');
                     }
                 } catch (err) {
-                    // console.log(err);
                     const result = await redisClient.v4.del(decodedToken.userId);
                     console.log('레디스 데이터 삭제: ', result);
                     console.log('리프레쉬 토큰 만료!!');
