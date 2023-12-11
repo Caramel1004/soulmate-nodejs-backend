@@ -741,10 +741,10 @@ const channelService = {
             const feed = await Feed.findOne({
                 channelId: channelId,
                 _id: feedId
-            },{
+            }, {
                 imageUrls: 1
             });
-    
+
             // s3에 해당 파일들 삭제
             if (feed.imageUrls.length > 0) {
                 await filesS3Handler.deletePhotoList(feed.imageUrls);
