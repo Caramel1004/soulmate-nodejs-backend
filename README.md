@@ -45,7 +45,8 @@
 # soulmate 아키텍처
 - 서비스 아키텍처
 <img src="./readme-images/SOULMATE 아키텍처.png">
-- BACKEND API 서버 Route Middleware 아키텍처 
+
+- BACKEND API 서버 Route Middleware 아키텍처
 <img src="./readme-images/API 서버 미들웨어 아키텍처.png">
 
 
