@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env NODE_ENV=production PORT=8080 pm2 start app.js -i 0",
+    "start": "cross-env NODE_ENV=production PORT=8080 nodemon pm2 start app.js -i 0",
     "dev": "cross-env NODE_ENV=dev PORT=8080 nodemon app.js",
     "start-server": "node app.js"
   },
@@ -24,8 +24,7 @@
     "@aws-sdk/s3-request-presigner": "^3.454.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
-    "connect-redis": "^7.1.0",
-    "cross-dotenv": "^1.0.4",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
@@ -42,7 +41,6 @@
     "socket.io": "^4.6.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "uuid": "^9.0.0",
     "winston": "^3.11.0"
   },
   "type": "module"
