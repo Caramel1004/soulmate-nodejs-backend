@@ -1,10 +1,12 @@
-import jsonWebToken from '../util/jwt.js'
+import bcrypt from 'bcryptjs';
+
 import Channel from '../models/channel.js';
+import { User, SNS_Account } from '../models/user.js';
 
 import db from '../util/transaction.js'
+import jsonWebToken from '../util/jwt.js'
 import { successType, errorType } from '../util/status.js';
 import { hasUser, hasUserInDB, vaildatePasswordOfUser, hasAuthorizationToken, hasExistUserInChannel } from '../validator/valid.js'
-import { User, SNS_Account } from '../models/user.js';
 import filesS3Handler from '../util/files-s3-handler.js';
 
 /**
