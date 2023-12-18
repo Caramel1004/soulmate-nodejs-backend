@@ -569,7 +569,6 @@ const channelService = {
     /** 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 */
     getWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, userId, next) => {
         try {
-            console.log(searchWord);
             const workSpaceList = await WorkSpace.find({
                 channelId: channelId,
                 workSpaceName: {
