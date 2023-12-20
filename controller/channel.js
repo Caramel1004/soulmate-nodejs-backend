@@ -25,7 +25,7 @@ import { hasReturnValue } from '../validator/valid.js'
 
 const channelController = {
     /** 1. 검색키워드에의한 오픈 채널 검색 및 조회 */
-    getSearchOpenChannelListBySearchKeyWord: async (req, res, next) => {
+    postSearchOpenChannelListBySearchKeyWord: async (req, res, next) => {
         try {
             let searchWord = req.body.searchWord;
             let category = req.body.category;
@@ -38,7 +38,7 @@ const channelController = {
                 category = undefined;
             }
 
-            const data = await channelService.getSearchOpenChannelListBySearchKeyWord(category, searchWord, next);
+            const data = await channelService.postSearchOpenChannelListBySearchKeyWord(category, searchWord, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
@@ -87,12 +87,13 @@ const channelController = {
         }
     },
     /** 4. 해당유저의 채널 목록 조회 */
-    getChannelListByUserId: async (req, res, next) => {
+    postChannelListByUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
-            const searchWord = req.query.searchWord;//찾을 종류
+            const { searchType } = req.query
+            const { searchWord, category } = req.body;
 
-            const data = await channelService.getChannelListByUserId(userId, searchWord, next);
+            const data = await channelService.postChannelListByUserId(userId, searchType, searchWord, category, next);
 
             hasReturnValue(data);
 
@@ -390,9 +391,29 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const { channelId } = req.params;
-            const { open, channelName, comment, category } = req.body;
+            const { open, channelName, comment, category, fileUrls } = req.body;
 
-            const data = await channelService.patchEditChannelByCreator(userId, channelId, open, channelName, comment, category, next);
+            const data = await channelService.patchEditChannelByCreator(userId, channelId, open, channelName, comment, category, fileUrls, next);
+            hasReturnValue(data);
+
+            res.status(data.status.code).json({
+                authStatus: authStatus,
+                status: data.status,
+                channelId: data.channelId,
+                thumbnail: data.thumbnail
+            })
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** 19. 채널 썸네일 수정 */
+    patchEditChannelThumbnailByCreator: async (req, res, next) => {
+        try {
+            const { userId, authStatus } = req.user;
+            const { channelId } = req.params;
+            const { thumbnail } = req.body;
+
+            const data = await channelService.patchEditChannelThumbnailByCreator(userId, channelId, thumbnail, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
