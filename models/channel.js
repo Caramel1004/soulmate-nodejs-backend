@@ -28,6 +28,9 @@ const channelSchema = new Schema({
             required: true
         }
     ],
+    summary: {
+        type: String
+    },
     comment: {
         type: String
     },
