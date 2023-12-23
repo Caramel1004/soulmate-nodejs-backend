@@ -148,15 +148,14 @@ const filesS3Handler = {
     uploadChannelThumbnailToS3: async (req, res, next) => {
         try {
             const { thumbnail } = req.body;
+            req.body.fileUrls = [];
 
-            if (thumbnail != 'undefined' && thumbnail != 'null') {
-                console.log('진입');
+            if (thumbnail) {
                 // JSON형태로 되어있는 file 객체를 파싱하는 과정 -> buffer 프로퍼티의 data프로퍼티(배열 형태)값을 버퍼로 변환
                 const parsedThumbnail = JSON.parse(thumbnail, (key, value) => {
                     const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;
                     return parsedJson;
                 });
-                console.log(parsedThumbnail);
                 // s3에 업로드
                 const fileId = new Date().getTime().toString(36);
                 const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com/images/channels_thumbnail/soulmate_Photo_${fileId}.${parsedThumbnail.mimetype}`;
@@ -174,7 +173,7 @@ const filesS3Handler = {
                     new Error('파일 업로드 실패, 서버에 문제가 생겼습니다.')
                 }
 
-                req.body.fileUrl = fileUrl;
+                req.body.fileUrls.push(fileUrl);
             }
             next();
         } catch (error) {
