@@ -50,9 +50,21 @@ const userService = {
             // 사용자 존재유무 체크
             hasUser(user);
 
-            // 나중에 bcrypt 추가할 예정s
+            // 나중에 bcrypt 추가할 예정
             // 비밀번호 일치하는지 체크
             vaildatePasswordOfUser(user.password, pwd);
+
+            // 사용자 고유아이디 존재x => 사용자 고유아이디 업데이트
+            if (user.uniqueId == undefined || !user.uniqueId || user.uniqueId == null) {
+                const uniqueId = `@user-${new Date(user.createdAt).getTime().toString(36)}`;
+                await User.updateOne({
+                    _id: user._id
+                },
+                    {
+                        uniqueId: uniqueId
+                    }
+                );
+            }
 
             // jwt 발급
             const token = await jsonWebToken.signToken(user);
@@ -94,7 +106,7 @@ const userService = {
                 }
                 return user;
             });
-            
+
             return {
                 status: successType.S02.s200,
                 matchedUsers: matchedUsers
@@ -106,6 +118,7 @@ const userService = {
     // 나의 프로필 조회(유저 정보)
     getMyProfile: async (userId, next) => {
         try {
+            // 1. 유저 먼저 조회
             const matchedUser = await User.findOne(
                 { _id: userId },
                 {
@@ -114,19 +127,40 @@ const userService = {
                     photo: 1,
                     gender: 1,
                     phone: 1,
+                    uniqueId: 1,
+                    snsConnectedAccount: 1,
                     wishChannels: 1
                 });
 
-            if (!matchedUser) {
-                const error = new Error(errorType.D04.d404);
-                throw error;
+            hasUser(matchedUser);
+
+            // 2. 외부 계정에 연결되어있는지 조회
+            const isOAuth = await SNS_Account.exists({
+                _id: matchedUser.snsConnectedAccount._id,
+                company: matchedUser.snsConnectedAccount.company
+            })
+
+            let logoImageUrl = '';
+            switch (matchedUser.snsConnectedAccount.company) {
+                case 'kakao': logoImageUrl = `/images/kakao_symbol.png`;
+                    break;
+                case 'google': logoImageUrl = `/images/google_symbol.png`;
+                    break;
+                case 'naver': logoImageUrl = `/images/naver_symbol.png`;
+                    break;
             }
 
-            const status = successType.S02.s200;
+            matchedUser._doc.snsAccount = {
+                isOAuth: isOAuth,
+                company: matchedUser.snsConnectedAccount.company,
+                logoImageUrl: logoImageUrl
+            };
+
+            console.log(matchedUser)
 
             return {
                 matchedUser: matchedUser,
-                status: status
+                status: successType.S02.s200
             }
         } catch (err) {
             next(err);
