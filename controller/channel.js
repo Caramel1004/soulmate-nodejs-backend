@@ -112,9 +112,10 @@ const channelController = {
             const { userId, authStatus } = req.user;
             const channelName = req.body.channelName;
             const open = req.body.open;
-            let thumbnail = req.body.fileUrl;
+            let thumbnail = req.body.fileUrls;
             const category = req.body.category;
             const comment = req.body.comment;
+            const summary = req.body.summary;
 
             const categoryArr = [];
             categoryArr.push(category);
@@ -123,9 +124,10 @@ const channelController = {
                 userId: userId,
                 open: open,
                 channelName: channelName,
-                thumbnail: thumbnail,
+                thumbnail: thumbnail[0],
                 category: categoryArr,
-                comment: comment
+                comment: comment,
+                summary: summary
             }
 
             const data = await channelService.postCreateChannel(body, next);
@@ -270,24 +272,23 @@ const channelController = {
         }
     },
     /** 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 */
-    getWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
+    postWorkSpaceListByChannelIdAndUserId: async (req, res, next) => {
         try {
             const { userId, authStatus } = req.user;
-            const { searchWord } = req.body;
+            const { searchWord, open } = req.body;
             let keyword = searchWord;
 
             if (keyword == undefined) {
                 keyword = '';
             }
 
-            const data = await channelService.getWorkSpaceListByChannelIdAndUserId(req.params.channelId, keyword, userId, next);
+            const data = await channelService.postWorkSpaceListByChannelIdAndUserId(req.params.channelId, keyword, open, userId, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
                 authStatus: authStatus,
                 status: data.status,
-                workSpaces: data.workSpaces,
-                openWorkSpaces: data.openWorkSpaces
+                workSpaces: data.workSpaces
             })
         } catch (err) {
             next(err);
@@ -391,9 +392,9 @@ const channelController = {
         try {
             const { userId, authStatus } = req.user;
             const { channelId } = req.params;
-            const { open, channelName, comment, category, fileUrls } = req.body;
+            const { open, channelName, comment, category, fileUrls, summary } = req.body;
 
-            const data = await channelService.patchEditChannelByCreator(userId, channelId, open, channelName, comment, category, fileUrls, next);
+            const data = await channelService.patchEditChannelByCreator(userId, channelId, open, channelName, comment, category, fileUrls, summary, next);
             hasReturnValue(data);
 
             res.status(data.status.code).json({
