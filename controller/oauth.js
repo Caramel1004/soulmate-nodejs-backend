@@ -67,7 +67,8 @@ const oauthController = {
                 token: data.token,
                 refreshToken: data.refreshToken,
                 name: data.name,
-                photo: data.photo
+                photo: data.photo,
+                channels: data.channels
             });
         } catch (err) {
             next(err);
