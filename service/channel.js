@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+
 import Channel from '../models/channel.js';
 import { Feed } from '../models/feed.js';
 import { User } from '../models/user.js';
@@ -5,7 +7,7 @@ import { ChatRoom } from '../models/chat-room.js';
 import { WorkSpace } from '../models/workspace.js';
 
 import { successType } from '../util/status.js';
-import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel, hasFeed } from '../validator/valid.js';
+import { hasArrayChannel, hasChannelDetail, hasUser, hasChatRoom, hasExistUserInChannel, hasWorkSpace, hasExistWishChannel, hasFeed, isMemberOfChannel } from '../validator/valid.js';
 import filesS3Handler from '../util/files-s3-handler.js';
 
 /** ##API 기능 정리
@@ -29,14 +31,22 @@ import filesS3Handler from '../util/files-s3-handler.js';
  * 18. 채널 정보 수정
  */
 
+dotenv.config();
+
 const channelService = {
     /** 1. 검색키워드에의한 오픈 채널 검색 및 조회 
      * @params {String} category: 카테고리
      * @params {String} searchWord: 검색키워드
      * @params {function} next: 다음 미들웨어 실행 함수
     */
-    getSearchOpenChannelListBySearchKeyWord: async (category, searchWord, next) => {
+    postSearchOpenChannelListBySearchKeyWord: async (category, searchWord, next) => {
         try {
+            // 유저가 0명인 채널 삭제
+            // 쿼리문 chatgpt 참고함
+            await Channel.deleteMany({
+                $expr: { $lte: [{ $size: '$members' }, 0] }
+            });
+
             let condition;
             // 1. 카테고리 + 서치워드
             if (category != undefined && searchWord != '') {
@@ -76,7 +86,8 @@ const channelService = {
                     channelName: 1,
                     thumbnail: 1,
                     category: 1,
-                    members: 1
+                    members: 1,
+                    summary: 1
                 });
 
             // 에러: 채널을 담는 배열이 존재하지않으면 에러
@@ -87,6 +98,7 @@ const channelService = {
                 channels: channels
             }
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },
@@ -204,25 +216,66 @@ const channelService = {
      * @return {Object} (property) status: {code 상태코드, status 상태, msg 상태메시지}: http 상태 보고서
      * @return {Object} (property) channels
     */
-    getChannelListByUserId: async (userId, searchWord, next) => {
+    postChannelListByUserId: async (userId, searchType, searchWord, category, next) => {
         try {
+            let condition;
+            // 1. 카테고리 + 서치워드
+            if (category != undefined && searchWord != undefined) {
+                condition = {
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    },
+                    category: {
+                        $in: [category]
+                    }
+                }
+            } else if (category != undefined && searchWord == undefined) {
+                condition = {
+                    category: {
+                        $in: [category]
+                    }
+                }
+            } else if (category == undefined && searchWord != undefined) {
+                condition = {
+                    channelName: {
+                        $regex: searchWord,
+                        $options: 'i'
+                    }
+                }
+            } else if (category == undefined && searchWord == undefined) {
+                condition = {
+                    open: {
+                        $in: ['Y', 'N']
+                    }
+                }
+            }
             // 분류 목록: 업무(비공개)팀플레이 채널, 내가만든 채널, 초대 받은 채널, 오픈 채널 -> 필터
             const user = await User.findById(userId)
-                .populate('channels', {
-                    open: 1,
-                    owner: 1,
-                    channelName: 1,
-                    thumbnail: 1,
-                    category: 1,
-                    members: 1
+                .select({
+                    channels: 1
+                })
+                .populate({
+                    path: 'channels',
+                    select: {
+                        open: 1,
+                        owner: 1,
+                        channelName: 1,
+                        thumbnail: 1,
+                        category: 1,
+                        members: 1,
+                        workSpaces: 1,
+                        chatRooms: 1
+                    },
+                    match: condition
                 });//populate함수로 해당아이디에대한 채널정보 모두 가져오기
 
             hasUser(user);
 
             let filteredChannels;
 
-            // 쿼리스트링 - searchWord
-            switch (searchWord) {
+            // 쿼리스트링 - searchType
+            switch (searchType) {
                 case 'own':
                     // 해당 유저가 생성한 채널
                     filteredChannels = user.channels.filter(channel => channel.owner.toString() === userId.toString());
@@ -259,10 +312,6 @@ const channelService = {
         try {
             // 1. 채널추가 요청한 유저의 아이디에 의한 데이터 조회
             const matchedUser = await User.findById(body.userId);
-
-            if (body.thumbnail === '') {
-                body.thumbnail = '/images/android-chrome-192x192.png';
-            }
 
             // 2. 채널 추가 요청한 유저가 오너
             const owner = matchedUser._id;
@@ -371,10 +420,10 @@ const channelService = {
         try {
             // 1. 유저가 해당 채널의 아이디를 가지고 있는지 부터 체크 
             const user = await User.findById(userId).select({ channels: 1 }).populate('channels');
+            hasUser(user);
 
             const matchedChannel = user.channels.find(channel => channel._id.toString() === channelId.toString());
-
-            hasChannelDetail(matchedChannel);
+            isMemberOfChannel(matchedChannel);
 
             // 2. 유저가 해당 채널의 아이디를 가지고있으면 다음 채널아이디로 해당채널 조회
             const channel = await Channel.findById(matchedChannel._id)
@@ -567,13 +616,23 @@ const channelService = {
         }
     },
     /** 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 */
-    getWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, userId, next) => {
+    postWorkSpaceListByChannelIdAndUserId: async (channelId, searchWord, open, userId, next) => {
         try {
+            let openArr = [];
+            if (open == 'Y' || open == 'true') {
+                openArr = [...['Y', 'true']];
+            } else if (open == 'N' || open == 'false' || open == undefined) {
+                openArr = [...['N', 'false']];
+            }
+
             const workSpaceList = await WorkSpace.find({
                 channelId: channelId,
                 workSpaceName: {
                     $regex: searchWord,
                     $options: 'i'
+                },
+                open: {
+                    $in: openArr
                 }
             })
                 .select({
@@ -590,17 +649,14 @@ const channelService = {
                 })
                 .populate({
                     path: 'posts',
+                    select: 'content createdAt',
                     options: {
                         sort: {
                             createdAt: -1
-                        },
-                        limit: 2
-                    },
-                    populate: {
-                        path: 'creator',
-                        select: 'name'
+                        }
                     }
                 });
+            console.log(workSpaceList);
             const userWorkSpaces = workSpaceList.filter(workSpace => {
                 const hasWorkSpace = workSpace.users.find(user => user._id.toString() === userId.toString());
                 if (hasWorkSpace) {
@@ -608,12 +664,9 @@ const channelService = {
                 }
             });
 
-            const openWorkSpaces = workSpaceList.filter(workSpace => workSpace.open == 'Y' || workSpace.open == 'true');
-
             return {
                 status: successType.S02.s200,
-                workSpaces: userWorkSpaces,
-                openWorkSpaces: openWorkSpaces
+                workSpaces: userWorkSpaces
             }
         } catch (err) {
             next(err);
@@ -632,7 +685,9 @@ const channelService = {
             const updatedUsers = matchedChannel.members.filter(id => id.toString() !== userId.toString());
 
             if (updatedUsers.length <= 0) {
-                await filesS3Handler.deletePhotoList([matchedChannel.thumbnail]);
+                if (matchedChannel.thumbnail.split('/images')[0] == `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com`) {
+                    await filesS3Handler.deletePhotoList([matchedChannel.thumbnail]);
+                }
                 await Channel.deleteOne({ _id: channelId });
             } else {
                 matchedChannel.members = [...updatedUsers];
@@ -825,7 +880,49 @@ const channelService = {
         }
     },
     /** 18. 채널 정보 수정 */
-    patchEditChannelByCreator: async (userId, channelId, open, channelName, comment, category, next) => {
+    patchEditChannelByCreator: async (userId, channelId, open, channelName, comment, category, fileUrls, summary, next) => {
+        try {
+            // 1. 유저 존재 여부
+            const hasUserData = await User.exists({ _id: userId });
+            hasUser(hasUserData);
+
+            if (fileUrls.length > 0) {
+                const channel = await Channel.findById(channelId).select({ thumbnail: 1 });
+                const channelThumbnail = [];
+                channelThumbnail.push(channel.thumbnail);
+
+                channel.thumbnail = fileUrls[0];
+                await channel.save();
+
+                // s3에 해당 파일들 삭제
+                await filesS3Handler.deletePhotoList([...channelThumbnail]);
+            }
+
+            // 2. 채널 업데이트
+            await Channel.updateOne({
+                _id: channelId,
+                owner: userId
+            },
+                {
+                    open: open,
+                    channelName: channelName,
+                    comment: comment,
+                    category: category,
+                    summary: summary
+                }
+            );
+
+            return {
+                status: successType.S02.s200,
+                channelId: channelId,
+                thumbnail: fileUrls
+            }
+        } catch (err) {
+            next(err);
+        }
+    },
+    /** 19. 채널 썸네일 수정 */
+    patchEditChannelThumbnailByCreator: async (userId, channelId, thumbnail, next) => {
         try {
             // 1. 유저 존재 여부
             const hasUserData = await User.exists({ _id: userId });
@@ -837,10 +934,7 @@ const channelService = {
                 owner: userId
             },
                 {
-                    open: open,
-                    channelName: channelName,
-                    comment: comment,
-                    category: category
+                    thumbnail: thumbnail
                 }
             );
 
@@ -850,7 +944,7 @@ const channelService = {
         } catch (err) {
             next(err);
         }
-    }
+    },
 }
 
 export default channelService;
