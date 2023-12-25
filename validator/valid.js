@@ -16,6 +16,7 @@ export const hasJsonWebToken = async (req, res, next) => {
         }
 
         const accessToken = authHeader.split(' ')[1];
+        console.log(accessToken);
         const refreshToken = req.headers.refresh;
 
         const data = await jsonWebToken.verifyAuthorizaionToken(accessToken, refreshToken);
@@ -66,6 +67,13 @@ export const hasArrayChannel = channels => {
 export const hasChannelDetail = channelDetail => {
     if (!channelDetail) {
         throw new NotFoundDataError('채널 세부 정보가 존재하지 않습니다.');
+    }
+    return;
+}
+
+export const isMemberOfChannel = channelDetail => {
+    if (!channelDetail) {
+        throw new NotFoundDataError('해당 채널 멤버가 아닙니다.\n해당 채널의 멤버에게 초대를 받아보세요.');
     }
     return;
 }
