@@ -36,7 +36,7 @@ const router = Router();
  * @route {/api/v1/channel/openchannel-list}
  * 1. 검색키워드에의한 오픈 채널 검색 및 조회
 */
-router.post('/openchannel-list', channelController.getSearchOpenChannelListBySearchKeyWord);
+router.post('/openchannel-list', channelController.postSearchOpenChannelListBySearchKeyWord);
 
 
 /** GET /api/v1/channel/openchannel-list/:channelId
@@ -56,11 +56,11 @@ router.patch('/add-or-remove-wishchannel', hasJsonWebToken, channelController.pa
 
 
 /** GET /api/v1/channel/mychannels
- * @method{GET}
+ * @method{POST}
  * @route {/api/v1/channel/mychannels}
  * 4. 해당유저의 채널 목록 조회
  */
-router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUserId);
+router.post('/mychannels', hasJsonWebToken, channelController.postChannelListByUserId);
 
 
 /** POST /api/v1/channel/create
@@ -70,7 +70,7 @@ router.get('/mychannels', hasJsonWebToken, channelController.getChannelListByUse
  */
 router.post('/create',
     hasJsonWebToken,
-    multer({ storage: filesHandler.fileStorage, fileFilter: filesHandler.fileFilter, limits: { fieldSize: 25 * 1024 * 1024 } }).single('thumbnail'),
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).single('thumbnail'),
     filesS3Handler.uploadChannelThumbnailToS3,
     channelController.postCreateChannel);
 
@@ -128,7 +128,7 @@ router.post('/:channelId/create-workspace', hasJsonWebToken, channelController.p
  * @route {/api/v1/channel/:channelId/workspace} 
  * 12. 해당채널에서 유저가 속한 워크스페이스 검색키워드로 목록 검색 
  */
-router.post('/:channelId/workspace', hasJsonWebToken, channelController.getWorkSpaceListByChannelIdAndUserId);
+router.post('/:channelId/workspace', hasJsonWebToken, channelController.postWorkSpaceListByChannelIdAndUserId);
 
 
 /** PATCH /api/v1/channel/exit/:channelId
@@ -184,6 +184,10 @@ router.patch('/plus-or-minus-feed-like', hasJsonWebToken, channelController.patc
  * @route {/api/v1/channel/edit-channel/:channelId} 
  * 18. 채널 정보 수정
  */
-router.patch('/edit-channel/:channelId', hasJsonWebToken, channelController.patchEditChannelByCreator);
+router.patch('/edit-channel/:channelId',
+    hasJsonWebToken,
+    multer({ limits: { fieldSize: 25 * 1024 * 1024 } }).array('thumbnail', 1),
+    filesS3Handler.uploadChannelThumbnailToS3,
+    channelController.patchEditChannelByCreator);
 
 export default router;
