@@ -305,6 +305,7 @@ const chatService = {
                         fileUrlsOfChats = [...fileUrlsOfChats, ...chat.fileUrls];
                     }
                 }
+                
                 if (fileUrlsOfChats.length > 0) {
                     await filesS3Handler.deletePhotoList(fileUrlsOfChats);
                 }
