@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
 
 import Channel from '../models/channel.js';
 import { User, SNS_Account } from '../models/user.js';
@@ -12,7 +13,14 @@ import filesS3Handler from '../util/files-s3-handler.js';
 /**
  * 1. 회원가입
  * 2. 로그인 요청한 유저 조회
+ * 3. 검색 키워드로 유저 리스트 조회
+ * 4. 내 프로필 조회
+ * 5. 내 프로필 수정
+ * 6. 내 프로필 이미지 수정
+ * 7. 앱에서 회원 탈퇴
  */
+
+dotenv.config();
 
 const userService = {
     // 1. 회원 가입
@@ -176,9 +184,21 @@ const userService = {
             // 2. 가입이 안되있으면 회원가입 되어있으면 로그인
             let user;
             if (snsAccount) {
-                user = await User.findOne({ password: snsResData.id });
+                user = await User.findOne({ password: snsResData.id.toString() }).populate('channels', { channelName: 1, thumbnail: 1 });
                 if (!user) {
                     await SNS_Account.deleteOne({ id: snsResData.id })
+                }
+
+                // 사용자 고유아이디 존재x => 사용자 고유아이디 업데이트
+                if (user.uniqueId == undefined || !user.uniqueId || user.uniqueId == null) {
+                    const uniqueId = `@user-${new Date(user.createdAt).getTime().toString(36)}`;
+                    await User.updateOne({
+                        _id: user._id
+                    },
+                        {
+                            uniqueId: uniqueId
+                        }
+                    );
                 }
             } else {
                 const account = await SNS_Account.create({
@@ -200,7 +220,7 @@ const userService = {
                 });
             }
             hasUser(user);
-
+            console.log(user);
             // jwt 발급
             const token = await jsonWebToken.signToken(user);
 
@@ -212,7 +232,8 @@ const userService = {
                 token: token.accessToken,
                 refreshToken: token.refreshToken,
                 photo: user.photo,
-                name: user.name
+                name: user.name,
+                channels: user.channels
             }
         } catch (err) {
             console.log(err);
@@ -238,7 +259,9 @@ const userService = {
                     updatedData.data = data;
                     break;
                 case hasPhotoToBeEdit:
-                    await filesS3Handler.deletePhotoList([user.photo]);
+                    if (user.photo.split('/images')[0] == `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com`) {
+                        await filesS3Handler.deletePhotoList([user.photo]);
+                    }
                     await User.updateOne({ _id: userId }, { photo: body.fileUrls[0] });
                     updatedData.photo = body.fileUrls[0];
                     break;
@@ -255,6 +278,10 @@ const userService = {
             next(err)
         }
     },
+    /** 7. 앱에서 회원 탈퇴 */
+    deleteUserToApp: async (req, res, next) => {
+        
+    }
 }
 
 export default userService;
