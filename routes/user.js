@@ -16,6 +16,7 @@ const router = Router();
  * 4. 내 프로필 조회
  * 5. 내 프로필 수정
  * 6. 내 프로필 이미지 수정
+ * 7. 앱에서 회원 탈퇴
  */
 
 
@@ -80,5 +81,12 @@ router.patch('/edit-myprofile-photo',
     filesS3Handler.uploadUserPhotoToS3,
     userController.patchEditMyProfileByReqUser
 );
+
+/** DELETE /api/v1/user/delete-user
+ * @method{DELETE}
+ * @route {/api/v1/user/delete-user}
+ * 7. 회원 탈퇴 
+*/
+// router.delete('/delete-user', hasJsonWebToken, userController.deleteUserToApp);
 
 export default router;
