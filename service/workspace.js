@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+
 import Channel from '../models/channel.js';
 import { WorkSpace, Post, Reply } from '../models/workspace.js'
 
@@ -18,6 +20,9 @@ import filesS3Handler from '../util/files-s3-handler.js';
  * 10. 게시물 삭제
  * 11. 댓글 삭제
  */
+
+dotenv.config();
+
 const workspaceService = {
     /** 1. 워크스페이스 세부정보 조회 */
     getLoadWorkspace: async (channelId, workSpaceId, sortType, sortNum, userId, next) => {
@@ -419,10 +424,17 @@ const workspaceService = {
             hasUser(user);
 
             // s3에 해당 파일들 삭제
-            if (matchedPost.fileUrls.length > 0) {
+            const s3FileUrls = [];
+            matchedPost.fileUrls.forEach(fileUrl => {
+                if (fileUrl.split('/images')[0] == `https://${process.env.S3_BUCKET}.s3.${process.env.S3_BUCKET_REGION}.amazonaws.com`) {
+                    s3FileUrls.push(fileUrl);
+                }
+            });
+
+            if (s3FileUrls.length > 0) {
                 await filesS3Handler.deletePhotoList(matchedPost.fileUrls);
             }
-            
+
             /** 2) 해당 게시물 삭제
               * @params {ObjectId} 요청한 게시물 아이디 
               * @return {object} (property)워크스페이스에 참여하고있는 유저들
