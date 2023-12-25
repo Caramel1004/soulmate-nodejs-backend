@@ -7,7 +7,7 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    id: {
+    uniqueId: {
         type: String
     },
     name: {
@@ -69,6 +69,7 @@ const snsAccountSchema = new Schema({
         required: true
     }
 }, { timestamps: true });
+
 
 export const User = mongoose.model('User', userSchema);
 export const SNS_Account = mongoose.model('snsAccount', snsAccountSchema);
