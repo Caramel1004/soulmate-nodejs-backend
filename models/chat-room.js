@@ -48,6 +48,10 @@ const chatSchema = new Schema({
     isNotice: {
         type: String,
         default: 'N'
+    },
+    createdAt: {
+        type: Date,
+        default: new Date()
     }
 }, { timestamps: true });
 
