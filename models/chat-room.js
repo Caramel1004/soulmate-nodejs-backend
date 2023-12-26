@@ -48,13 +48,8 @@ const chatSchema = new Schema({
     isNotice: {
         type: String,
         default: 'N'
-    },
-    createdAt: {
-        type: Date
     }
-}, { timestamps: {
-    currentTime: new Date()
-} });
+}, { timestamps: true });
 
 const ChatRoom = mongoose.model('ChatRoom', chatRoomSchema);
 const Chat = mongoose.model('Chat', chatSchema);
