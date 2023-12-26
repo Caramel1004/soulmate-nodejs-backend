@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env NODE_ENV=production PORT=80 pm2 start app.js -i 0",
-    "dev": "cross-env NODE_ENV=dev PORT=80 nodemon app.js",
+    "start": "cross-env NODE_ENV=production PORT=8080 pm2 start app.js -i 0",
+    "dev": "cross-env NODE_ENV=dev PORT=8080 nodemon app.js",
     "start-server": "node app.js"
   },
   "author": "Caramel1004",

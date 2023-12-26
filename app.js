@@ -102,12 +102,12 @@ app.use((error, req, res, next) => {
 mongoose.connect(DATABASE_URL)
     .then(result => {
         // 서버사이드 웹 소켓
-        app.listen(process.env.PORT || 80, () => console.log(`Node BackEnd Server start!!`));
+        const server = app.listen(process.env.PORT || 8080, () => console.log(`Node BackEnd Server start!!`));
 
-        // const io = SocketIO.init(server);
-        // io.emit('connection', socket => {
-        //     console.log('백엔드 서버 webSocket 가동!!!');
-        // });
+        const io = SocketIO.init(server);
+        io.emit('connection', socket => {
+            console.log('백엔드 서버 webSocket 가동!!!');
+        });
 
         // 레디스 연결
         redisClient.connect();
