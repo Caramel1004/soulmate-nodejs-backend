@@ -102,7 +102,7 @@ app.use((error, req, res, next) => {
 mongoose.connect(DATABASE_URL)
     .then(result => {
         // 서버사이드 웹 소켓
-        const server = app.listen(process.env.PORT || 80, () => console.log(`Node BackEnd Server start!!`));
+        app.listen(process.env.PORT || 80, () => console.log(`Node BackEnd Server start!!`));
 
         // const io = SocketIO.init(server);
         // io.emit('connection', socket => {
