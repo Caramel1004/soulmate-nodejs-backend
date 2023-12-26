@@ -34,8 +34,8 @@ const createCategoryData = async () => {
             name: '디자인'
         },
         {
-            keyword: 'sale',
-            name: '영업'
+            keyword: 'marketing',
+            name: '마케팅'
         },
         {
             keyword: 'community',
