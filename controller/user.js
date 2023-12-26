@@ -5,6 +5,11 @@ import { hasReturnValue } from '../validator/valid.js'
 /**
  * 1. 회원가입
  * 2. 로그인 요청한 유저 조회
+ * 3. 검색 키워드로 유저 리스트 조회
+ * 4. 내 프로필 조회
+ * 5. 내 프로필 수정
+ * 6. 내 프로필 이미지 수정
+ * 7. 앱에서 회원 탈퇴
  */
 
 const userController = {
@@ -82,7 +87,7 @@ const userController = {
             matchedUser: data.matchedUser
         });
     },
-    /** 5. 내 프로필 수정 */
+    /** 5., 6. 내 프로필 수정 */
     patchEditMyProfileByReqUser: async (req, res, next) => {
         const { body } = req;
         const { userId, authStatus } = req.user;
@@ -96,6 +101,19 @@ const userController = {
             updatedData: data.updatedData
         });
     },
+    /** 7. 앱에서 회원 탈퇴 */
+    deleteUserToApp: async (req, res, next) => {
+        const { userId, authStatus } = req.user;
+
+        const data = await userService.deleteUserToApp(userId, body, next);
+        hasReturnValue(data);
+
+        res.status(data.status.code).json({
+            authStatus: authStatus,
+            status: data.status,
+            updatedData: data.updatedData
+        });
+    }
 }
 
 export default userController;
