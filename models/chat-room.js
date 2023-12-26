@@ -53,7 +53,7 @@ const chatSchema = new Schema({
         type: Date,
         default: new Date()
     }
-}, { timestamps: true });
+});
 
 const ChatRoom = mongoose.model('ChatRoom', chatRoomSchema);
 const Chat = mongoose.model('Chat', chatSchema);
