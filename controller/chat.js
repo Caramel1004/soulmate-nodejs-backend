@@ -7,7 +7,6 @@ import { successType, errorType } from '../util/status.js';
 import { hasReturnValue } from '../validator/valid.js'
 
 import SocketIO from '../socket.js';
-import socket from '../socket.js';
 
 /**
  * 1. 채팅방 세부정보 조회
