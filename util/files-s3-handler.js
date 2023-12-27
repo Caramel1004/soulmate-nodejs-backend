@@ -150,7 +150,7 @@ const filesS3Handler = {
             const { thumbnail } = req.body;
             req.body.fileUrls = [];
 
-            if (thumbnail) {
+            if (thumbnail && thumbnail != 'undefined') {
                 // JSON형태로 되어있는 file 객체를 파싱하는 과정 -> buffer 프로퍼티의 data프로퍼티(배열 형태)값을 버퍼로 변환
                 const parsedThumbnail = JSON.parse(thumbnail, (key, value) => {
                     const parsedJson = value && value.type === 'Buffer' ? Buffer.from(value) : value;

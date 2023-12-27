@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import moment from "moment";
 
 const { Schema } = mongoose;
 
@@ -29,14 +28,9 @@ const chatRoomSchema = new Schema({
         }
     ],
     createdAt: {
-        type: Date,
-        default: () => moment().tz('Asia/Seoul')
-    },
-    updatedAt: {
-        type: Date,
-        default: () => moment().tz('Asia/Seoul')
+        type: Date
     }
-});
+}, { timestamps: true });
 
 // 채팅 스키마
 const chatSchema = new Schema({
