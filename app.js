@@ -34,7 +34,7 @@ app.use('/soulmate/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 let DATABASE_NAME;
 if (process.env.NODE_ENV === 'production') {
     console.log('배포 환경!!');
-    DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_DEV_VER;
+    DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_PROD_VER;
     app.use(morgan('combined'));
     app.use(
         helmet({
