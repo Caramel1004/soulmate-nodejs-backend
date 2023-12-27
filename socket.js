@@ -6,9 +6,8 @@ export default {
         socketIO = new Server(server, {
             cors: {
                 origin: 'http://3.39.235.59:3000',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                methods: ['GET, POST, PUT, PATCH, DELETE'],
+                allowedHeaders: ['Content-Type', 'application/json']
             }
         });
         return socketIO;
