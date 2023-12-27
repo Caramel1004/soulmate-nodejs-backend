@@ -5,7 +5,7 @@ export default {
     init: server => {
         socketIO = new Server(server, {
             cors: {
-                origin: ['http://localhost:4000', 'http://3.39.235.59:3000'],
+                origin: ['http://3.39.235.59:3000'],
                 headers: {
                     'Content-Type': 'application/json'
                 }
