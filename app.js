@@ -33,7 +33,8 @@ app.use('/soulmate/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // 배포 환경 or 개발 환경
 let DATABASE_NAME;
 if (process.env.NODE_ENV === 'production') {
-    console.log('배포 환경!!');
+    console.log('-------------------PROD ENV-------------------');
+    process.env.REDIRECT_URI= process.env.REDIRECT_URI_DEV_VER;
     DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_PROD_VER;
     app.use(morgan('combined'));
     app.use(
@@ -45,7 +46,8 @@ if (process.env.NODE_ENV === 'production') {
     );
     app.use(hpp());
 } else {
-    console.log('개발 환경!!');
+    console.log('-------------------DEV ENV-------------------');
+    process.env.REDIRECT_URI= process.env.REDIRECT_URI_PROD_VER;
     DATABASE_NAME = process.env.DATABASE_DEFAULT_NAME_DEV_VER;
     app.use(morgan('dev'));
 }
