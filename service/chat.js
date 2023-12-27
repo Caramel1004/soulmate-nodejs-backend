@@ -323,16 +323,16 @@ const chatService = {
                 // 채팅룸 스키마에서 해당 채팅방 삭제
                 await ChatRoom.deleteOne({ _id: matchedChatRoom._id });
             } else {
-                matchedChatRoom.users = [...filteredChatRoomUsers];
-                matchedChatRoom.chats.push(chatObj._id);
-                await matchedChatRoom.save();
-
                 // 퇴장 멘트를 챗으로 저장
                 const chatObj = await Chat.create({
                     chat: `${exitUser.name}님이 퇴장하셨습니다.`,
                     creator: exitUser._id,
                     isNotice: 'Y'
                 });
+
+                matchedChatRoom.users = [...filteredChatRoomUsers];
+                matchedChatRoom.chats.push(chatObj._id);
+                await matchedChatRoom.save();
             }
 
             return {
