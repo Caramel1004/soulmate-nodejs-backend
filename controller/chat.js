@@ -49,7 +49,7 @@ const chatController = {
 
             res.status(data.status.code).json({
                 status: data.status,
-                users: data.users
+                members: data.members
             });
         } catch (err) {
             next(err);

@@ -25,9 +25,9 @@ const router = Router();
 router.get('/:channelId/:chatRoomId', hasJsonWebToken, chatController.getLoadChatRoom);
 
 
-/** GET /api/v1/chat/channel-members/:channelId
+/** GET /api/v1/chat/channel-members/:channelId/:chatRoomId
  * @method{GET}
- * @route {/api/v1/chat/channel-members/:channelId}
+ * @route {/api/v1/chat/channel-members/:channelId/:chatRoomId}
  * 2. 채팅방에서 채널 멤버들 조회
 */
 router.get('/channel-members/:channelId/:chatRoomId', chatController.getLoadUsersInChannel);

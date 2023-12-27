@@ -118,7 +118,7 @@ const chatService = {
 
             return {
                 status: status,
-                users: channel.members
+                members: channel.members
             }
         } catch (err) {
             next(err);
