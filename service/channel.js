@@ -394,7 +394,8 @@ const channelService = {
                         thumbnail: 1,
                         category: 1,
                         comment: 1,
-                        members: 1
+                        members: 1,
+                        summary: 1
                     },
                     match: condition,
                     populate: { path: 'members', select: 'name photo' }
