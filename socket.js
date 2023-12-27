@@ -7,7 +7,8 @@ export default {
             cors: {
                 origin: 'http://3.39.235.59:3000',
                 methods: ['GET, POST, PUT, PATCH, DELETE'],
-                allowedHeaders: ['Content-Type', 'application/json']
+                allowedHeaders: ['Content-Type', 'application/json'],
+                credentials: true
             }
         });
         return socketIO;
