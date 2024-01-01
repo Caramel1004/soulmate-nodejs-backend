@@ -622,8 +622,10 @@ const channelService = {
             let openArr = [];
             if (open == 'Y' || open == 'true') {
                 openArr = [...['Y', 'true']];
-            } else if (open == 'N' || open == 'false' || open == undefined) {
+            } else if (open == 'N' || open == 'false') {
                 openArr = [...['N', 'false']];
+            } else if (open == undefined) {
+                openArr = [...['Y', 'N', 'true', 'false']];
             }
 
             const workSpaceList = await WorkSpace.find({
