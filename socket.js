@@ -5,7 +5,7 @@ export default {
     init: server => {
         socketIO = new Server(server, {
             cors: {
-                origin: 'http://3.38.246.44:8080',
+                origin: 'http://43.202.77.252:443',
                 methods: ['GET, POST, PUT, PATCH, DELETE'],
                 allowedHeaders: ['Content-Type', 'application/json'],
                 credentials: true
