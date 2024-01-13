@@ -5,7 +5,7 @@ export default {
     init: server => {
         socketIO = new Server(server, {
             cors: {
-                origin: ['https://somate.site', 'https://www.somate.site', 'http://localhost:4000'],
+                origin: ['https://somat.site', 'https://www.somat.site', 'http://localhost:4000'],
                 methods: ['GET, POST, PUT, PATCH, DELETE'],
                 allowedHeaders: ['Content-Type', 'application/json'],
                 credentials: true
