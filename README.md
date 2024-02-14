@@ -1,5 +1,9 @@
 # soulmate-nodejs-backend
-앱 이름: Soulmate, 언제든지 소통할 수 있는 메신저 애플리케이션
+>- 앱 이름: Soulmate, 언제든지 소통할 수 있는 메신저 애플리케이션
+>- Https가 적용된 플랫폼
+> https://www.somat.site
+>- 자세한 백엔드 기술 히스토리
+>  https://caramel1004.notion.site/caramel1004/SOULMATE-90ce4f5f3b314d809f400aeee832ca2a
 
 # 사용한 기술 스택
 <div align="left">
